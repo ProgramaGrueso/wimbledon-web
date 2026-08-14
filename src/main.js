@@ -205,76 +205,86 @@ function renderEditorialApp() {
       </div>
     </section>
 
-    <!-- RESERVA EDITORIAL -->
+    <!-- RESERVA & UBICACIÓN EDITORIAL -->
     <section id="reserva" class="section-editorial bg-black">
       <div class="editorial-container">
         <div class="editorial-header-block reveal" style="text-align: center; max-width: 800px; margin-left: auto; margin-right: auto;">
           <span class="editorial-tag">DISPONIBILIDAD INMEDIATA</span>
-          <h2 class="editorial-headline" style="color: var(--color-white);">Reservar una Suite</h2>
+          <h2 class="editorial-headline" style="color: var(--color-white);">Reservar una Suite & Ubicación</h2>
           <p style="color: #999999; margin-top: 1rem;">
             Selecciona la fecha y habitación de tu interés. Tu solicitud se enviará a nuestra central de atención confidencial por WhatsApp.
           </p>
         </div>
 
-        <div class="editorial-form-wrap reveal">
-          <form id="editorialForm">
-            <div class="editorial-form-grid">
-              <div class="editorial-field">
-                <label class="editorial-label">Nombre Completo</label>
-                <input type="text" id="edName" class="editorial-input" placeholder="Tu nombre" required />
-              </div>
+        <div class="reserva-grid-wrap reveal">
+          <!-- Columna Izquierda: Formulario de Reserva (55%) -->
+          <div class="reserva-form-col">
+            <form id="editorialForm">
+              <div class="editorial-form-grid">
+                <div class="editorial-field">
+                  <label class="editorial-label">Nombre Completo</label>
+                  <input type="text" id="edName" class="editorial-input" placeholder="Tu nombre" required />
+                </div>
 
-              <div class="editorial-field">
-                <label class="editorial-label">Teléfono de Contacto</label>
-                <input type="tel" id="edPhone" class="editorial-input" placeholder="Ej. 990370681" required />
-              </div>
+                <div class="editorial-field">
+                  <label class="editorial-label">Teléfono de Contacto</label>
+                  <input type="tel" id="edPhone" class="editorial-input" placeholder="Ej. 990370681" required />
+                </div>
 
-              <div class="editorial-field">
-                <label class="editorial-label">Suite Seleccionada</label>
-                <select id="edRoom" class="editorial-select" required>
-                  ${roomsData.map(r => `<option value="${r.nombre}">${r.nombre}</option>`).join('')}
-                </select>
-              </div>
+                <div class="editorial-field">
+                  <label class="editorial-label">Suite Seleccionada</label>
+                  <select id="edRoom" class="editorial-select" required>
+                    ${roomsData.map(r => `<option value="${r.nombre}">${r.nombre}</option>`).join('')}
+                  </select>
+                </div>
 
-              <div class="editorial-field">
-                <label class="editorial-label">Tiempo de Estadía</label>
-                <select id="edDuration" class="editorial-select">
-                  <option value="6 Horas">Estadía por 6 Horas</option>
-                  <option value="12 Horas">Estadía por 12 Horas</option>
-                  <option value="Noche Completa">Noche Completa</option>
-                </select>
-              </div>
+                <div class="editorial-field">
+                  <label class="editorial-label">Tiempo de Estadía</label>
+                  <select id="edDuration" class="editorial-select">
+                    <option value="6 Horas">Estadía por 6 Horas</option>
+                    <option value="12 Horas">Estadía por 12 Horas</option>
+                    <option value="Noche Completa">Noche Completa</option>
+                  </select>
+                </div>
 
-              <div class="editorial-field full">
-                <label class="editorial-label">Fecha y Hora Estimada</label>
-                <input type="datetime-local" id="edDate" class="editorial-input" required />
-              </div>
+                <div class="editorial-field full">
+                  <label class="editorial-label">Fecha y Hora Estimada</label>
+                  <input type="datetime-local" id="edDate" class="editorial-input" required />
+                </div>
 
-              <div class="editorial-field full" style="margin-top: 2rem; text-align: center;">
-                <button type="submit" class="btn-editorial-light" style="width: 100%; max-width: 450px; margin: 0 auto;">
-                  CONFIRMAR VIA WHATSAPP
-                </button>
+                <div class="editorial-field full" style="margin-top: 2rem; text-align: center;">
+                  <button type="submit" class="btn-editorial-light" style="width: 100%;">
+                    CONFIRMAR VÍA WHATSAPP
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Columna Derecha: Mapa Oscuro Sticky (45%) -->
+          <div class="reserva-map-col">
+            <div class="reserva-map-sticky">
+              <div class="reserva-map-header">
+                <span class="editorial-tag text-gold">NUESTRA UBICACIÓN</span>
+                <h3 class="reserva-map-title">Av. Costanera 2098</h3>
+                <p class="reserva-map-sub">San Miguel, Lima • Estacionamiento Privado Directo las 24 Horas</p>
+              </div>
+              <div class="map-container">
+                <iframe 
+                  title="Ubicación Hotel Wimbledon"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.37340638531!2d-77.0945!3d-12.0864!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c963625f2ed9%3A0x88981f4a9bb540c4!2sAv.%20Costanera%202098%2C%20San%20Miguel%2015087!5e0!3m2!1ses!2spe!4v1700000000000!5m2!1ses!2spe" 
+                  width="100%" 
+                  height="450" 
+                  style="border:0;" 
+                  allowfullscreen="" 
+                  loading="lazy" 
+                  referrerpolicy="no-referrer-when-downgrade"
+                  class="google-map-iframe"
+                ></iframe>
               </div>
             </div>
-          </form>
+          </div>
         </div>
-      </div>
-    </section>
-
-    <!-- GOOGLE MAPS LOCATION EMBED -->
-    <section id="mapa" class="map-section">
-      <div class="map-container">
-        <iframe 
-          title="Ubicación Hotel Wimbledon"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.37340638531!2d-77.0945!3d-12.0864!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c963625f2ed9%3A0x88981f4a9bb540c4!2sAv.%20Costanera%202098%2C%20San%20Miguel%2015087!5e0!3m2!1ses!2spe!4v1700000000000!5m2!1ses!2spe" 
-          width="100%" 
-          height="450" 
-          style="border:0;" 
-          allowfullscreen="" 
-          loading="lazy" 
-          referrerpolicy="no-referrer-when-downgrade"
-          class="google-map-iframe"
-        ></iframe>
       </div>
     </section>
 

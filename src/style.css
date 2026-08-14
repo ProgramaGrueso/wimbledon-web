@@ -831,17 +831,55 @@ button {
 }
 
 /* ==========================================================================
-   EDITORIAL RESERVATION FORM
+   EDITORIAL RESERVATION FORM & STICKY MAP (2-COLUMN DESKTOP GRID)
    ========================================================================== */
+.reserva-grid-wrap {
+  display: grid;
+  grid-template-columns: 55% 45%;
+  gap: 4rem;
+  align-items: start;
+}
+
+.reserva-form-col {
+  width: 100%;
+}
+
+.reserva-map-col {
+  width: 100%;
+  position: relative;
+}
+
+.reserva-map-sticky {
+  position: sticky;
+  top: 100px; /* Aligned below sticky editorial-header */
+  z-index: 10;
+}
+
+.reserva-map-header {
+  margin-bottom: 1.25rem;
+}
+
+.reserva-map-title {
+  font-size: 1.8rem;
+  color: var(--color-white);
+  font-weight: 300;
+  margin-bottom: 0.25rem;
+}
+
+.reserva-map-sub {
+  font-size: 0.88rem;
+  color: #999999;
+  line-height: 1.5;
+}
+
 .editorial-form-wrap {
-  max-width: 900px;
-  margin: 0 auto;
+  width: 100%;
 }
 
 .editorial-form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 3rem 4rem;
+  gap: 2.5rem 3rem;
 }
 
 .editorial-field {
@@ -883,22 +921,15 @@ button {
   color: var(--color-white);
 }
 
-/* ==========================================================================
-   GOOGLE MAPS SECTION
-   ========================================================================== */
-.map-section {
-  width: 100%;
-  background-color: var(--color-black);
-  position: relative;
-  border-top: 1px solid var(--color-border-dark);
-}
-
 .map-container {
   width: 100%;
   line-height: 0;
 }
 
 .google-map-iframe {
+  width: 100%;
+  height: 450px;
+  border: 1px solid var(--color-border-dark);
   filter: grayscale(0.85) contrast(1.1) invert(0.92) hue-rotate(180deg);
   transition: filter 0.5s ease;
 }
@@ -1261,17 +1292,11 @@ button {
   }
 
   .official-brand-logo {
-    height: 26px;
+    height: 28px;
   }
 
-  .brand-name {
-    font-size: 1.15rem;
-    letter-spacing: 0.12em;
-  }
-
-  .brand-sub {
-    font-size: 0.48rem;
-    letter-spacing: 0.22em;
+  .brand-wordmark {
+    display: none !important;
   }
 
   .btn-editorial-text {
@@ -1421,7 +1446,21 @@ button {
     font-size: 1.2rem;
   }
 
-  /* Form Layout */
+  /* Reserva Form & Map Mobile Single Column (< 768px) */
+  .reserva-grid-wrap {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .reserva-map-sticky {
+    position: static;
+    top: auto;
+  }
+
+  .google-map-iframe {
+    height: 320px;
+  }
+
   .editorial-form-grid {
     gap: 1.5rem;
   }
