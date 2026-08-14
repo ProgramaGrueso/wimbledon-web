@@ -4,7 +4,7 @@
     "habitaciones_count": 16,
     "servicios_count": 4,
     "carta_count": 21,
-    "fecha_generacion": "2026-08-14T19:14:49.091Z"
+    "fecha_generacion": "2026-08-14T22:17:20.550Z"
   },
   "habitaciones": [
     {
@@ -13,6 +13,7 @@
       "slug": "suite-presidencial",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 156",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/12/suite-presidencial-1.jpg",
       "descripcion": "¡Ten los sueños más placenteros! Nuestra habitación de lujo está equipada con todos los detalles que permitan a nuestros clientes tener descanso propio de una realeza. Detalles: Cama redonda, Sillón Tántrico de Cuarzo, Cámara Seca, Ducha española, Jacuzzi con Hidromasaje, Pole Dance, Baño privado y Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Vista al mar Cama Redonda Sillón tántrico Ducha española Jacuzzi Pole Dance Secadora de cabello Frigobar Televisión con Cable y DVD Radio (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18% + 5% recargo al consumo. RESERVAR",
       "resumen": "¡Ten los sueños más placenteros! Nuestra habitación de lujo está equipada con todos los detalles que permitan"
@@ -23,6 +24,7 @@
       "slug": "tropical-dreams",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 125",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/Tropical-Dreams.jpg",
       "descripcion": "Habitación de lujo diseñada para los clientes exclusivos que desean vivir un momento inolvidable. Detalles: Cama Queen confort 100%, Pole Dance, Jacuzzi, Ducha Española, Frigo bar (con cargo extra). Habitación equipada con: Cama Queen Confort 100% Ducha española Jacuzzi Pole Dance Frigo bar (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
       "resumen": "Habitación de lujo diseñada para los clientes exclusivos que desean vivir un momento inolvidable. Detalles: Cama Queen"
@@ -33,6 +35,7 @@
       "slug": "riverside-dreams-presidencial",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 156",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/Riverside-Dreams-Presidencial.jpg",
       "descripcion": "¡Dónde fluye la pasión! Nuestra habitación de lujo está diseñada de manera que nuestros clientes vivan momentos inolvidables que les permitan fluir en sintonía con el amor. Detalles: Vista a un río artificial, Cama King, Jacuzzi, Pole Dance, Sillón Tántrico, Frigo bar (con cargo extra). Habitación equipada con: Vista a un río artificial Sillón Tántrico Cama (King size) Jacuzzi Pole Dance Frigo bar (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18% + 5% recargo al consumo. RESERVAR",
       "resumen": "¡Dónde fluye la pasión! Nuestra habitación de lujo está diseñada de manera que nuestros clientes vivan momentos"
@@ -43,6 +46,7 @@
       "slug": "suite-presidencial-con-camara-seca",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 200",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/Suite-Presidencial-Camara-Seca.jpg",
       "descripcion": "¡Ten los sueños más placenteros! Nuestra habitación de lujo está equipada con todos los detalles que permitan a nuestros clientes tener descanso propio de una realeza. Detalles: Cama redonda, Sillón Tántrico de Cuarzo, Cámara Seca, Ducha española, Jacuzzi con Hidromasaje, Pole Dance, Baño privado y Frigo bar (con cargo extra). Habitación equipada con: Cama redonda Sillón Tántrico de Cuarzo Cámara Seca Ducha Española Jacuzzi con Hidromasaje Pole Dance Baño privado Frigo bar (Tarifa válida por 7 HORAS)RESERVAR",
       "resumen": "¡Ten los sueños más placenteros! Nuestra habitación de lujo está equipada con todos los detalles que permitan"
@@ -53,6 +57,7 @@
       "slug": "dark-fantasies",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 208",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/dark-fantasies.jpg",
       "descripcion": "¡El límite lo pones tú! Una habitación que cumple fantasías; exclusiva para nuestros clientes más exigentes, equipadas con todas las comodidades para que las parejas jueguen con su imaginación y se desviven en pasión. Detalles: Cama King, Cruz de sumisión ó Pared de sumisión, Ducha española, Jacuzzi, Pole dance, Sillón Tántrico y Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama (King size) Ducha española Jacuzzi Pole Dance Sillón Tántrico Frigo bar (Tarifa válida por 7 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
       "resumen": "¡El límite lo pones tú! Una habitación que cumple fantasías; exclusiva para nuestros clientes más exigentes, equipadas"
@@ -63,6 +68,7 @@
       "slug": "habitacion-especial",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 150",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/habitacion-especial.jpg",
       "descripcion": "¡Un espacio único! Nuestras habitaciones especiales fueron hechas con un toque extra de placer y discreción para que los eternos enamorados vivan momentos inolvidables. Detalles: Cama redonda, Jacuzzi con hidromasaje, Sillón Tántrico, Pole dance, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Estacionamiento directo a la Habitación Cama redonda Sillón tántrico Ducha española Jacuzzi Frigobar Secadora de cabello Tv con servicio de cable y DVD (Tarifa válida por 6 HORAS)RESERVAR",
       "resumen": "¡Un espacio único! Nuestras habitaciones especiales fueron hechas con un toque extra de placer y discreción para"
@@ -73,6 +79,7 @@
       "slug": "habitacion-delux",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 55",
       "imagen_url": null,
       "descripcion": "¡Ven, charlemos un ratito! Habitación confortable para que nuestros clientes vivan un instante de pasión. Detalles: Cama de Dos Plazas, Baño con Agua Fría y Caliente, Equipadas con Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama 2 plazas Baño con agua fría y caliente Frigo bar (Tarifa válida por 6 HORAS)RESERVAR",
       "resumen": "¡Ven, charlemos un ratito! Habitación confortable para que nuestros clientes vivan un instante de pasión."
@@ -83,6 +90,7 @@
       "slug": "hawaian-dreams",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 73",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/hawaiam-dreams.jpg",
       "descripcion": "¡Aloha! Habitación diseñada con detalles tropicales que recrearán un ambiente como en el mismo Hawai. Detalles: Cama 2 Plazas confort 100%, Aire acondicionado, Baño agua, fría – caliente, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama 2 plazas confort 100% Aire acondicionado Baño agua fría &#8211; caliente Frigobar (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
       "resumen": "¡Aloha! Habitación diseñada con detalles tropicales que recrearán un ambiente como en el mismo Hawai."
@@ -93,6 +101,7 @@
       "slug": "simple-con-jacuzzi",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 89",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/simple-con-jacuzzi-1.jpg",
       "descripcion": "¡Te veo en el Jacuzzi! Habitación confortable para que nuestros clientes pasen momentos pasionales en el Jacuzzi. Detalles: Parking directo a la habitación, Cama 2 Plazas / confort 100%, Ducha Española, Baño agua fría – caliente, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Parking directo a la habitación Cama 2 plazas confort 100% Ducha española Baño agua fría &#8211; caliente Frigobar Televisión con Cable y DVD (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
       "resumen": "¡Te veo en el Jacuzzi! Habitación confortable para que nuestros clientes pasen momentos pasionales en el Jacuzzi."
@@ -103,6 +112,7 @@
       "slug": "simple-vista-al-mar",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 73",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/simple-vista-al-mar.jpg",
       "descripcion": "¡Veamos juntos el mar! Habitación confortable para que nuestros clientes tengan un momento de pasión con el mar como único testigo. Detalles: Vista al mar, Cama 2 Plazas / confort 100%, Baño agua fría – caliente, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Vista al mar (de acuerdo a disponibilidad) Cama 2 plazas confort 100% Frigo bar Baño agua fría &#8211; caliente Televisión con Cable y DVD (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18% + 5% recargo al consumo. RESERVAR",
       "resumen": "¡Veamos juntos el mar! Habitación confortable para que nuestros clientes tengan un momento de pasión con el"
@@ -113,6 +123,7 @@
       "slug": "habitacion-con-jacuzzi-deluxe",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 104",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/Jacuzzi-Deluxe.jpg",
       "descripcion": "¡Velada en el Jacuzzi! Nuestra habitación ejecutiva cuenta con todas las comodidades para que nuestros clientes hagan a un lado la rutina y vivan momentos de satisfacción en nuestro relajante Jacuzzi. Detalles: Cama Queen confort 100%, Pole dance, Jacuzzi, Aire acondicionado, Baño agua fría – caliente, Frigobar (con cargo extra).Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama (Queen size) Jacuzzi Baño agua fría &#8211; caliente Frigo bar Televisión con Cable y DVD (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
       "resumen": "¡Velada en el Jacuzzi! Nuestra habitación ejecutiva cuenta con todas las comodidades para que nuestros clientes hagan a"
@@ -123,6 +134,7 @@
       "slug": "camara-seca-y-jacuzzi",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 200",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/camara-seca-.jpg",
       "descripcion": "¡No hagamos el amor, él nos hará! Una habitación donde se respira amor; exclusiva para las parejas más exigentes, equipada con todas las comodidades que nuestros clientes necesitan para pasar momentos inolvidables. Detalles: Cama redonda confort 100%, Cámara seca, Pole dance, Jacuzzi, Ducha española, Baño agua fría – caliente, Frigobar (con cargo extra).Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cámara redonda confort 100% Cámara seca Jacuzzi Pole Dance Ducha española Baño agua fría &#8211; caliente Frigo bar Televisión con Cable y DVD (Tarifa válida por 7 HORAS)RESERVAR",
       "resumen": "¡No hagamos el amor, él nos hará! Una habitación donde se respira amor; exclusiva para las parejas más"
@@ -133,6 +145,7 @@
       "slug": "riverside-dreams",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 125",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/riverside-dreams.jpg",
       "descripcion": "¡Dónde fluye la pasión! Nuestra habitación de lujo está diseñada de manera que nuestros clientes vivan momentos inolvidables que les permitan fluir en sintonía con el amor. Detalles: Cama Queen confort 100%, Pole dance, Jacuzzi, Aire acondicionado, Baño agua fría – caliente, Frigobar (con cargo extra).Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama (Queen size) Jacuzzi Pole Dance Aire acondicionado Baño agua fría &#8211; caliente Frigo bar Televisión con Cable y DVD (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18% + 5% recargo al consumo. RESERVAR",
       "resumen": "¡Dónde fluye la pasión! Nuestra habitación de lujo está diseñada de manera que nuestros clientes vivan momentos inolvidables"
@@ -143,6 +156,7 @@
       "slug": "venetian-flowers",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 100",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/venetian-flowers.jpg",
       "descripcion": "¡Tengamos una velada! Nuestra habitación ejecutiva cuenta con todas las comodidades para que nuestros clientes hagan a un lado la rutina y vivan experiencias satisfactorias. Detalles: Cama Queen confort 100%, Pole dance, Jacuzzi, Aire acondicionado, Baño agua fría – caliente, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama (Queen size) Jacuzzi Aire acondicionado Baño agua fría &#8211; caliente Frigo bar Televisión con Cable y DVD (Tarifa válida por 6 HORAS)RESERVAR",
       "resumen": "¡Tengamos una velada! Nuestra habitación ejecutiva cuenta con todas las comodidades para que nuestros clientes hagan a"
@@ -153,6 +167,7 @@
       "slug": "pacific-dreams",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 125",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/pacific-dreams.jpg",
       "descripcion": "¡Una elegancia que somete! Habitación de lujo diseñada para clientes exclusivos que desean vivir del máximo placer. Detalles: Vista al mar (de acuerdo a disponibilidad con un agregado extra de 20 soles), Cama (King size / queen size), Sillón tántrico, Cabina hidromasaje, Ducha española, Jacuzzi, Pole Dance, Secadora de cabello, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Vista al mar (de acuerdo a disponibilidad) Cama (Queen size) Ducha española Jacuzzi Pole Dance Frigobar Televisión con Cable y DVD Radio (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
       "resumen": "¡Una elegancia que somete! Habitación de lujo diseñada para clientes exclusivos que desean vivir del máximo placer."
@@ -163,6 +178,7 @@
       "slug": "pacific-dreams-presidencial",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 177",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/pacific-dreams-presidencial.jpg",
       "descripcion": "¡Una elegancia que somete! Habitación de lujo diseñada para clientes exclusivos que desean vivir del máximo placer. Detalles: Vista al mar (de acuerdo a disponibilidad con un agregado extra de 20 soles), Cama (King size / queen size), Sillón tántrico, Cabina hidromasaje, Ducha española, Jacuzzi, Pole Dance, Secadora de cabello, Frigobar (con cargo extra).Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Vista al mar (de acuerdo a disponibilidad) Cama (King size / Queen size) Sillón tántrico Ducha española Jacuzzi Pole Dance Secadora de cabello Frigobar Televisión con Cable y DVD Radio (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
       "resumen": "¡Una elegancia que somete! Habitación de lujo diseñada para clientes exclusivos que desean vivir del máximo placer. Detalles:"
@@ -175,6 +191,7 @@
       "slug": "parking-directo",
       "categoria_id": 5,
       "categoria_nombre": "Servicios",
+      "precio": null,
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/servicio-parking-directo.png",
       "descripcion": "[vc_custom_heading text=»Pensando en tu privacidad, contamos con Parking Directo a la habitación» font_container=»tag:h2|font_size:35px|text_align:left|color:%231e2928\"",
       "resumen": "[vc_custom_heading text=»Pensando en tu privacidad, contamos con Parking Directo a la habitación» font_container=»tag:h2|font_size:35px|text_align:left|color:%231e2928\""
@@ -185,6 +202,7 @@
       "slug": "minibar",
       "categoria_id": 5,
       "categoria_nombre": "Servicios",
+      "precio": "S/ 180",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/minibar-1.png",
       "descripcion": "Disfruta de nuestras bebidas siempre frescas y a gusto del cliente Whisky Johnnie Walker Etiq. Negra 750ml S/ 180.00 Jägermeister x 700ml S/ 125.00 Whisky Johnnie Walker Etiq. Roja 750ml + Ginger Ale S/ 120.00 Vodka Absolut x 750ml + Jugo de Naranja x 1 lt S/ 120.00 Tequila José Cuervo x750ml S/ 120.00 Ron Appleton Special x750ml S/ 75.00 Vino Blanco Herederos del Marquez del Riscal Rueda S/ 75.00 Vino Tinto Navarro Correa Blend x750ml S/ 75.00 Champagne Riccadonna x 750ml S/ 70.00 Champagne Rocca Del Forti x 750ml S/ 55.00 Vino Magdalena x 750ml S/ 35.00 Champagne Primado Queirolo x 750ml S/ 30.00 Whisky Johnnie Walker Etiq. Negra 5 cl S/ 20.00 Champagne Riccadonna x 200ml S/ 25.00 Jack Daniels X 0.50 ML S/ 20.00 Jägermeister x 40ml (NO DISPONIBLE) Monster Energy X 473 ML S/ 12.00 Red Bull x 250ml S/ 14.00 Vodka SMIRNOFF X 275 ML S/ 14.00 Piscano X 275 ML S/ 10.00 Four Loko X 473 ML S/ 17.00 Cerveza Corona x 355ml S/ 12.00 Cerveza Pilsen x 310ml S/ 10.00 Cerveza Cusqueña Malta x 330ml S/ 10.00 Cerveza Cusqueña Dorada x 355ml S/ 10.00 Coca Cola x 450ml S/ 6.00 Inka kola x 450ml S/ 6.00 Gatorade x 473ml S/ 6.00 Agua Mineral San Luis x 625ml S/ 5.00 Agua Mineral con Gas x 625ml (NO DISPONIBLE) Combos Cheese S/ 7.00 Papas Nativas Mixtas X 40gr S/ 6.00 Camote Salado / Chofeñ Salado X 40gr S/ 4.00 Hershey´s S/ 7.00 Pringles (lata pequeña) S/ 8.00 Chocolate M&M S/ 7.00 Chocolate Snickers S/ 8.00 Chocolate Ferrero Rocher 3 Unid S/ 12.00 Inka Chips (piqueos) S/ 6.00 Vuse Go Max 5.000 PUFF S/ 75.00 Vuse Go X 700 PUFF S/ 35.00 Caramelo Halls Extra Fuerte S/ 2.50 Cigarro Lucky Strike Light x 10 unid S/ 16.00 Preservativo Durex x 3 unid S/ 12.00 Lubricante S/ 4.00 Kit + Cepillo + Crema dental S/ 10.90 Trident S/ 3.00",
       "resumen": "Disfruta de nuestras bebidas siempre frescas y a gusto del cliente"
@@ -195,6 +213,7 @@
       "slug": "carta",
       "categoria_id": 5,
       "categoria_nombre": "Servicios",
+      "precio": "S/ 30",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/carta-1-1.png",
       "descripcion": "Conoce nuestra carta, minuciosamente organizada para la satisfacción de tu paladar Champagne RICCADONNA ASTY / RUBY SX 200 ML S/ 30.00 Vino Intipalka Macbel X 750 ML S/ 60.00 Vino Queirolo Magdalena x 750 ml S/ 35.00 Vino Gran Rose Tabernero Semi Seco X 750 ML S/ 45.00 Espumante Montesierpe X 750 ML S/ 55.00 Champagne Asti Riccadonna x 750 ml S/ 80.00 Whisky Johnnie Walker + Ginger Ale S/ 129.00 Vino Marques de Riscal x 750 ml S/ 79.00 Vodka Absolut + Jugo de Naranja S/ 109.00 Ron Flor de Caña + Coca Cola 1.5lt S/ 109.00 Chilcano de Pisco S/ 18.00 Pisco Sour S/ 20.00 Piña Colada S/ 22.00 Jugo de Piña S/ 8,00 Jugo de Papaya S/ 8,00 Cafe Americano S/ 6,00 Vaso de Maracuyá S/ 7,00 Vaso de Limonada S/ 7,00 Infusion Manzanilla S/ 3,50 Infusion TE S/ 3,50 Vaso de Limonada Frozen S/ 10,00 Vaso de Maracuya Frozen S/ 10,00 Infusión Anís S/ 3,50",
       "resumen": "[vc_column_text"
@@ -205,6 +224,7 @@
       "slug": "decoraciones",
       "categoria_id": 5,
       "categoria_nombre": "Servicios",
+      "precio": null,
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/decoraciones-1-1.png",
       "descripcion": "Enamórate de nuestras decoraciones que tenemos para tí; encontrarás diseños sencillos, pero bonitos y también decoraciones modernas y elegantes View Large Decoracion Decoración 1 View Large Decoracion Decoración 2 View Large Decoracion Decoración 3",
       "resumen": "[vc_column woodmart_text_align=»center» horizontal_alignment=»eyJkZXZpY2VzIjp7ImRlc2t0b3AiOnsidmFsdWUiOiJjZW50ZXIifSwidGFibGV0Ijp7InZhbHVlIjoiIn0sIm1vYmlsZSI6eyJ2YWx1ZSI6IiJ9fX0=» woodmart_css_id=»62f423b73a765\" parallax_scroll=»no» woodmart_sticky_column=»false» wd_collapsible_content_switcher=»no» wd_column_role_offcanvas_desktop=»no» wd_column_role_offcanvas_tablet=»no» wd_column_role_offcanvas_mobile=»no» wd_column_role_content_desktop=»no» wd_column_role_content_tablet=»no» wd_column_role_content_mobile=»no» mobile_bg_img_hidden=»no» tablet_bg_img_hidden=»no» woodmart_parallax=»0\" woodmart_box_shadow=»no» responsive_spacing=»eyJwYXJhbV90eXBlIjoid29vZG1hcnRfcmVzcG9uc2l2ZV9zcGFjaW5nIiwic2VsZWN0b3JfaWQiOiI2MmY0MjNiNzNhNzY1Iiwic2hvcnRjb2RlIjoidmNfY29sdW1uIiwiZGF0YSI6eyJ0YWJsZXQiOnt9LCJtb2JpbGUiOnt9fX0=» mobile_reset_margin=»no» tablet_reset_margin=»no»"
@@ -217,6 +237,7 @@
       "slug": "fetuccini-al-alfredo",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": "S/ 27",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2025/10/fetuccini-al-alfredo.png",
       "descripcion": "fetuccini servido con salsa bechamel, crema de leche, jamón y queso parmesano.",
       "resumen": "fetuccini servido con salsa bechamel, crema"
@@ -227,6 +248,7 @@
       "slug": "hamburguesa-pollo-broaster",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 26",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2025/10/hamburguesa-pollo-broaster.png",
       "descripcion": "pan hamburguesa con 150gr de pollo broaster, acompañado de tomate, lechuga, pickles y papas fritas.",
       "resumen": "pan hamburguesa con 150gr de pollo"
@@ -237,6 +259,7 @@
       "slug": "hamburguesa-smash",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 20",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2025/10/hamburguesa-smash.png",
       "descripcion": "120gr de carne, cocida en la plancha acompañado de cebolla caramelizada, tomate, lechuga, queso cheddar y papas fritas.",
       "resumen": "120gr de carne, cocida en la"
@@ -247,6 +270,7 @@
       "slug": "arroz-chaufa-con-carne",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": "S/ 28",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2025/10/arroz-chaufa-con-carne.png",
       "descripcion": "125gr de lomo fino al wok con huevo, arroz, salsa de la casa, cebolla china con un sabor oriental.",
       "resumen": "125gr de lomo fino al wok"
@@ -257,6 +281,7 @@
       "slug": "milanesa-napolitana-con-spaguetti-al-pesto",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": "S/ 35",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2025/10/milanesa-napolitana.png",
       "descripcion": "filete de pollo con una salsa napolitana hecha en casa, cubierta con queso, montada sobre spaguetti en cremosa salsa al pesto.",
       "resumen": "filete de pollo con una salsa"
@@ -267,6 +292,7 @@
       "slug": "desayuno-mixto",
       "categoria_id": 20,
       "categoria_nombre": "Desayunos y Ensaladas",
+      "precio": "S/ 19",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2025/10/desayuno_mixto-1.png",
       "descripcion": "2 capas de pan blanco grillados con mantequilla, relleno con queso Edam y Jamón acompañado de café americano y jugo de frutas.",
       "resumen": "2 capas de pan blanco grillados"
@@ -277,6 +303,7 @@
       "slug": "triple-point-extremo-de-pollo",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 42",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/Triple-Point-Extremo-de-Pollo.jpg",
       "descripcion": "Combinación perfecta entre Chicken Crispers , Buffalo wings Y Chicken Quesadillas. Acompañado de palitos de apio",
       "resumen": "Combinación perfecta entre Chicken Crispers , Buffalo wings Y Chicken Quesadillas."
@@ -287,6 +314,7 @@
       "slug": "dropshot-chicken-tacos",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": "S/ 26",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/Dropshot-Chicken-Tacos.jpg",
       "descripcion": "Trilogía de tacos de pollo crujiente acompañados de nuestro clásico Dropshot Glaze",
       "resumen": "Trilogía de tacos de pollo crujiente acompañados"
@@ -297,6 +325,7 @@
       "slug": "signature-wimbledon-double-cheeseburger",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": "S/ 25",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/Signature-Wimbledon-Double-Cheese-Burger.jpg",
       "descripcion": "Nuestra clásica hamburguesa 180gr doble queso acompañado de nuestras crocantes papas fritas",
       "resumen": "Nuestra clásica hamburguesa 180gr doble queso acompañado"
@@ -307,6 +336,7 @@
       "slug": "filete-a-la-plancha",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": "S/ 28",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/Filete-a-la-Plancha.jpg",
       "descripcion": "Jugoso filete de pollo acompañado de papas fritas",
       "resumen": "Jugoso filete de pollo acompañado de papas"
@@ -317,6 +347,7 @@
       "slug": "suprema-de-pollo",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": null,
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/SUPREMA-DE-POLLO.jpg",
       "descripcion": "Pechuga de pollo apanada y acompañado de papas fritas y arroz",
       "resumen": "Pechuga de pollo apanada y acompañado de"
@@ -327,6 +358,7 @@
       "slug": "bisteck-a-lo-pobre",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": null,
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/BISTECK-A-LO-POBRE.jpg",
       "descripcion": "Bistec de Lomo fino, acompañado de papas fritas, plátano frito, arroz y huevo montado",
       "resumen": "Bistec de Lomo fino, acompañado de papas"
@@ -337,6 +369,7 @@
       "slug": "lomo-saltado",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": "S/ 43",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/LOMO-SALTADO.jpg",
       "descripcion": "Lomo Fino, cebolla, ají amarillo y culantro salteado al Wok, acompañada de papas fritas y arroz",
       "resumen": "Lomo Fino, cebolla, ají amarillo y culantro"
@@ -347,6 +380,7 @@
       "slug": "ensalada-de-la-casa",
       "categoria_id": 20,
       "categoria_nombre": "Desayunos y Ensaladas",
+      "precio": "S/ 17",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/ENSALADA-DE-LA-CASA.jpg",
       "descripcion": "Generosa combinación de Lechuga, zanahoria, tomate, cebolla y palta",
       "resumen": "Generosa combinación de Lechuga, zanahoria, tomate, cebolla"
@@ -357,6 +391,7 @@
       "slug": "desayuno-americano",
       "categoria_id": 20,
       "categoria_nombre": "Desayunos y Ensaladas",
+      "precio": "S/ 19",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/DESAYUNO-AMERICANO.jpg",
       "descripcion": "Huevos revueltos con tocino y jamón. Acompañado de tostadas, café americano y jugo de frutas",
       "resumen": "Huevos revueltos con tocino y jamón. Acompañado"
@@ -367,6 +402,7 @@
       "slug": "club-sandwich",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 30",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/CLUB-SANDWICH.jpg",
       "descripcion": "Capas de pan de Molde rellenas de jamón, queso, huevo, tocino, pollo y mayonesa, acompañado de papas fritas",
       "resumen": "Capas de pan de Molde rellenas de"
@@ -377,6 +413,7 @@
       "slug": "chicharron-de-pollo",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 33",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/CHICHARRON-DE-POLLO.jpg",
       "descripcion": "Pechuga de pollo aderezada y frita al estilo Wimbledon, servidas con papas fritas y salsa tártara",
       "resumen": "Pechuga de pollo aderezada y frita al"
@@ -387,6 +424,7 @@
       "slug": "mini-hamburguesas",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 26",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/MINI-HAMBURGUESA.jpg",
       "descripcion": "Cuatro hamburguesitas de res acompañadas de papas fritas",
       "resumen": "Cuatro hamburguesitas de res acompañadas de papas"
@@ -397,6 +435,7 @@
       "slug": "piqueo-premium",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 48",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/PIQUEO-PREMIUM.jpg",
       "descripcion": "Alitas de Pollo a la barbeque, tequeños relleno de queso, yuquitas fritas y chicharrón de pollo acompañado de nuestras crocantes papas fritas",
       "resumen": "Alitas de Pollo a la barbeque, tequeños"
@@ -407,6 +446,7 @@
       "slug": "salchipapa-especial",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 24",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/SALCHIPAPA-ESPECIAL.jpg",
       "descripcion": "Crocantes papas fritas acompañadas de hot dog frankfurter y huevo frito",
       "resumen": "Crocantes papas fritas acompañadas de hot dog"
@@ -417,6 +457,7 @@
       "slug": "tequenos-con-queso",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 19",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/TEQUENOS-CON-QUESO.jpg",
       "descripcion": "8 tequeños con tradicional relleno de queso fresco, acompañado de salsa tártara",
       "resumen": "8 tequeños con tradicional relleno de queso"
@@ -429,6 +470,7 @@
       "slug": "fetuccini-al-alfredo",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": "S/ 27",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2025/10/fetuccini-al-alfredo.png",
       "descripcion": "fetuccini servido con salsa bechamel, crema de leche, jamón y queso parmesano.",
       "resumen": "fetuccini servido con salsa bechamel, crema"
@@ -439,6 +481,7 @@
       "slug": "hamburguesa-pollo-broaster",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 26",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2025/10/hamburguesa-pollo-broaster.png",
       "descripcion": "pan hamburguesa con 150gr de pollo broaster, acompañado de tomate, lechuga, pickles y papas fritas.",
       "resumen": "pan hamburguesa con 150gr de pollo"
@@ -449,6 +492,7 @@
       "slug": "hamburguesa-smash",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 20",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2025/10/hamburguesa-smash.png",
       "descripcion": "120gr de carne, cocida en la plancha acompañado de cebolla caramelizada, tomate, lechuga, queso cheddar y papas fritas.",
       "resumen": "120gr de carne, cocida en la"
@@ -459,6 +503,7 @@
       "slug": "arroz-chaufa-con-carne",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": "S/ 28",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2025/10/arroz-chaufa-con-carne.png",
       "descripcion": "125gr de lomo fino al wok con huevo, arroz, salsa de la casa, cebolla china con un sabor oriental.",
       "resumen": "125gr de lomo fino al wok"
@@ -469,6 +514,7 @@
       "slug": "milanesa-napolitana-con-spaguetti-al-pesto",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": "S/ 35",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2025/10/milanesa-napolitana.png",
       "descripcion": "filete de pollo con una salsa napolitana hecha en casa, cubierta con queso, montada sobre spaguetti en cremosa salsa al pesto.",
       "resumen": "filete de pollo con una salsa"
@@ -479,6 +525,7 @@
       "slug": "desayuno-mixto",
       "categoria_id": 20,
       "categoria_nombre": "Desayunos y Ensaladas",
+      "precio": "S/ 19",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2025/10/desayuno_mixto-1.png",
       "descripcion": "2 capas de pan blanco grillados con mantequilla, relleno con queso Edam y Jamón acompañado de café americano y jugo de frutas.",
       "resumen": "2 capas de pan blanco grillados"
@@ -489,6 +536,7 @@
       "slug": "suite-presidencial",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 156",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/12/suite-presidencial-1.jpg",
       "descripcion": "¡Ten los sueños más placenteros! Nuestra habitación de lujo está equipada con todos los detalles que permitan a nuestros clientes tener descanso propio de una realeza. Detalles: Cama redonda, Sillón Tántrico de Cuarzo, Cámara Seca, Ducha española, Jacuzzi con Hidromasaje, Pole Dance, Baño privado y Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Vista al mar Cama Redonda Sillón tántrico Ducha española Jacuzzi Pole Dance Secadora de cabello Frigobar Televisión con Cable y DVD Radio (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18% + 5% recargo al consumo. RESERVAR",
       "resumen": "¡Ten los sueños más placenteros! Nuestra habitación de lujo está equipada con todos los detalles que permitan"
@@ -499,6 +547,7 @@
       "slug": "triple-point-extremo-de-pollo",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 42",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/Triple-Point-Extremo-de-Pollo.jpg",
       "descripcion": "Combinación perfecta entre Chicken Crispers , Buffalo wings Y Chicken Quesadillas. Acompañado de palitos de apio",
       "resumen": "Combinación perfecta entre Chicken Crispers , Buffalo wings Y Chicken Quesadillas."
@@ -509,6 +558,7 @@
       "slug": "parking-directo",
       "categoria_id": 5,
       "categoria_nombre": "Servicios",
+      "precio": null,
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/servicio-parking-directo.png",
       "descripcion": "[vc_custom_heading text=»Pensando en tu privacidad, contamos con Parking Directo a la habitación» font_container=»tag:h2|font_size:35px|text_align:left|color:%231e2928\"",
       "resumen": "[vc_custom_heading text=»Pensando en tu privacidad, contamos con Parking Directo a la habitación» font_container=»tag:h2|font_size:35px|text_align:left|color:%231e2928\""
@@ -519,6 +569,7 @@
       "slug": "tropical-dreams",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 125",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/Tropical-Dreams.jpg",
       "descripcion": "Habitación de lujo diseñada para los clientes exclusivos que desean vivir un momento inolvidable. Detalles: Cama Queen confort 100%, Pole Dance, Jacuzzi, Ducha Española, Frigo bar (con cargo extra). Habitación equipada con: Cama Queen Confort 100% Ducha española Jacuzzi Pole Dance Frigo bar (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
       "resumen": "Habitación de lujo diseñada para los clientes exclusivos que desean vivir un momento inolvidable. Detalles: Cama Queen"
@@ -529,6 +580,7 @@
       "slug": "riverside-dreams-presidencial",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 156",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/Riverside-Dreams-Presidencial.jpg",
       "descripcion": "¡Dónde fluye la pasión! Nuestra habitación de lujo está diseñada de manera que nuestros clientes vivan momentos inolvidables que les permitan fluir en sintonía con el amor. Detalles: Vista a un río artificial, Cama King, Jacuzzi, Pole Dance, Sillón Tántrico, Frigo bar (con cargo extra). Habitación equipada con: Vista a un río artificial Sillón Tántrico Cama (King size) Jacuzzi Pole Dance Frigo bar (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18% + 5% recargo al consumo. RESERVAR",
       "resumen": "¡Dónde fluye la pasión! Nuestra habitación de lujo está diseñada de manera que nuestros clientes vivan momentos"
@@ -539,6 +591,7 @@
       "slug": "suite-presidencial-con-camara-seca",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 200",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/Suite-Presidencial-Camara-Seca.jpg",
       "descripcion": "¡Ten los sueños más placenteros! Nuestra habitación de lujo está equipada con todos los detalles que permitan a nuestros clientes tener descanso propio de una realeza. Detalles: Cama redonda, Sillón Tántrico de Cuarzo, Cámara Seca, Ducha española, Jacuzzi con Hidromasaje, Pole Dance, Baño privado y Frigo bar (con cargo extra). Habitación equipada con: Cama redonda Sillón Tántrico de Cuarzo Cámara Seca Ducha Española Jacuzzi con Hidromasaje Pole Dance Baño privado Frigo bar (Tarifa válida por 7 HORAS)RESERVAR",
       "resumen": "¡Ten los sueños más placenteros! Nuestra habitación de lujo está equipada con todos los detalles que permitan"
@@ -549,6 +602,7 @@
       "slug": "dropshot-chicken-tacos",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": "S/ 26",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/Dropshot-Chicken-Tacos.jpg",
       "descripcion": "Trilogía de tacos de pollo crujiente acompañados de nuestro clásico Dropshot Glaze",
       "resumen": "Trilogía de tacos de pollo crujiente acompañados"
@@ -559,6 +613,7 @@
       "slug": "signature-wimbledon-double-cheeseburger",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": "S/ 25",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/Signature-Wimbledon-Double-Cheese-Burger.jpg",
       "descripcion": "Nuestra clásica hamburguesa 180gr doble queso acompañado de nuestras crocantes papas fritas",
       "resumen": "Nuestra clásica hamburguesa 180gr doble queso acompañado"
@@ -569,6 +624,7 @@
       "slug": "filete-a-la-plancha",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": "S/ 28",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/Filete-a-la-Plancha.jpg",
       "descripcion": "Jugoso filete de pollo acompañado de papas fritas",
       "resumen": "Jugoso filete de pollo acompañado de papas"
@@ -579,6 +635,7 @@
       "slug": "suprema-de-pollo",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": null,
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/SUPREMA-DE-POLLO.jpg",
       "descripcion": "Pechuga de pollo apanada y acompañado de papas fritas y arroz",
       "resumen": "Pechuga de pollo apanada y acompañado de"
@@ -589,6 +646,7 @@
       "slug": "bisteck-a-lo-pobre",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": null,
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/BISTECK-A-LO-POBRE.jpg",
       "descripcion": "Bistec de Lomo fino, acompañado de papas fritas, plátano frito, arroz y huevo montado",
       "resumen": "Bistec de Lomo fino, acompañado de papas"
@@ -599,6 +657,7 @@
       "slug": "lomo-saltado",
       "categoria_id": 21,
       "categoria_nombre": "Platos Principales",
+      "precio": "S/ 43",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/LOMO-SALTADO.jpg",
       "descripcion": "Lomo Fino, cebolla, ají amarillo y culantro salteado al Wok, acompañada de papas fritas y arroz",
       "resumen": "Lomo Fino, cebolla, ají amarillo y culantro"
@@ -609,6 +668,7 @@
       "slug": "ensalada-de-la-casa",
       "categoria_id": 20,
       "categoria_nombre": "Desayunos y Ensaladas",
+      "precio": "S/ 17",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/ENSALADA-DE-LA-CASA.jpg",
       "descripcion": "Generosa combinación de Lechuga, zanahoria, tomate, cebolla y palta",
       "resumen": "Generosa combinación de Lechuga, zanahoria, tomate, cebolla"
@@ -619,6 +679,7 @@
       "slug": "desayuno-americano",
       "categoria_id": 20,
       "categoria_nombre": "Desayunos y Ensaladas",
+      "precio": "S/ 19",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/DESAYUNO-AMERICANO.jpg",
       "descripcion": "Huevos revueltos con tocino y jamón. Acompañado de tostadas, café americano y jugo de frutas",
       "resumen": "Huevos revueltos con tocino y jamón. Acompañado"
@@ -629,6 +690,7 @@
       "slug": "club-sandwich",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 30",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/CLUB-SANDWICH.jpg",
       "descripcion": "Capas de pan de Molde rellenas de jamón, queso, huevo, tocino, pollo y mayonesa, acompañado de papas fritas",
       "resumen": "Capas de pan de Molde rellenas de"
@@ -639,6 +701,7 @@
       "slug": "chicharron-de-pollo",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 33",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/CHICHARRON-DE-POLLO.jpg",
       "descripcion": "Pechuga de pollo aderezada y frita al estilo Wimbledon, servidas con papas fritas y salsa tártara",
       "resumen": "Pechuga de pollo aderezada y frita al"
@@ -649,6 +712,7 @@
       "slug": "mini-hamburguesas",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 26",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/MINI-HAMBURGUESA.jpg",
       "descripcion": "Cuatro hamburguesitas de res acompañadas de papas fritas",
       "resumen": "Cuatro hamburguesitas de res acompañadas de papas"
@@ -659,6 +723,7 @@
       "slug": "piqueo-premium",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 48",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/PIQUEO-PREMIUM.jpg",
       "descripcion": "Alitas de Pollo a la barbeque, tequeños relleno de queso, yuquitas fritas y chicharrón de pollo acompañado de nuestras crocantes papas fritas",
       "resumen": "Alitas de Pollo a la barbeque, tequeños"
@@ -669,6 +734,7 @@
       "slug": "salchipapa-especial",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 24",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/SALCHIPAPA-ESPECIAL.jpg",
       "descripcion": "Crocantes papas fritas acompañadas de hot dog frankfurter y huevo frito",
       "resumen": "Crocantes papas fritas acompañadas de hot dog"
@@ -679,6 +745,7 @@
       "slug": "tequenos-con-queso",
       "categoria_id": 19,
       "categoria_nombre": "Piqueos",
+      "precio": "S/ 19",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/TEQUENOS-CON-QUESO.jpg",
       "descripcion": "8 tequeños con tradicional relleno de queso fresco, acompañado de salsa tártara",
       "resumen": "8 tequeños con tradicional relleno de queso"
@@ -689,6 +756,7 @@
       "slug": "dark-fantasies",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 208",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/dark-fantasies.jpg",
       "descripcion": "¡El límite lo pones tú! Una habitación que cumple fantasías; exclusiva para nuestros clientes más exigentes, equipadas con todas las comodidades para que las parejas jueguen con su imaginación y se desviven en pasión. Detalles: Cama King, Cruz de sumisión ó Pared de sumisión, Ducha española, Jacuzzi, Pole dance, Sillón Tántrico y Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama (King size) Ducha española Jacuzzi Pole Dance Sillón Tántrico Frigo bar (Tarifa válida por 7 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
       "resumen": "¡El límite lo pones tú! Una habitación que cumple fantasías; exclusiva para nuestros clientes más exigentes, equipadas"
@@ -699,6 +767,7 @@
       "slug": "habitacion-especial",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 150",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/habitacion-especial.jpg",
       "descripcion": "¡Un espacio único! Nuestras habitaciones especiales fueron hechas con un toque extra de placer y discreción para que los eternos enamorados vivan momentos inolvidables. Detalles: Cama redonda, Jacuzzi con hidromasaje, Sillón Tántrico, Pole dance, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Estacionamiento directo a la Habitación Cama redonda Sillón tántrico Ducha española Jacuzzi Frigobar Secadora de cabello Tv con servicio de cable y DVD (Tarifa válida por 6 HORAS)RESERVAR",
       "resumen": "¡Un espacio único! Nuestras habitaciones especiales fueron hechas con un toque extra de placer y discreción para"
@@ -709,6 +778,7 @@
       "slug": "minibar",
       "categoria_id": 5,
       "categoria_nombre": "Servicios",
+      "precio": "S/ 180",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/minibar-1.png",
       "descripcion": "Disfruta de nuestras bebidas siempre frescas y a gusto del cliente Whisky Johnnie Walker Etiq. Negra 750ml S/ 180.00 Jägermeister x 700ml S/ 125.00 Whisky Johnnie Walker Etiq. Roja 750ml + Ginger Ale S/ 120.00 Vodka Absolut x 750ml + Jugo de Naranja x 1 lt S/ 120.00 Tequila José Cuervo x750ml S/ 120.00 Ron Appleton Special x750ml S/ 75.00 Vino Blanco Herederos del Marquez del Riscal Rueda S/ 75.00 Vino Tinto Navarro Correa Blend x750ml S/ 75.00 Champagne Riccadonna x 750ml S/ 70.00 Champagne Rocca Del Forti x 750ml S/ 55.00 Vino Magdalena x 750ml S/ 35.00 Champagne Primado Queirolo x 750ml S/ 30.00 Whisky Johnnie Walker Etiq. Negra 5 cl S/ 20.00 Champagne Riccadonna x 200ml S/ 25.00 Jack Daniels X 0.50 ML S/ 20.00 Jägermeister x 40ml (NO DISPONIBLE) Monster Energy X 473 ML S/ 12.00 Red Bull x 250ml S/ 14.00 Vodka SMIRNOFF X 275 ML S/ 14.00 Piscano X 275 ML S/ 10.00 Four Loko X 473 ML S/ 17.00 Cerveza Corona x 355ml S/ 12.00 Cerveza Pilsen x 310ml S/ 10.00 Cerveza Cusqueña Malta x 330ml S/ 10.00 Cerveza Cusqueña Dorada x 355ml S/ 10.00 Coca Cola x 450ml S/ 6.00 Inka kola x 450ml S/ 6.00 Gatorade x 473ml S/ 6.00 Agua Mineral San Luis x 625ml S/ 5.00 Agua Mineral con Gas x 625ml (NO DISPONIBLE) Combos Cheese S/ 7.00 Papas Nativas Mixtas X 40gr S/ 6.00 Camote Salado / Chofeñ Salado X 40gr S/ 4.00 Hershey´s S/ 7.00 Pringles (lata pequeña) S/ 8.00 Chocolate M&M S/ 7.00 Chocolate Snickers S/ 8.00 Chocolate Ferrero Rocher 3 Unid S/ 12.00 Inka Chips (piqueos) S/ 6.00 Vuse Go Max 5.000 PUFF S/ 75.00 Vuse Go X 700 PUFF S/ 35.00 Caramelo Halls Extra Fuerte S/ 2.50 Cigarro Lucky Strike Light x 10 unid S/ 16.00 Preservativo Durex x 3 unid S/ 12.00 Lubricante S/ 4.00 Kit + Cepillo + Crema dental S/ 10.90 Trident S/ 3.00",
       "resumen": "Disfruta de nuestras bebidas siempre frescas y a gusto del cliente"
@@ -719,6 +789,7 @@
       "slug": "carta",
       "categoria_id": 5,
       "categoria_nombre": "Servicios",
+      "precio": "S/ 30",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/carta-1-1.png",
       "descripcion": "Conoce nuestra carta, minuciosamente organizada para la satisfacción de tu paladar Champagne RICCADONNA ASTY / RUBY SX 200 ML S/ 30.00 Vino Intipalka Macbel X 750 ML S/ 60.00 Vino Queirolo Magdalena x 750 ml S/ 35.00 Vino Gran Rose Tabernero Semi Seco X 750 ML S/ 45.00 Espumante Montesierpe X 750 ML S/ 55.00 Champagne Asti Riccadonna x 750 ml S/ 80.00 Whisky Johnnie Walker + Ginger Ale S/ 129.00 Vino Marques de Riscal x 750 ml S/ 79.00 Vodka Absolut + Jugo de Naranja S/ 109.00 Ron Flor de Caña + Coca Cola 1.5lt S/ 109.00 Chilcano de Pisco S/ 18.00 Pisco Sour S/ 20.00 Piña Colada S/ 22.00 Jugo de Piña S/ 8,00 Jugo de Papaya S/ 8,00 Cafe Americano S/ 6,00 Vaso de Maracuyá S/ 7,00 Vaso de Limonada S/ 7,00 Infusion Manzanilla S/ 3,50 Infusion TE S/ 3,50 Vaso de Limonada Frozen S/ 10,00 Vaso de Maracuya Frozen S/ 10,00 Infusión Anís S/ 3,50",
       "resumen": "[vc_column_text"
@@ -729,6 +800,7 @@
       "slug": "decoraciones",
       "categoria_id": 5,
       "categoria_nombre": "Servicios",
+      "precio": null,
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/decoraciones-1-1.png",
       "descripcion": "Enamórate de nuestras decoraciones que tenemos para tí; encontrarás diseños sencillos, pero bonitos y también decoraciones modernas y elegantes View Large Decoracion Decoración 1 View Large Decoracion Decoración 2 View Large Decoracion Decoración 3",
       "resumen": "[vc_column woodmart_text_align=»center» horizontal_alignment=»eyJkZXZpY2VzIjp7ImRlc2t0b3AiOnsidmFsdWUiOiJjZW50ZXIifSwidGFibGV0Ijp7InZhbHVlIjoiIn0sIm1vYmlsZSI6eyJ2YWx1ZSI6IiJ9fX0=» woodmart_css_id=»62f423b73a765\" parallax_scroll=»no» woodmart_sticky_column=»false» wd_collapsible_content_switcher=»no» wd_column_role_offcanvas_desktop=»no» wd_column_role_offcanvas_tablet=»no» wd_column_role_offcanvas_mobile=»no» wd_column_role_content_desktop=»no» wd_column_role_content_tablet=»no» wd_column_role_content_mobile=»no» mobile_bg_img_hidden=»no» tablet_bg_img_hidden=»no» woodmart_parallax=»0\" woodmart_box_shadow=»no» responsive_spacing=»eyJwYXJhbV90eXBlIjoid29vZG1hcnRfcmVzcG9uc2l2ZV9zcGFjaW5nIiwic2VsZWN0b3JfaWQiOiI2MmY0MjNiNzNhNzY1Iiwic2hvcnRjb2RlIjoidmNfY29sdW1uIiwiZGF0YSI6eyJ0YWJsZXQiOnt9LCJtb2JpbGUiOnt9fX0=» mobile_reset_margin=»no» tablet_reset_margin=»no»"
@@ -739,6 +811,7 @@
       "slug": "habitacion-delux",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 55",
       "imagen_url": null,
       "descripcion": "¡Ven, charlemos un ratito! Habitación confortable para que nuestros clientes vivan un instante de pasión. Detalles: Cama de Dos Plazas, Baño con Agua Fría y Caliente, Equipadas con Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama 2 plazas Baño con agua fría y caliente Frigo bar (Tarifa válida por 6 HORAS)RESERVAR",
       "resumen": "¡Ven, charlemos un ratito! Habitación confortable para que nuestros clientes vivan un instante de pasión."
@@ -749,6 +822,7 @@
       "slug": "hawaian-dreams",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 73",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/08/hawaiam-dreams.jpg",
       "descripcion": "¡Aloha! Habitación diseñada con detalles tropicales que recrearán un ambiente como en el mismo Hawai. Detalles: Cama 2 Plazas confort 100%, Aire acondicionado, Baño agua, fría – caliente, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama 2 plazas confort 100% Aire acondicionado Baño agua fría &#8211; caliente Frigobar (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
       "resumen": "¡Aloha! Habitación diseñada con detalles tropicales que recrearán un ambiente como en el mismo Hawai."
@@ -759,6 +833,7 @@
       "slug": "simple-con-jacuzzi",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 89",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/simple-con-jacuzzi-1.jpg",
       "descripcion": "¡Te veo en el Jacuzzi! Habitación confortable para que nuestros clientes pasen momentos pasionales en el Jacuzzi. Detalles: Parking directo a la habitación, Cama 2 Plazas / confort 100%, Ducha Española, Baño agua fría – caliente, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Parking directo a la habitación Cama 2 plazas confort 100% Ducha española Baño agua fría &#8211; caliente Frigobar Televisión con Cable y DVD (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
       "resumen": "¡Te veo en el Jacuzzi! Habitación confortable para que nuestros clientes pasen momentos pasionales en el Jacuzzi."
@@ -769,6 +844,7 @@
       "slug": "simple-vista-al-mar",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 73",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/simple-vista-al-mar.jpg",
       "descripcion": "¡Veamos juntos el mar! Habitación confortable para que nuestros clientes tengan un momento de pasión con el mar como único testigo. Detalles: Vista al mar, Cama 2 Plazas / confort 100%, Baño agua fría – caliente, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Vista al mar (de acuerdo a disponibilidad) Cama 2 plazas confort 100% Frigo bar Baño agua fría &#8211; caliente Televisión con Cable y DVD (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18% + 5% recargo al consumo. RESERVAR",
       "resumen": "¡Veamos juntos el mar! Habitación confortable para que nuestros clientes tengan un momento de pasión con el"
@@ -779,6 +855,7 @@
       "slug": "habitacion-con-jacuzzi-deluxe",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 104",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/Jacuzzi-Deluxe.jpg",
       "descripcion": "¡Velada en el Jacuzzi! Nuestra habitación ejecutiva cuenta con todas las comodidades para que nuestros clientes hagan a un lado la rutina y vivan momentos de satisfacción en nuestro relajante Jacuzzi. Detalles: Cama Queen confort 100%, Pole dance, Jacuzzi, Aire acondicionado, Baño agua fría – caliente, Frigobar (con cargo extra).Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama (Queen size) Jacuzzi Baño agua fría &#8211; caliente Frigo bar Televisión con Cable y DVD (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
       "resumen": "¡Velada en el Jacuzzi! Nuestra habitación ejecutiva cuenta con todas las comodidades para que nuestros clientes hagan a"
@@ -789,6 +866,7 @@
       "slug": "camara-seca-y-jacuzzi",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 200",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/camara-seca-.jpg",
       "descripcion": "¡No hagamos el amor, él nos hará! Una habitación donde se respira amor; exclusiva para las parejas más exigentes, equipada con todas las comodidades que nuestros clientes necesitan para pasar momentos inolvidables. Detalles: Cama redonda confort 100%, Cámara seca, Pole dance, Jacuzzi, Ducha española, Baño agua fría – caliente, Frigobar (con cargo extra).Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cámara redonda confort 100% Cámara seca Jacuzzi Pole Dance Ducha española Baño agua fría &#8211; caliente Frigo bar Televisión con Cable y DVD (Tarifa válida por 7 HORAS)RESERVAR",
       "resumen": "¡No hagamos el amor, él nos hará! Una habitación donde se respira amor; exclusiva para las parejas más"
@@ -799,6 +877,7 @@
       "slug": "riverside-dreams",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 125",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/riverside-dreams.jpg",
       "descripcion": "¡Dónde fluye la pasión! Nuestra habitación de lujo está diseñada de manera que nuestros clientes vivan momentos inolvidables que les permitan fluir en sintonía con el amor. Detalles: Cama Queen confort 100%, Pole dance, Jacuzzi, Aire acondicionado, Baño agua fría – caliente, Frigobar (con cargo extra).Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama (Queen size) Jacuzzi Pole Dance Aire acondicionado Baño agua fría &#8211; caliente Frigo bar Televisión con Cable y DVD (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18% + 5% recargo al consumo. RESERVAR",
       "resumen": "¡Dónde fluye la pasión! Nuestra habitación de lujo está diseñada de manera que nuestros clientes vivan momentos inolvidables"
@@ -809,6 +888,7 @@
       "slug": "venetian-flowers",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 100",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/venetian-flowers.jpg",
       "descripcion": "¡Tengamos una velada! Nuestra habitación ejecutiva cuenta con todas las comodidades para que nuestros clientes hagan a un lado la rutina y vivan experiencias satisfactorias. Detalles: Cama Queen confort 100%, Pole dance, Jacuzzi, Aire acondicionado, Baño agua fría – caliente, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama (Queen size) Jacuzzi Aire acondicionado Baño agua fría &#8211; caliente Frigo bar Televisión con Cable y DVD (Tarifa válida por 6 HORAS)RESERVAR",
       "resumen": "¡Tengamos una velada! Nuestra habitación ejecutiva cuenta con todas las comodidades para que nuestros clientes hagan a"
@@ -819,6 +899,7 @@
       "slug": "pacific-dreams",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 125",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/pacific-dreams.jpg",
       "descripcion": "¡Una elegancia que somete! Habitación de lujo diseñada para clientes exclusivos que desean vivir del máximo placer. Detalles: Vista al mar (de acuerdo a disponibilidad con un agregado extra de 20 soles), Cama (King size / queen size), Sillón tántrico, Cabina hidromasaje, Ducha española, Jacuzzi, Pole Dance, Secadora de cabello, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Vista al mar (de acuerdo a disponibilidad) Cama (Queen size) Ducha española Jacuzzi Pole Dance Frigobar Televisión con Cable y DVD Radio (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
       "resumen": "¡Una elegancia que somete! Habitación de lujo diseñada para clientes exclusivos que desean vivir del máximo placer."
@@ -829,6 +910,7 @@
       "slug": "pacific-dreams-presidencial",
       "categoria_id": 4,
       "categoria_nombre": "Habitaciones",
+      "precio": "S/ 177",
       "imagen_url": "https://wimbledon-hotel.com/wp-content/uploads/2022/07/pacific-dreams-presidencial.jpg",
       "descripcion": "¡Una elegancia que somete! Habitación de lujo diseñada para clientes exclusivos que desean vivir del máximo placer. Detalles: Vista al mar (de acuerdo a disponibilidad con un agregado extra de 20 soles), Cama (King size / queen size), Sillón tántrico, Cabina hidromasaje, Ducha española, Jacuzzi, Pole Dance, Secadora de cabello, Frigobar (con cargo extra).Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Vista al mar (de acuerdo a disponibilidad) Cama (King size / Queen size) Sillón tántrico Ducha española Jacuzzi Pole Dance Secadora de cabello Frigobar Televisión con Cable y DVD Radio (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
       "resumen": "¡Una elegancia que somete! Habitación de lujo diseñada para clientes exclusivos que desean vivir del máximo placer. Detalles:"

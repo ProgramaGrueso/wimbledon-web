@@ -189,24 +189,27 @@ button {
 
 .brand-logo {
   display: flex;
-  flex-direction: column;
+  align-items: center;
 }
 
-.brand-name {
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
-  letter-spacing: 0.15em;
-  color: var(--color-white);
-  font-weight: 300;
-  line-height: 1;
+.official-brand-logo {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+  transition: transform 0.3s var(--easing-editorial);
 }
 
-.brand-sub {
-  font-size: 0.6rem;
-  letter-spacing: 0.35em;
-  color: var(--color-accent);
-  text-transform: uppercase;
-  margin-top: 4px;
+.official-brand-logo:hover {
+  transform: scale(1.03);
+}
+
+.official-brand-logo-footer {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  margin: 0 auto 2rem;
+  display: block;
 }
 
 .nav-links {
@@ -359,34 +362,76 @@ button {
 }
 
 /* ==========================================================================
-   EDITORIAL CONCEPT SECTION
+   EDITORIAL CONCEPT SECTION WITH VIDEO BACKGROUND
    ========================================================================== */
-.concepto-editorial-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6rem;
+.section-video-bg {
+  position: relative;
+  overflow: hidden;
+  color: var(--color-white);
+  min-height: 85vh;
+  display: flex;
   align-items: center;
+  justify-content: center;
+  background-color: var(--color-black);
+}
+
+.video-bg-container {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.video-bg-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.6) contrast(1.1);
+}
+
+.video-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(11, 11, 11, 0.65);
+  z-index: 2;
+}
+
+.relative-z {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+}
+
+.concepto-video-content {
+  max-width: 960px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .concepto-editorial-text {
   font-family: var(--font-serif);
-  font-size: clamp(1.85rem, 3vw, 2.75rem);
+  font-size: clamp(2rem, 3.5vw, 3.25rem);
   font-weight: 300;
-  line-height: 1.35;
-  color: var(--color-black);
-  margin-bottom: 2.5rem;
+  line-height: 1.3;
+  margin-bottom: 2rem;
 }
 
 .concepto-body-text {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   line-height: 1.85;
-  color: #4a4a4a;
+  max-width: 780px;
+  margin: 0 auto;
 }
 
-.concepto-full-img {
-  width: 100%;
-  height: 650px;
-  object-fit: cover;
+.text-gold {
+  color: var(--color-accent) !important;
+}
+
+.text-white {
+  color: var(--color-white) !important;
+}
+
+.text-light {
+  color: rgba(255, 255, 255, 0.82) !important;
 }
 
 /* ==========================================================================
@@ -417,6 +462,11 @@ button {
   border-bottom: 2px solid var(--color-black);
 }
 
+.bg-catalog-offwhite {
+  background-color: #F7F5F0;
+  color: var(--color-black);
+}
+
 /* Full-bleed Editorial Suite Presentation (Alternating List Layout) */
 .suite-editorial-item {
   display: grid;
@@ -443,18 +493,48 @@ button {
 }
 
 .suite-img-col {
-  height: 520px;
+  aspect-ratio: 16 / 10;
   width: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: #e5e2d9;
 }
 
 .suite-img-col img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Cinematic Warm Preset LUT Filter: reduced saturation, increased shadow contrast, subtle warm amber tint */
+  filter: saturate(0.82) contrast(1.12) sepia(0.16) hue-rotate(-6deg);
+  transition: filter 0.5s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.suite-img-col::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(197, 168, 128, 0.06);
+  pointer-events: none;
+  mix-blend-mode: multiply;
 }
 
 .suite-info-col {
   padding: 1rem 0;
+}
+
+.suite-header-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.suite-roman-num {
+  font-family: var(--font-serif);
+  font-size: 2.25rem;
+  color: var(--color-accent);
+  font-weight: 300;
+  line-height: 1;
 }
 
 .suite-cat-meta {
@@ -462,20 +542,55 @@ button {
   letter-spacing: 0.25em;
   text-transform: uppercase;
   color: var(--color-accent);
+}
+
+.suite-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
   margin-bottom: 1rem;
 }
 
 .suite-editorial-title {
-  font-size: clamp(2.5rem, 4vw, 3.75rem);
+  font-size: clamp(2.25rem, 3.5vw, 3.5rem);
   font-weight: 300;
-  margin-bottom: 1.5rem;
   color: var(--color-black);
+  margin-bottom: 0;
+}
+
+.suite-editorial-price {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  color: var(--color-black);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.suite-img-price {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  background-color: var(--color-black);
+  color: var(--color-white);
+  padding: 0.4rem 1rem;
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  z-index: 5;
+  letter-spacing: 0.05em;
+}
+
+.gastronomia-price-editorial {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  color: var(--color-black);
+  font-weight: 500;
 }
 
 .suite-editorial-desc {
   font-size: 1.05rem;
-  line-height: 1.8;
-  color: #555555;
+  line-height: 1.85;
+  color: #4a4a4a;
   margin-bottom: 2rem;
 }
 
@@ -621,42 +736,153 @@ button {
 }
 
 /* ==========================================================================
-   EDITORIAL FOOTER
+   GOOGLE MAPS SECTION
+   ========================================================================== */
+.map-section {
+  width: 100%;
+  background-color: var(--color-black);
+  position: relative;
+  border-top: 1px solid var(--color-border-dark);
+}
+
+.map-container {
+  width: 100%;
+  line-height: 0;
+}
+
+.google-map-iframe {
+  filter: grayscale(0.85) contrast(1.1) invert(0.92) hue-rotate(180deg);
+  transition: filter 0.5s ease;
+}
+
+.google-map-iframe:hover {
+  filter: grayscale(0.2) contrast(1.05);
+}
+
+/* ==========================================================================
+   EDITORIAL FOOTER WITH LIBRO DE RECLAMACIONES & SOCIAL MEDIA
    ========================================================================== */
 .editorial-footer {
   background-color: var(--color-black);
   color: var(--color-white);
-  padding: 120px 0 60px;
+  padding: 100px 0 60px;
   border-top: 1px solid var(--color-border-dark);
+  text-align: center;
 }
 
-.footer-editorial-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 6rem;
-  margin-bottom: 6rem;
+.footer-brand-center {
+  margin-bottom: 2rem;
 }
 
 .footer-title-serif {
   font-family: var(--font-serif);
-  font-size: 3rem;
+  font-size: 3.5rem;
   font-weight: 300;
-  margin-bottom: 1.5rem;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.25rem;
 }
 
-.footer-meta-label {
-  font-size: 0.75rem;
+.footer-social-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.social-link-editorial {
+  font-size: 0.85rem;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: var(--color-accent);
-  margin-bottom: 1rem;
-  display: block;
+  color: var(--color-white);
+  font-weight: 500;
+  transition: color 0.3s var(--easing-editorial);
 }
 
-.footer-meta-val {
-  font-size: 1rem;
-  color: #cccccc;
-  line-height: 1.7;
+.social-link-editorial:hover {
+  color: var(--color-accent);
+}
+
+.social-dot {
+  color: var(--color-accent);
+  font-size: 0.8rem;
+}
+
+.footer-nav-editorial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 3.5rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--color-border-dark);
+}
+
+.footer-nav-editorial a {
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 0.3s var(--easing-editorial);
+}
+
+.footer-nav-editorial a:hover {
+  color: var(--color-accent);
+}
+
+/* Libro de Reclamaciones Button */
+.libro-reclamaciones-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3.5rem;
+}
+
+.libro-reclamaciones-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem 2.25rem;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-accent);
+  color: var(--color-white);
+  transition: background-color 0.4s var(--easing-editorial), transform 0.4s var(--easing-editorial);
+}
+
+.libro-reclamaciones-btn:hover {
+  background-color: rgba(197, 168, 128, 0.15);
+  transform: translateY(-2px);
+}
+
+.libro-icon {
+  font-size: 1.75rem;
+}
+
+.libro-text {
+  text-align: left;
+}
+
+.libro-title {
+  display: block;
+  font-size: 0.825rem;
+  letter-spacing: 0.2em;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.libro-sub {
+  display: block;
+  font-size: 0.675rem;
+  color: var(--color-accent);
+  margin-top: 2px;
+}
+
+.footer-meta-bottom {
+  font-size: 0.8rem;
+  color: #888888;
+  line-height: 1.8;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 /* ==========================================================================
@@ -702,6 +928,79 @@ button {
   position: relative;
   transform: translateX(100%);
   transition: transform 0.5s var(--easing-editorial);
+}
+
+/* Exact User Spec Layout Styles */
+.drawer-spec-layout {
+  font-family: var(--font-sans);
+  text-align: left;
+}
+
+.drawer-spec-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2.2rem, 4vw, 2.85rem);
+  font-weight: 400;
+  color: #d00a1e;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+
+.drawer-spec-price {
+  font-family: var(--font-serif);
+  font-size: 2.15rem;
+  color: #1e2928;
+  font-weight: 300;
+  margin-bottom: 1.5rem;
+}
+
+.drawer-spec-intro {
+  font-size: 0.95rem;
+  color: #666666;
+  line-height: 1.65;
+  margin-bottom: 1.75rem;
+}
+
+.drawer-spec-img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  margin-bottom: 2rem;
+  border-radius: 0;
+}
+
+.drawer-spec-heading {
+  color: #d00a1e;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.drawer-spec-bullets {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.drawer-spec-bullets li {
+  color: #555555;
+  font-size: 0.95rem;
+  margin-bottom: 0.65rem;
+  line-height: 1.5;
+}
+
+.drawer-spec-duration {
+  color: #666666;
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+.drawer-spec-tax {
+  font-weight: 700;
+  color: #111111;
+  font-size: 0.85rem;
+  line-height: 1.5;
 }
 
 .drawer-overlay.open .drawer-panel {

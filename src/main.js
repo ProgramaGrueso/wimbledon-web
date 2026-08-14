@@ -3,6 +3,7 @@
 let landingData = null;
 let roomsData = [];
 let figmaData = null;
+let specsData = {};
 
 // Amenity Text Parser (Clean Editorial Format)
 function parseAmenitiesText(desc) {
@@ -39,15 +40,17 @@ function getRoomCategory(room) {
 // Data Fetcher
 async function initApp() {
   try {
-    const [resLanding, resRooms, resFigma] = await Promise.all([
+    const [resLanding, resRooms, resFigma, resSpecs] = await Promise.all([
       fetch('/data/landing_real.json').then(r => r.json()),
       fetch('/data/catalogo_habitaciones.json').then(r => r.json()),
-      fetch('/data/figma_catalogo.json').then(r => r.json())
+      fetch('/data/figma_catalogo.json').then(r => r.json()),
+      fetch('/data/specs_habitaciones.json').then(r => r.json())
     ]);
 
     landingData = resLanding.landing_page || resLanding;
     roomsData = resRooms;
     figmaData = resFigma;
+    specsData = resSpecs;
 
     renderEditorialApp();
     setupIntersectionObserver();
@@ -94,32 +97,33 @@ function renderEditorialApp() {
       </div>
     </section>
 
-    <!-- EDITORIAL CONCEPT SECTION -->
-    <section id="concepto" class="section-editorial bg-offwhite">
-      <div class="editorial-container">
-        <div class="concepto-editorial-layout">
-          <div class="reveal">
-            <span class="editorial-tag">EL CONCEPTO WIMBLEDON</span>
-            <h2 class="concepto-editorial-text">
-              "Hotel Wimbledon fusiona lo tradicional y lo imaginativo a través de sus más de 130 habitaciones preparadas para el máximo placer e intimidad."
-            </h2>
-            <p class="concepto-body-text">
-              Ubicados estratègicamente en la Avenida Costanera en San Miguel, brindamos una experiencia multisensorial con absoluto hermetismo. Nuestras suites ejecutivas y presidenciales cuentan con acabados finos, equipamiento especial como Cámara Seca, Ducha Española, Pole Dance y Jacuzzi con Hidromasaje.
-            </p>
-            <div style="margin-top: 3rem;">
-              <a href="#habitaciones" class="btn-editorial">EXPLORAR LA COLECCIÓN</a>
-            </div>
-          </div>
-          
-          <div class="reveal">
-            <img src="https://wimbledon-hotel.com/wp-content/uploads/2022/08/Riverside-Dreams-Presidencial.jpg" alt="Riverside Dreams Presidencial" class="concepto-full-img" />
+    <!-- EDITORIAL CONCEPT SECTION WITH VIDEO BACKGROUND -->
+    <section id="concepto" class="section-editorial section-video-bg">
+      <div class="video-bg-container">
+        <video autoplay loop muted playsinline class="video-bg-media">
+          <source src="/video/MiniMax_H3_00017_.webm" type="video/webm" />
+        </video>
+        <div class="video-bg-overlay"></div>
+      </div>
+
+      <div class="editorial-container relative-z">
+        <div class="concepto-video-content reveal">
+          <span class="editorial-tag text-gold">EL CONCEPTO WIMBLEDON</span>
+          <h2 class="concepto-editorial-text text-white">
+            "Hotel Wimbledon fusiona lo tradicional y lo imaginativo a través de sus más de 130 habitaciones preparadas para el máximo placer e intimidad."
+          </h2>
+          <p class="concepto-body-text text-light">
+            Ubicados estratégicamente en la Avenida Costanera en San Miguel, brindamos una experiencia multisensorial con absoluto hermetismo. Nuestras suites ejecutivas y presidenciales cuentan con acabados finos, equipamiento especial como Cámara Seca, Ducha Española, Pole Dance y Jacuzzi con Hidromasaje.
+          </p>
+          <div style="margin-top: 3.5rem;">
+            <a href="#habitaciones" class="btn-editorial-light">EXPLORAR LA COLECCIÓN</a>
           </div>
         </div>
       </div>
     </section>
 
     <!-- COLECCIÓN DE SUITES / HABITACIONES -->
-    <section id="habitaciones" class="section-editorial bg-white">
+    <section id="habitaciones" class="section-editorial bg-catalog-offwhite">
       <div class="editorial-container">
         <div class="editorial-header-block reveal">
           <span class="editorial-tag">CATÁLOGO DE HABITACIONES</span>
@@ -256,30 +260,64 @@ function renderEditorialApp() {
       </div>
     </section>
 
-    <!-- EDITORIAL FOOTER -->
+    <!-- GOOGLE MAPS LOCATION EMBED -->
+    <section id="mapa" class="map-section">
+      <div class="map-container">
+        <iframe 
+          title="Ubicación Hotel Wimbledon"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.37340638531!2d-77.0945!3d-12.0864!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c963625f2ed9%3A0x88981f4a9bb540c4!2sAv.%20Costanera%202098%2C%20San%20Miguel%2015087!5e0!3m2!1ses!2spe!4v1700000000000!5m2!1ses!2spe" 
+          width="100%" 
+          height="450" 
+          style="border:0;" 
+          allowfullscreen="" 
+          loading="lazy" 
+          referrerpolicy="no-referrer-when-downgrade"
+          class="google-map-iframe"
+        ></iframe>
+      </div>
+    </section>
+
+    <!-- EDITORIAL FOOTER & LEGAL -->
     <footer class="editorial-footer">
       <div class="editorial-container">
-        <div class="footer-editorial-grid">
-          <div>
-            <h3 class="footer-title-serif">WIMBLEDON</h3>
-            <p style="color: #999; font-size: 0.95rem; max-width: 420px; line-height: 1.8;">
-              Hotel de estadía por horas y suites de lujo en San Miguel, Lima. Privacidad garantizada, atención 24 horas y gastronomía frente al mar.
-            </p>
-          </div>
-
-          <div>
-            <span class="footer-meta-label">Ubicación</span>
-            <p class="footer-meta-val">${contacto.direccion || 'Av. Costanera 2098, San Miguel, Lima, Perú'}</p>
-          </div>
-
-          <div>
-            <span class="footer-meta-label">Central Telefónica</span>
-            <p class="footer-meta-val">578-6000<br>+51 990 370 681<br>+51 941 965 168</p>
-          </div>
+        <div class="footer-brand-center">
+          <img src="/images/logo.png" alt="Hotel Wimbledon" class="official-brand-logo-footer" />
         </div>
 
-        <div style="padding-top: 3rem; border-top: 1px solid var(--color-border-dark); text-align: center; color: #666; font-size: 0.8rem;">
-          <p>&copy; ${new Date().getFullYear()} Hotel Wimbledon. Todos los derechos reservados.</p>
+        <!-- Social Media Links -->
+        <div class="footer-social-bar">
+          <a href="https://www.facebook.com/Hotel.Wimbledon" target="_blank" rel="noopener noreferrer" class="social-link-editorial">FACEBOOK</a>
+          <span class="social-dot">•</span>
+          <a href="https://www.instagram.com/hotelwimbledon/" target="_blank" rel="noopener noreferrer" class="social-link-editorial">INSTAGRAM</a>
+          <span class="social-dot">•</span>
+          <a href="https://www.tiktok.com/@hotelwimbledon" target="_blank" rel="noopener noreferrer" class="social-link-editorial">TIKTOK</a>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="footer-nav-editorial">
+          <a href="#hero">INICIO</a>
+          <a href="#habitaciones">HABITACIONES</a>
+          <a href="#experiencia">SERVICIOS</a>
+          <a href="#reserva">CONTACTANOS</a>
+          <a href="https://wimbledon-hotel.com/politicas-y-restricciones/" target="_blank">POLÍTICAS Y RESTRICCIONES</a>
+          <a href="https://wimbledon-hotel.com/codigo-etico/" target="_blank">CÓDIGO ÉTICO</a>
+        </nav>
+
+        <!-- Libro de Reclamaciones -->
+        <div class="libro-reclamaciones-wrap">
+          <a href="https://wimbledon-hotel.com/libro-de-reclamaciones/" target="_blank" rel="noopener noreferrer" class="libro-reclamaciones-btn">
+            <div class="libro-icon">📖</div>
+            <div class="libro-text">
+              <span class="libro-title">LIBRO DE RECLAMACIONES</span>
+              <span class="libro-sub">Conforme al Código de Protección al Consumidor</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Contact & Address Metadata Bar -->
+        <div class="footer-meta-bottom">
+          <p>Av. Costanera 2098, San Miguel (Cdra. 20 Av. La Paz) Lima, Perú | 578-6000 | +51 990 370 681 | reservas@wimbledon-hotel.com</p>
+          <p style="margin-top: 0.75rem; color: #555;">&copy; ${new Date().getFullYear()} Hotel Wimbledon. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>
@@ -289,6 +327,26 @@ function renderEditorialApp() {
   renderGastronomiaList();
   setupFormHandler();
 }
+
+// Evocative Luxury Editorial Copy & Catalog Indexing
+const EDITORIAL_ROOM_COPY = {
+  860: { num: "I", resumen: "Un santuario concebido para el descanso más exclusivo. Equipada con jacuzzi de hidromasaje, cámara seca y detalles de arquitectura sutil diseñados para una privacidad absoluta frente al mar." },
+  528: { num: "II", resumen: "Una atmósfera de serenidad y confort elevado. Diseñada para aislar el ruido exterior y permitir que el tiempo transcurra a su propio ritmo en una velada íntima." },
+  526: { num: "III", resumen: "Inspirada en el fluir del agua y la arquitectura sensorial. Un refugio espacioso con vista panorámica, sillón tántrico y iluminación tenue para el encuentro íntimo." },
+  523: { num: "IV", resumen: "La máxima expresión del bienestar privado. Un espacio de relajación térmica integral que combina sauna seco, jacuzzi y acabados de lujo." },
+  227: { num: "V", resumen: "Sombras elegantes y diseño envolvente. Una suite temática creada para explorar la intimidad en un ambiente de sofisticación sobria y misterio." },
+  43:  { num: "VI", resumen: "Confort sobrio y funcionalidad discreta. Un refugio pensado para la conversación pausada y el descanso reparador en un entorno de calma total." },
+  35:  { num: "VII", resumen: "Líneas puras y texturas reconfortantes. Equipamiento completo para una desconexión serena en el corazón de San Miguel." },
+  33:  { num: "VIII", resumen: "Calidez botánica y ambientes amplios. Un refugio temático concebido para transportarse a un estado de relajación costera." },
+  31:  { num: "IX", resumen: "La combinación perfecta entre sencillez y bienestar. Jacuzzi privado con sistema de hidromasaje en una atmósfera de absoluta privacidad." },
+  29:  { num: "X", resumen: "Luz natural y la perspectiva ininterrumpida del océano Pacífico. Un entorno sereno para la contemplación del horizonte costero." },
+  27:  { num: "XI", resumen: "Una velada concebida alrededor del agua y la calma. Jacuzzi privado, climatización regulada y texturas suaves para una estancia reconfortante." },
+  24:  { num: "XII", resumen: "Armonía entre calor, vapor y privacidad. Un circuito de relajación privado en la intimidad de su suite." },
+  22:  { num: "XIII", resumen: "Líneas fluidas y sobriedad táctil. Diseñada para brindar confort pleno y una atmósfera cálida durante su estadía." },
+  20:  { num: "XIV", resumen: "Detalles delicados y ambientación acogedora. Un refugio pensado para la pausa y el encuentro íntimo sin interrupciones." },
+  16:  { num: "XV", resumen: "Elegancia atemporal con el rumor del mar de fondo. Equipamiento de primera clase y vistas seleccionadas hacia la costa." },
+  14:  { num: "XVI", resumen: "La cúspide de la hospitalidad discreta. Amplitud, jacuzzi con hidromasaje y vista privilegiada sobre la bahía de Lima." }
+};
 
 // Render Editorial Suites List
 function renderSuitesList(filterCategory = 'all') {
@@ -304,23 +362,39 @@ function renderSuitesList(filterCategory = 'all') {
     const isReverse = index % 2 !== 0 ? 'reverse' : '';
     const amenities = parseAmenitiesText(room.descripcion);
     const categoryName = room.categoria_nombre || 'Suite de Lujo';
+    
+    const customInfo = EDITORIAL_ROOM_COPY[room.id] || {
+      num: String(index + 1).padStart(2, '0'),
+      resumen: room.resumen || room.descripcion.substring(0, 150) + '...'
+    };
+
+    const priceDisplay = room.precio ? `${room.precio}` : 'CONSULTAR';
 
     return `
       <div class="suite-editorial-item ${isReverse} reveal" data-id="${room.id}">
         <div class="suite-img-col">
           <img src="${room.imagen_url || 'https://wimbledon-hotel.com/wp-content/uploads/2022/12/suite-presidencial-1.jpg'}" alt="${room.nombre}" loading="lazy" />
+          <span class="suite-img-price">${priceDisplay}</span>
         </div>
 
         <div class="suite-info-col">
-          <span class="suite-cat-meta">${categoryName}</span>
-          <h3 class="suite-editorial-title">${room.nombre}</h3>
-          <p class="suite-editorial-desc">${room.resumen || room.descripcion.substring(0, 160) + '...'}</p>
+          <div class="suite-header-meta">
+            <span class="suite-roman-num">${customInfo.num}</span>
+            <span class="suite-cat-meta">— ${categoryName}</span>
+          </div>
+          
+          <div class="suite-title-row">
+            <h3 class="suite-editorial-title">${room.nombre}</h3>
+            <span class="suite-editorial-price">${priceDisplay}</span>
+          </div>
+          
+          <p class="suite-editorial-desc">${customInfo.resumen}</p>
 
           <div class="suite-editorial-meta">
             ${amenities.map(a => `<span class="meta-pill-editorial">— ${a}</span>`).join('')}
           </div>
 
-          <div style="display: flex; gap: 2rem; align-items: center;">
+          <div style="display: flex; gap: 2rem; align-items: center; margin-top: 1rem;">
             <button class="btn-editorial js-open-drawer" data-id="${room.id}">VER ESPECIFICACIONES</button>
             <a href="https://wa.me/51990370681?text=Hola%20Hotel%20Wimbledon,%20deseo%20reservar%20la%20habitacion%20${encodeURIComponent(room.nombre)}" target="_blank" class="btn-editorial-text" style="color: var(--color-black);">
               Reservar por WhatsApp
@@ -345,7 +419,10 @@ function renderGastronomiaList() {
     <div class="gastronomia-item-editorial reveal">
       <img src="${item.imagen_url || 'https://wimbledon-hotel.com/wp-content/uploads/2025/10/hamburguesa-smash.png'}" alt="${item.nombre}" class="gastronomia-img-editorial" loading="lazy" />
       <div>
-        <h4 class="gastronomia-title-editorial">${item.nombre}</h4>
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <h4 class="gastronomia-title-editorial">${item.nombre}</h4>
+          ${item.precio ? `<span class="gastronomia-price-editorial">${item.precio}</span>` : ''}
+        </div>
         <p class="gastronomia-desc-editorial">${item.descripcion || 'Servicio directo a la habitación las 24 horas.'}</p>
       </div>
     </div>
@@ -357,27 +434,44 @@ function openDrawer(roomId) {
   const room = roomsData.find(r => r.id === parseInt(roomId));
   if (!room) return;
 
-  const amenities = parseAmenitiesText(room.descripcion);
+  const spec = specsData[roomId] || {
+    nombre: room.nombre,
+    precio_exacto: room.precio || 'S/ 150.00',
+    intro: 'Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja.',
+    equipamiento: ['Vista al mar', 'Jacuzzi', 'Ducha española', 'Frigobar'],
+    duracion: '(Tarifa válida por 6 HORAS)',
+    impuestos: 'En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.'
+  };
+
+  const titleFormatted = spec.nombre.startsWith('Habitación') ? spec.nombre : `Habitación ${spec.nombre}`;
 
   const drawerBody = document.getElementById('drawerBody');
   drawerBody.innerHTML = `
-    <span class="suite-cat-meta">${room.categoria_nombre}</span>
-    <h2 style="font-family: var(--font-serif); font-size: 3rem; font-weight: 300; margin-bottom: 1.5rem;">${room.nombre}</h2>
-    
-    <img src="${room.imagen_url}" alt="${room.nombre}" style="width: 100%; height: 320px; object-fit: cover; margin-bottom: 2rem;" />
-    
-    <p style="font-size: 1.05rem; line-height: 1.8; color: #444; margin-bottom: 2rem;">
-      ${room.descripcion}
-    </p>
+    <div class="drawer-spec-layout">
+      <h2 class="drawer-spec-title">${titleFormatted}</h2>
+      
+      <div class="drawer-spec-price">| ${spec.precio_exacto}</div>
+      
+      <p class="drawer-spec-intro">${spec.intro}</p>
 
-    <h4 style="font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-accent); margin-bottom: 1rem;">Equipamiento Incluido:</h4>
-    <ul style="list-style: none; margin-bottom: 2.5rem;">
-      ${amenities.map(a => `<li style="padding: 0.5rem 0; border-bottom: 1px solid var(--color-border); font-size: 0.95rem;">— ${a}</li>`).join('')}
-    </ul>
+      <img src="${room.imagen_url}" alt="${spec.nombre}" class="drawer-spec-img" />
 
-    <a href="https://wa.me/51990370681?text=Hola%20Hotel%20Wimbledon,%20deseo%20reservar%20la%20habitacion%20${encodeURIComponent(room.nombre)}" target="_blank" class="btn-editorial" style="width: 100%; text-align: center;">
-      SOLICITAR DISPONIBILIDAD VIA WHATSAPP
-    </a>
+      <h4 class="drawer-spec-heading">Habitación equipada con:</h4>
+
+      <ul class="drawer-spec-bullets">
+        ${spec.equipamiento.map(item => `<li>${item}</li>`).join('')}
+      </ul>
+
+      <p class="drawer-spec-duration">${spec.duracion}</p>
+
+      <p class="drawer-spec-tax">
+        ${spec.impuestos}
+      </p>
+
+      <a href="https://wa.me/51990370681?text=Hola%20Hotel%20Wimbledon,%20deseo%20reservar%20la%20${encodeURIComponent(titleFormatted)}" target="_blank" class="btn-editorial" style="width: 100%; text-align: center; margin-top: 2rem;">
+        RESERVAR AHORA VÍA WHATSAPP
+      </a>
+    </div>
   `;
 
   const drawer = document.getElementById('roomDrawer');

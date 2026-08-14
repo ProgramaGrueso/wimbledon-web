@@ -1,0 +1,265 @@
+{
+  "14": {
+    "id": 14,
+    "nombre": "Pacific Dreams Presidencial",
+    "precio_exacto": "S/ 177.20",
+    "intro": "¡Una elegancia que somete! Habitación de lujo diseñada para clientes exclusivos que desean vivir del máximo placer.",
+    "equipamiento": [
+      "Vista al mar (de acuerdo a disponibilidad)",
+      "Cama (King size / Queen size)",
+      "Sillón tántrico",
+      "Ducha española",
+      "Jacuzzi",
+      "Pole Dance",
+      "Secadora de cabello",
+      "Frigobar",
+      "Televisión con Cable y DVD",
+      "Radio"
+    ],
+    "duracion": "(Tarifa válida por 6 HORAS)",
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+  },
+  "16": {
+    "id": 16,
+    "nombre": "Pacific Dreams",
+    "precio_exacto": "S/ 125.08",
+    "intro": "¡Una elegancia que somete! Habitación de lujo diseñada para clientes exclusivos que desean vivir del máximo placer.",
+    "equipamiento": [
+      "Vista al mar (de acuerdo a disponibilidad)",
+      "Cama (Queen size)",
+      "Ducha española",
+      "Jacuzzi",
+      "Pole Dance",
+      "Frigobar",
+      "Televisión con Cable y DVD",
+      "Radio"
+    ],
+    "duracion": "(Tarifa válida por 6 HORAS)",
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+  },
+  "20": {
+    "id": 20,
+    "nombre": "Venetian Flowers",
+    "precio_exacto": "S/ 100.00",
+    "intro": "¡Tengamos una velada! Nuestra habitación ejecutiva cuenta con todas las comodidades para que nuestros clientes hagan a un lado la rutina y vivan experiencias satisfactorias.",
+    "equipamiento": [
+      "Cama (Queen size)",
+      "Jacuzzi",
+      "Aire acondicionado",
+      "Baño agua fría – caliente",
+      "Frigo bar",
+      "Televisión con Cable y DVD"
+    ],
+    "duracion": "(Tarifa válida por 6 HORAS)",
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+  },
+  "22": {
+    "id": 22,
+    "nombre": "Riverside Dreams",
+    "precio_exacto": "S/ 125.08",
+    "intro": "¡Dónde fluye la pasión! Nuestra habitación de lujo está diseñada de manera que nuestros clientes vivan momentos inolvidables que les permitan fluir en sintonía con el amor.",
+    "equipamiento": [
+      "Cama (Queen size)",
+      "Jacuzzi",
+      "Pole Dance",
+      "Aire acondicionado",
+      "Baño agua fría – caliente",
+      "Frigo bar",
+      "Televisión con Cable y DVD"
+    ],
+    "duracion": "(Tarifa válida por 6 HORAS)",
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+  },
+  "24": {
+    "id": 24,
+    "nombre": "Cámara Seca y Jacuzzi",
+    "precio_exacto": "S/ 200.00",
+    "intro": "¡No hagamos el amor, él nos hará! Una habitación donde se respira amor; exclusiva para las parejas más exigentes, equipada con todas las comodidades que nuestros clientes necesitan para pasar momentos inolvidables.",
+    "equipamiento": [
+      "Cámara redonda confort 100%",
+      "Cámara seca",
+      "Jacuzzi",
+      "Pole Dance",
+      "Ducha española",
+      "Baño agua fría – caliente",
+      "Frigo bar",
+      "Televisión con Cable y DVD"
+    ],
+    "duracion": "(Tarifa válida por 7 HORAS)",
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+  },
+  "27": {
+    "id": 27,
+    "nombre": "Jacuzzi Deluxe",
+    "precio_exacto": "S/ 104.24",
+    "intro": "¡Velada en el Jacuzzi! Nuestra habitación ejecutiva cuenta con todas las comodidades para que nuestros clientes hagan a un lado la rutina y vivan momentos de satisfacción en nuestro relajante Jacuzzi.",
+    "equipamiento": [
+      "Cama (Queen size)",
+      "Jacuzzi",
+      "Baño agua fría – caliente",
+      "Frigo bar",
+      "Televisión con Cable y DVD"
+    ],
+    "duracion": "(Tarifa válida por 6 HORAS)",
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+  },
+  "29": {
+    "id": 29,
+    "nombre": "Simple Vista al Mar",
+    "precio_exacto": "S/ 72.97",
+    "intro": "¡Veamos juntos el mar! Habitación confortable para que nuestros clientes tengan un momento de pasión con el mar como único testigo.",
+    "equipamiento": [
+      "Vista al mar (de acuerdo a disponibilidad)",
+      "Cama 2 plazas confort 100%",
+      "Frigo bar",
+      "Baño agua fría – caliente",
+      "Televisión con Cable y DVD"
+    ],
+    "duracion": "(Tarifa válida por 6 HORAS)",
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+  },
+  "31": {
+    "id": 31,
+    "nombre": "Simple con Jacuzzi",
+    "precio_exacto": "S/ 88.60",
+    "intro": "¡Te veo en el Jacuzzi! Habitación confortable para que nuestros clientes pasen momentos pasionales en el Jacuzzi.",
+    "equipamiento": [
+      "Parking directo a la habitación",
+      "Cama 2 plazas confort 100%",
+      "Ducha española",
+      "Baño agua fría – caliente",
+      "Frigobar",
+      "Televisión con Cable y DVD"
+    ],
+    "duracion": "(Tarifa válida por 6 HORAS)",
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+  },
+  "33": {
+    "id": 33,
+    "nombre": "Hawaian Dreams",
+    "precio_exacto": "S/ 72.97",
+    "intro": "¡Aloha! Habitación diseñada con detalles tropicales que recrearán un ambiente como en el mismo Hawai.",
+    "equipamiento": [
+      "Cama 2 plazas confort 100%",
+      "Aire acondicionado",
+      "Baño agua fría – caliente",
+      "Frigobar"
+    ],
+    "duracion": "(Tarifa válida por 6 HORAS)",
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+  },
+  "35": {
+    "id": 35,
+    "nombre": "Habitación Delux",
+    "precio_exacto": "S/ 55.00",
+    "intro": "¡Ven, charlemos un ratito! Habitación confortable para que nuestros clientes vivan un instante de pasión.",
+    "equipamiento": [
+      "Cama 2 plazas",
+      "Baño con agua fría y caliente",
+      "Frigo bar"
+    ],
+    "duracion": "(Tarifa válida por 6 HORAS)",
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+  },
+  "43": {
+    "id": 43,
+    "nombre": "Habitación Especial",
+    "precio_exacto": "S/ 150.00",
+    "intro": "¡Un espacio único! Nuestras habitaciones especiales fueron hechas con un toque extra de placer y discreción para que los eternos enamorados vivan momentos inolvidables.",
+    "equipamiento": [
+      "Estacionamiento directo a la Habitación",
+      "Cama redonda",
+      "Sillón tántrico",
+      "Ducha española",
+      "Jacuzzi",
+      "Frigobar",
+      "Secadora de cabello",
+      "Tv con servicio de cable y DVD"
+    ],
+    "duracion": "(Tarifa válida por 6 HORAS)",
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+  },
+  "227": {
+    "id": 227,
+    "nombre": "Dark Fantasies",
+    "precio_exacto": "S/ 208.47",
+    "intro": "¡El límite lo pones tú! Una habitación que cumple fantasías; exclusiva para nuestros clientes más exigentes, equipadas con todas las comodidades para que las parejas jueguen con su imaginación y se desviven en pasión.",
+    "equipamiento": [
+      "Cama (King size)",
+      "Ducha española",
+      "Jacuzzi",
+      "Pole Dance",
+      "Sillón Tántrico",
+      "Frigo bar"
+    ],
+    "duracion": "(Tarifa válida por 7 HORAS)",
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+  },
+  "523": {
+    "id": 523,
+    "nombre": "Suite Presidencial con Cámara Seca",
+    "precio_exacto": "S/ 200.00",
+    "intro": "¡Ten los sueños más placenteros! Nuestra habitación de lujo está equipada con todos los detalles que permitan a nuestros clientes tener descanso propio de una realeza.",
+    "equipamiento": [
+      "Cama redonda",
+      "Sillón Tántrico de Cuarzo",
+      "Cámara Seca",
+      "Ducha Española",
+      "Jacuzzi con Hidromasaje",
+      "Pole Dance",
+      "Baño privado",
+      "Frigo bar"
+    ],
+    "duracion": "(Tarifa válida por 7 HORAS)",
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+  },
+  "526": {
+    "id": 526,
+    "nombre": "Riverside Dreams Presidencial",
+    "precio_exacto": "S/ 156.36",
+    "intro": "¡Dónde fluye la pasión! Nuestra habitación de lujo está diseñada de manera que nuestros clientes vivan momentos inolvidables que les permitan fluir en sintonía con el amor.",
+    "equipamiento": [
+      "Vista a un río artificial",
+      "Sillón Tántrico",
+      "Cama (King size)",
+      "Jacuzzi",
+      "Pole Dance",
+      "Frigo bar"
+    ],
+    "duracion": "(Tarifa válida por 6 HORAS)",
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+  },
+  "528": {
+    "id": 528,
+    "nombre": "Tropical Dreams",
+    "precio_exacto": "S/ 125.08",
+    "intro": "Habitación de lujo diseñada para los clientes exclusivos que desean vivir un momento inolvidable.",
+    "equipamiento": [
+      "Cama Queen Confort 100%",
+      "Ducha española",
+      "Jacuzzi",
+      "Pole Dance",
+      "Frigo bar"
+    ],
+    "duracion": "(Tarifa válida por 6 HORAS)",
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+  },
+  "860": {
+    "id": 860,
+    "nombre": "Suite Presidencial",
+    "precio_exacto": "S/ 156.36",
+    "intro": "¡Ten los sueños más placenteros! Nuestra habitación de lujo está equipada con todos los detalles que permitan a nuestros clientes tener descanso propio de una realeza.",
+    "equipamiento": [
+      "Cama redonda",
+      "Sillón Tántrico de Cuarzo",
+      "Cámara Seca",
+      "Ducha española",
+      "Jacuzzi con Hidromasaje",
+      "Pole Dance",
+      "Baño privado",
+      "Frigobar ."
+    ],
+    "duracion": "(Tarifa válida por 6 HORAS)",
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+  }
+}
