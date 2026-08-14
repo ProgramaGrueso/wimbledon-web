@@ -414,12 +414,14 @@ function renderGastronomiaList() {
   const container = document.getElementById('gastronomiaList');
   if (!container || !figmaData || !figmaData.carta) return;
 
-  const items = figmaData.carta.slice(0, 6);
+  const items = figmaData.carta.slice(0, 8);
   container.innerHTML = items.map(item => `
     <div class="gastronomia-item-editorial reveal">
-      <img src="${item.imagen_url || 'https://wimbledon-hotel.com/wp-content/uploads/2025/10/hamburguesa-smash.png'}" alt="${item.nombre}" class="gastronomia-img-editorial" loading="lazy" />
-      <div>
-        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+      <div class="gastronomia-img-col">
+        <img src="${item.imagen_url || 'https://wimbledon-hotel.com/wp-content/uploads/2025/10/hamburguesa-smash.png'}" alt="${item.nombre}" class="gastronomia-img-editorial" loading="lazy" />
+      </div>
+      <div class="gastronomia-info-col">
+        <div class="gastronomia-header-row">
           <h4 class="gastronomia-title-editorial">${item.nombre}</h4>
           ${item.precio ? `<span class="gastronomia-price-editorial">${item.precio}</span>` : ''}
         </div>
