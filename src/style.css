@@ -1,0 +1,767 @@
+/* ==========================================================================
+   HOTEL WIMBLEDON — EDITORIAL DE LUJO STYLESHEET
+   ========================================================================== */
+
+:root {
+  --color-black: #0b0b0b;
+  --color-near-black: #121212;
+  --color-white: #ffffff;
+  --color-offwhite: #f7f6f2;
+  --color-sand: #eeece6;
+  
+  --color-accent: #c5a880;
+  --color-muted: #767676;
+  --color-border: #e2dfd7;
+  --color-border-dark: #222222;
+
+  --font-serif: 'Fraunces', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  
+  --easing-editorial: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Global Resets */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-radius: 0 !important; /* STRICT REQUIREMENT: No rounded corners */
+  box-shadow: none !important; /* STRICT REQUIREMENT: No shadows */
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+  background-color: var(--color-black);
+  color: var(--color-black);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  overflow-x: hidden;
+  line-height: 1.75;
+  background-color: var(--color-white);
+}
+
+/* Scrollbar minimal */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-black);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+}
+
+/* Typography Standards */
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+h1 {
+  font-size: clamp(4.25rem, 8vw, 7.5rem); /* 68px to 120px */
+}
+
+h2 {
+  font-size: clamp(2.75rem, 5vw, 4.5rem);
+}
+
+h3 {
+  font-size: clamp(1.75rem, 3vw, 2.75rem);
+}
+
+p {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--color-muted);
+  font-weight: 400;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.3s var(--easing-editorial);
+}
+
+button {
+  background: none;
+  border: none;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  color: inherit;
+}
+
+/* Editorial Buttons */
+.btn-editorial {
+  display: inline-block;
+  padding: 1.25rem 2.75rem;
+  background-color: var(--color-black);
+  color: var(--color-white);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: background-color 0.4s var(--easing-editorial), color 0.4s var(--easing-editorial);
+  border: 1px solid var(--color-black);
+}
+
+.btn-editorial:hover {
+  background-color: var(--color-white);
+  color: var(--color-black);
+}
+
+.btn-editorial-light {
+  display: inline-block;
+  padding: 1.25rem 2.75rem;
+  background-color: var(--color-white);
+  color: var(--color-black);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: background-color 0.4s var(--easing-editorial), color 0.4s var(--easing-editorial);
+  border: 1px solid var(--color-white);
+}
+
+.btn-editorial-light:hover {
+  background-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.btn-editorial-text {
+  font-size: 0.775rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--color-white);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--color-accent);
+}
+
+.btn-editorial-text:hover {
+  color: var(--color-accent);
+}
+
+/* ==========================================================================
+   NAVIGATION
+   ========================================================================== */
+.editorial-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  padding: 2.25rem 0;
+  transition: padding 0.4s var(--easing-editorial), background-color 0.4s var(--easing-editorial);
+  background-color: transparent;
+}
+
+.editorial-header.scrolled {
+  padding: 1.25rem 0;
+  background-color: rgba(11, 11, 11, 0.95);
+  border-bottom: 1px solid var(--color-border-dark);
+}
+
+.header-container {
+  max-width: 1520px;
+  margin: 0 auto;
+  padding: 0 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-logo {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-name {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  letter-spacing: 0.15em;
+  color: var(--color-white);
+  font-weight: 300;
+  line-height: 1;
+}
+
+.brand-sub {
+  font-size: 0.6rem;
+  letter-spacing: 0.35em;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 3.5rem;
+}
+
+.nav-item {
+  font-size: 0.775rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+  transition: color 0.3s var(--easing-editorial);
+}
+
+.nav-item:hover {
+  color: var(--color-white);
+}
+
+/* ==========================================================================
+   SECTIONS & LAYOUT STRUCTURE (PADDING: 160px ON DESKTOP)
+   ========================================================================== */
+.section-editorial {
+  padding: 160px 0;
+  position: relative;
+}
+
+.bg-white {
+  background-color: var(--color-white);
+  color: var(--color-black);
+}
+
+.bg-offwhite {
+  background-color: var(--color-offwhite);
+  color: var(--color-black);
+}
+
+.bg-black {
+  background-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.editorial-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 3rem;
+}
+
+/* Section Header Editorial */
+.editorial-header-block {
+  margin-bottom: 6rem;
+}
+
+.editorial-tag {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.editorial-headline {
+  max-width: 900px;
+}
+
+/* ==========================================================================
+   HERO SECTION (100VH, FULL BLEED, MINIMAL OVERLAY)
+   ========================================================================== */
+.hero-editorial {
+  height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 6rem;
+  background-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.hero-visual-full {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.hero-img-full {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.55);
+}
+
+.hero-overlay-minimal {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 2;
+}
+
+.hero-content-editorial {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 3rem;
+}
+
+.hero-editorial-h1 {
+  font-size: clamp(4.5rem, 9vw, 8.5rem);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  margin-bottom: 2rem;
+  color: var(--color-white);
+  max-width: 1100px;
+}
+
+.hero-editorial-h1 span {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--color-accent);
+}
+
+.hero-editorial-sub {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 680px;
+  line-height: 1.8;
+  margin-bottom: 3rem;
+  font-weight: 300;
+}
+
+.hero-meta-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 2.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hero-meta-item {
+  font-size: 0.775rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ==========================================================================
+   EDITORIAL CONCEPT SECTION
+   ========================================================================== */
+.concepto-editorial-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  align-items: center;
+}
+
+.concepto-editorial-text {
+  font-family: var(--font-serif);
+  font-size: clamp(1.85rem, 3vw, 2.75rem);
+  font-weight: 300;
+  line-height: 1.35;
+  color: var(--color-black);
+  margin-bottom: 2.5rem;
+}
+
+.concepto-body-text {
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: #4a4a4a;
+}
+
+.concepto-full-img {
+  width: 100%;
+  height: 650px;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   EDITORIAL SUITES CATALOG
+   ========================================================================== */
+.editorial-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 1.5rem;
+  margin-bottom: 5rem;
+}
+
+.editorial-filter-btn {
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  font-weight: 500;
+  position: relative;
+  padding-bottom: 1.5rem;
+  margin-bottom: -1.5rem;
+}
+
+.editorial-filter-btn.active {
+  color: var(--color-black);
+  border-bottom: 2px solid var(--color-black);
+}
+
+/* Full-bleed Editorial Suite Presentation (Alternating List Layout) */
+.suite-editorial-item {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 5rem;
+  align-items: center;
+  margin-bottom: 120px;
+  padding-bottom: 120px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.suite-editorial-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.suite-editorial-item.reverse {
+  grid-template-columns: 1fr 1.2fr;
+}
+
+.suite-editorial-item.reverse .suite-img-col {
+  order: 2;
+}
+
+.suite-img-col {
+  height: 520px;
+  width: 100%;
+}
+
+.suite-img-col img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.suite-info-col {
+  padding: 1rem 0;
+}
+
+.suite-cat-meta {
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 1rem;
+}
+
+.suite-editorial-title {
+  font-size: clamp(2.5rem, 4vw, 3.75rem);
+  font-weight: 300;
+  margin-bottom: 1.5rem;
+  color: var(--color-black);
+}
+
+.suite-editorial-desc {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #555555;
+  margin-bottom: 2rem;
+}
+
+.suite-editorial-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.meta-pill-editorial {
+  font-size: 0.775rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-black);
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   EDITORIAL EXPERIENCIA / SERVICIOS
+   ========================================================================== */
+.experiencia-editorial-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4rem;
+}
+
+.experiencia-card-editorial {
+  border-top: 1px solid var(--color-border-dark);
+  padding-top: 2.5rem;
+}
+
+.experiencia-num {
+  font-family: var(--font-serif);
+  font-size: 2.5rem;
+  color: var(--color-accent);
+  margin-bottom: 1rem;
+  font-weight: 300;
+}
+
+.experiencia-title {
+  font-size: 2.25rem;
+  font-weight: 300;
+  color: var(--color-white);
+  margin-bottom: 1.25rem;
+}
+
+.experiencia-desc {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #aaaaaa;
+}
+
+/* ==========================================================================
+   EDITORIAL CARTA GASTRONÓMICA
+   ========================================================================== */
+.gastronomia-list-editorial {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4rem;
+}
+
+.gastronomia-item-editorial {
+  display: flex;
+  gap: 2rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.gastronomia-img-editorial {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.gastronomia-title-editorial {
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: var(--color-black);
+  margin-bottom: 0.5rem;
+}
+
+.gastronomia-desc-editorial {
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   EDITORIAL RESERVATION FORM
+   ========================================================================== */
+.editorial-form-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.editorial-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3rem 4rem;
+}
+
+.editorial-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.editorial-field.full {
+  grid-column: span 2;
+}
+
+.editorial-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.editorial-input, .editorial-select {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.85rem 0;
+  color: var(--color-white);
+  font-size: 1.15rem;
+  font-family: var(--font-sans);
+  transition: border-color 0.3s var(--easing-editorial);
+}
+
+.editorial-input:focus, .editorial-select:focus {
+  outline: none;
+  border-bottom-color: var(--color-accent);
+}
+
+.editorial-select option {
+  background-color: var(--color-black);
+  color: var(--color-white);
+}
+
+/* ==========================================================================
+   EDITORIAL FOOTER
+   ========================================================================== */
+.editorial-footer {
+  background-color: var(--color-black);
+  color: var(--color-white);
+  padding: 120px 0 60px;
+  border-top: 1px solid var(--color-border-dark);
+}
+
+.footer-editorial-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 6rem;
+  margin-bottom: 6rem;
+}
+
+.footer-title-serif {
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  font-weight: 300;
+  margin-bottom: 1.5rem;
+}
+
+.footer-meta-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.footer-meta-val {
+  font-size: 1rem;
+  color: #cccccc;
+  line-height: 1.7;
+}
+
+/* ==========================================================================
+   SCROLL REVEAL ANIMATIONS (INTERSECTION OBSERVER FADE-IN + TRANSLATEY(20PX))
+   ========================================================================== */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 1s var(--easing-editorial), transform 1s var(--easing-editorial);
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* DRAWER OVERLAY */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: flex-end;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s var(--easing-editorial);
+}
+
+.drawer-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.drawer-panel {
+  width: 100%;
+  max-width: 650px;
+  height: 100%;
+  background: var(--color-white);
+  color: var(--color-black);
+  overflow-y: auto;
+  padding: 4rem 3rem;
+  position: relative;
+  transform: translateX(100%);
+  transition: transform 0.5s var(--easing-editorial);
+}
+
+.drawer-overlay.open .drawer-panel {
+  transform: translateX(0);
+}
+
+.drawer-close {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: var(--color-black);
+}
+
+.loader-container {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-white);
+}
+
+.loader-text {
+  font-family: var(--font-serif);
+  font-size: 2.5rem;
+  letter-spacing: 0.3em;
+  color: var(--color-black);
+  animation: fadeInOut 1.5s infinite ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Responsive Media Queries */
+@media (max-width: 1024px) {
+  .section-editorial {
+    padding: 100px 0;
+  }
+  .concepto-editorial-layout {
+    grid-template-columns: 1fr;
+    gap: 4rem;
+  }
+  .suite-editorial-item, .suite-editorial-item.reverse {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  .suite-editorial-item.reverse .suite-img-col {
+    order: 1;
+  }
+  .experiencia-editorial-grid, .gastronomia-list-editorial, .editorial-form-grid, .footer-editorial-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  .editorial-field.full {
+    grid-column: span 1;
+  }
+  .nav-links {
+    display: none;
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "landing_page": {
+    "hero": {
+      "marca": "Hotel Wimbledon",
+      "titulo_principal": "Nuestras habitaciones",
+      "subtitulo": "Planifica tu estadía con nosotros, contamos con habitaciones de lujo, habitaciones temáticas, estacionamiento directo a algunas habitaciones, nuestra carta de comidas y bebidas que complementan tu visita.",
+      "imagenes_portada": [
+        "https://wimbledon-hotel.com/wp-content/uploads/2022/08/collage-habitaciones-792x1024.jpg",
+        "https://wimbledon-hotel.com/wp-content/uploads/2022/08/cropped-logo-hwimbledon.png",
+        "https://wimbledon-hotel.com/wp-content/uploads/2022/08/dark-fantasies-800x600.jpg",
+        "https://wimbledon-hotel.com/wp-content/uploads/2022/08/Suite-Presidencial-Camara-Seca-800x600.jpg",
+        "https://wimbledon-hotel.com/wp-content/uploads/2022/07/camara-seca--800x600.jpg"
+      ]
+    },
+    "titulos_secciones": [
+      "Servicios Especiales",
+      "Parking Directo",
+      "Pensando en tu privacidad, contamos con Parking Directo a la habitación",
+      "Minibar",
+      "Disfruta de nuestras bebidas siempre frescas y a gusto del cliente",
+      "Carta",
+      "Conoce nuestra carta, minuciosamente organizada para la satisfacción de tu paladar",
+      "Decoraciones",
+      "Enamórate de nuestras decoraciones que tenemos para tí; encontrarás diseños sencillos, pero bonitos y también decoraciones modernas y elegantes"
+    ],
+    "textos_presentacion": [
+      "Planifica tu estadía con nosotros, contamos con habitaciones de lujo, habitaciones temáticas, estacionamiento directo a algunas habitaciones, nuestra carta de comidas y bebidas que complementan tu visita.",
+      "Pensando en tu privacidad, contamos con Parking Directo a la habitación",
+      "Disfruta de nuestras bebidas siempre frescas y a gusto del cliente",
+      "Conoce nuestra carta, minuciosamente organizada para la satisfacción de tu paladar",
+      "Enamórate de nuestras decoraciones que tenemos para tí; encontrarás diseños sencillos, pero bonitos y también decoraciones modernas y elegantes",
+      "Hotel Wimbledon fusiona lo tradicional y lo imaginativo a través de sus más de 130 habitaciones. Contamos con habitaciones de lujo, habitaciones temáticas, servicio las 24 horas, estacionamiento directo a algunas habitaciones, Wifi, y nuestra carta de comidas y bebidas que complementan tu apasionada estadía."
+    ],
+    "contacto_real": {
+      "direccion": "Av. Costanera 2098, San Miguel (Cdra. 20 Av. La Paz) Lima, Perú",
+      "telefonos": [
+        "997903819",
+        "578-6000",
+        "+51 990 370 681",
+        "+51 941 965 168"
+      ],
+      "email": "reservas@wimbledon-hotel.com"
+    },
+    "redes_sociales": {
+      "tiktok": "https://www.tiktok.com/@hotelwimbledon",
+      "facebook": "https://www.facebook.com/Hotel.Wimbledon",
+      "instagram": "https://www.instagram.com/hotelwimbledon/"
+    }
+  }
+}

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotel Wimbledon — Experiencia Editorial & Discreción</title>
+  <meta name="description" content="Hotel Wimbledon. Suites de lujo y estadía por horas en San Miguel, Lima. Discreción absoluta, jacuzzi, cámara seca y atención 24 horas frente al mar." />
+  
+  <!-- Editorial Typography: Fraunces (Serif H1/H2) & Plus Jakarta Sans (Clean Sans Body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body class="editorial-body">
+  <!-- Minimal Editorial Navigation -->
+  <header id="navbar" class="editorial-header">
+    <div class="header-container">
+      <a href="#hero" class="brand-logo">
+        <span class="brand-name">WIMBLEDON</span>
+        <span class="brand-sub">HOTEL & SUITES</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="#concepto" class="nav-item">El Concepto</a>
+        <a href="#habitaciones" class="nav-item">Colección</a>
+        <a href="#experiencia" class="nav-item">Experiencia</a>
+        <a href="#gastronomia" class="nav-item">Carta</a>
+        <a href="#reserva" class="nav-item">Reservas</a>
+      </nav>
+
+      <div class="header-contact">
+        <a href="https://wa.me/51990370681?text=Hola%20Hotel%20Wimbledon,%20deseo%20consultar%20disponibilidad" target="_blank" rel="noopener noreferrer" class="btn-editorial-text">
+          RESERVAR — WhatsApp
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main id="app">
+    <!-- Initial Loading State -->
+    <div class="loader-container">
+      <p class="loader-text">WIMBLEDON</p>
+    </div>
+  </main>
+
+  <!-- Room Detail Drawer / Overlay (Editorial Style) -->
+  <div id="roomDrawer" class="drawer-overlay" aria-hidden="true">
+    <div class="drawer-panel">
+      <button class="drawer-close" id="drawerClose" aria-label="Cerrar">&times;</button>
+      <div class="drawer-body" id="drawerBody">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
