@@ -36,12 +36,21 @@ html {
   color: var(--color-black);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 body {
+  max-width: 100vw;
   overflow-x: hidden;
+  width: 100%;
   line-height: 1.75;
   background-color: var(--color-white);
+}
+
+img, video, iframe, picture, svg {
+  max-width: 100%;
+  height: auto;
 }
 
 /* Scrollbar minimal */
@@ -253,6 +262,75 @@ button {
 
 .nav-item:hover {
   color: var(--color-white);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.hamburger-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 28px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 201;
+}
+
+.hamburger-line {
+  width: 100%;
+  height: 2px;
+  background-color: var(--color-white);
+  transition: transform 0.3s var(--easing-editorial), opacity 0.3s var(--easing-editorial), background-color 0.3s var(--easing-editorial);
+}
+
+.hamburger-btn.active .hamburger-line:nth-child(1) {
+  transform: translateY(9px) rotate(45deg);
+  background-color: var(--color-accent);
+}
+
+.hamburger-btn.active .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-btn.active .hamburger-line:nth-child(3) {
+  transform: translateY(-9px) rotate(-45deg);
+  background-color: var(--color-accent);
+}
+
+.nav-close-btn {
+  display: none;
+}
+
+.nav-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  z-index: 90;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s var(--easing-editorial), visibility 0.4s var(--easing-editorial);
+}
+
+.nav-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Suite Action Buttons Container */
+.suite-actions {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
 }
 
 /* ==========================================================================
@@ -1110,11 +1188,10 @@ button {
 /* Responsive Media Queries */
 @media (max-width: 1024px) {
   .section-editorial {
-    padding: 100px 0;
+    padding: 80px 0;
   }
-  .concepto-editorial-layout {
-    grid-template-columns: 1fr;
-    gap: 4rem;
+  .editorial-container, .header-container {
+    padding: 0 2rem;
   }
   .suite-editorial-item, .suite-editorial-item.reverse {
     grid-template-columns: 1fr;
@@ -1123,14 +1200,283 @@ button {
   .suite-editorial-item.reverse .suite-img-col {
     order: 1;
   }
-  .experiencia-editorial-grid, .gastronomia-list-editorial, .editorial-form-grid, .footer-editorial-grid {
+  .experiencia-editorial-grid, .gastronomia-list-editorial, .editorial-form-grid {
     grid-template-columns: 1fr;
     gap: 3rem;
   }
   .editorial-field.full {
     grid-column: span 1;
   }
+}
+
+@media (max-width: 767px) {
+  /* Header & Mobile Drawer Navigation */
+  .hamburger-btn {
+    display: flex;
+  }
+
   .nav-links {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 82%;
+    max-width: 320px;
+    height: 100vh;
+    background-color: var(--color-black);
+    z-index: 200;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 6rem 2rem 3rem 2rem;
+    gap: 2rem;
+    border-left: 1px solid var(--color-border-dark);
+    transform: translateX(100%);
+    transition: transform 0.4s var(--easing-editorial);
+    box-shadow: -10px 0 30px rgba(0,0,0,0.6);
+  }
+
+  .nav-links.mobile-open {
+    transform: translateX(0);
+  }
+
+  .nav-close-btn {
+    display: none !important;
+  }
+
+  .nav-item {
+    font-size: 1.05rem;
+    letter-spacing: 0.2em;
+  }
+
+  .editorial-header {
+    padding: 1.25rem 0;
+  }
+
+  .editorial-header.scrolled {
+    padding: 0.85rem 0;
+  }
+
+  .header-container {
+    padding: 0 1.25rem;
+  }
+
+  .official-brand-logo {
+    height: 26px;
+  }
+
+  .brand-name {
+    font-size: 1.15rem;
+    letter-spacing: 0.12em;
+  }
+
+  .brand-sub {
+    font-size: 0.48rem;
+    letter-spacing: 0.22em;
+  }
+
+  .btn-editorial-text {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+  }
+
+  /* Section Padding & Standard Margins */
+  .section-editorial {
+    padding: 48px 0;
+  }
+
+  .editorial-container {
+    padding: 0 1.25rem;
+  }
+
+  .editorial-header-block {
+    margin-bottom: 2.5rem;
+  }
+
+  .editorial-headline {
+    font-size: clamp(1.8rem, 6vw, 2.5rem);
+  }
+
+  /* Hero Section Clamping & Layout */
+  .hero-editorial {
+    min-height: 100vh;
+    height: auto;
+    padding-top: 7rem;
+    padding-bottom: 3rem;
+    align-items: center;
+  }
+
+  .hero-content-editorial {
+    padding: 0 1.25rem;
+  }
+
+  .hero-editorial-h1 {
+    font-size: clamp(2rem, 7.5vw, 3.6rem);
+    line-height: 1.12;
+    margin-bottom: 1.25rem;
+  }
+
+  .hero-editorial-sub {
+    font-size: 0.98rem;
+    line-height: 1.65;
+    margin-bottom: 2rem;
+  }
+
+  .hero-meta-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding-top: 1.5rem;
+  }
+
+  /* Concept Section */
+  .section-video-bg {
+    min-height: auto;
+    padding: 4rem 0;
+  }
+
+  .concepto-editorial-text {
+    font-size: clamp(1.35rem, 5vw, 2.2rem);
+    line-height: 1.35;
+    margin-bottom: 1.5rem;
+  }
+
+  .concepto-body-text {
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+
+  /* Suites Filter Bar */
+  .editorial-filter-bar {
+    gap: 0.75rem 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .editorial-filter-btn {
+    font-size: 0.75rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
+  }
+
+  /* Suite Items & Action Buttons */
+  .suite-editorial-item {
+    margin-bottom: 50px;
+    padding-bottom: 50px;
+  }
+
+  .suite-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .suite-editorial-title {
+    font-size: clamp(1.6rem, 5vw, 2.25rem);
+  }
+
+  .suite-editorial-price {
+    font-size: 1.5rem;
+  }
+
+  .suite-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .suite-actions .btn-editorial {
+    width: 100%;
+    text-align: center;
+    padding: 1rem 1.25rem;
+  }
+
+  .suite-actions .btn-editorial-text {
+    text-align: center;
+    display: block;
+    width: 100%;
+  }
+
+  /* Gastronomy List */
+  .gastronomia-item-editorial {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    gap: 1.25rem;
+  }
+
+  .gastronomia-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .gastronomia-title-editorial {
+    font-size: 1.3rem;
+  }
+
+  .gastronomia-price-editorial {
+    font-size: 1.2rem;
+  }
+
+  /* Form Layout */
+  .editorial-form-grid {
+    gap: 1.5rem;
+  }
+
+  .editorial-field.full button {
+    max-width: 100% !important;
+  }
+
+  /* Room Detail Drawer Panel */
+  .drawer-panel {
+    padding: 3.5rem 1.25rem 2rem;
+  }
+
+  .drawer-close {
+    top: 1.25rem;
+    right: 1.25rem;
+  }
+
+  /* Footer */
+  .editorial-footer {
+    padding: 60px 0 40px;
+  }
+
+  .footer-title-serif {
+    font-size: clamp(2rem, 7vw, 3.2rem);
+  }
+
+  .footer-social-bar {
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .footer-nav-editorial {
+    gap: 1rem 1.25rem;
+  }
+
+  .libro-reclamaciones-btn {
+    padding: 1rem 1.25rem;
+    width: 100%;
+    max-width: 360px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gastronomia-item-editorial {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .gastronomia-img-col {
+    width: 90px;
+    height: 90px;
+  }
+
+  .brand-sub {
     display: none;
   }
 }

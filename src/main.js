@@ -55,6 +55,7 @@ async function initApp() {
     renderEditorialApp();
     setupIntersectionObserver();
     setupHeaderScroll();
+    setupMobileNav();
   } catch (error) {
     console.error('Error al cargar datos:', error);
     document.getElementById('app').innerHTML = `
@@ -394,7 +395,7 @@ function renderSuitesList(filterCategory = 'all') {
             ${amenities.map(a => `<span class="meta-pill-editorial">— ${a}</span>`).join('')}
           </div>
 
-          <div style="display: flex; gap: 2rem; align-items: center; margin-top: 1rem;">
+          <div class="suite-actions">
             <button class="btn-editorial js-open-drawer" data-id="${room.id}">VER ESPECIFICACIONES</button>
             <a href="https://wa.me/51990370681?text=Hola%20Hotel%20Wimbledon,%20deseo%20reservar%20la%20habitacion%20${encodeURIComponent(room.nombre)}" target="_blank" class="btn-editorial-text" style="color: var(--color-black);">
               Reservar por WhatsApp
@@ -539,6 +540,68 @@ function setupIntersectionObserver() {
   }, { threshold: 0.1 });
 
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+}
+
+// Mobile Drawer Navigation Handler
+function setupMobileNav() {
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const navLinks = document.getElementById('navLinks');
+  const navCloseBtn = document.getElementById('navCloseBtn');
+  const navBackdrop = document.getElementById('navBackdrop');
+
+  if (!hamburgerBtn || !navLinks) return;
+
+  function openMobileNav() {
+    navLinks.classList.add('mobile-open');
+    if (navBackdrop) {
+      navBackdrop.classList.add('open');
+      navBackdrop.setAttribute('aria-hidden', 'false');
+    }
+    hamburgerBtn.classList.add('active');
+    hamburgerBtn.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMobileNav() {
+    navLinks.classList.remove('mobile-open');
+    if (navBackdrop) {
+      navBackdrop.classList.remove('open');
+      navBackdrop.setAttribute('aria-hidden', 'true');
+    }
+    hamburgerBtn.classList.remove('active');
+    hamburgerBtn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  hamburgerBtn.addEventListener('click', () => {
+    const isOpen = navLinks.classList.contains('mobile-open');
+    if (isOpen) {
+      closeMobileNav();
+    } else {
+      openMobileNav();
+    }
+  });
+
+  if (navCloseBtn) {
+    navCloseBtn.addEventListener('click', closeMobileNav);
+  }
+
+  if (navBackdrop) {
+    navBackdrop.addEventListener('click', closeMobileNav);
+  }
+
+  // Close when clicking any nav item
+  const navItems = navLinks.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
+    item.addEventListener('click', closeMobileNav);
+  });
+
+  // Close on Escape key
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && navLinks.classList.contains('mobile-open')) {
+      closeMobileNav();
+    }
+  });
 }
 
 // Form Handler
