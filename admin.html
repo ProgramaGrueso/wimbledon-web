@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotel Wimbledon — Portal de Administración Interna</title>
+  
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body style="background: #060911; color: #ffffff; min-height: 100vh; font-family: 'Plus Jakarta Sans', sans-serif;">
+  
+  <!-- Header del Portal Admin -->
+  <header style="background: #0b0f19; border-bottom: 1px solid rgba(217, 119, 6, 0.3); padding: 1.25rem 2rem;">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+      <a href="index.html" style="display: flex; align-items: center; gap: 0.75rem; color: #fff; text-decoration: none;">
+        <img src="/images/logo.png" alt="Hotel Wimbledon" style="height: 36px;" />
+        <div>
+          <span style="font-family: var(--font-serif); font-weight: bold; letter-spacing: 2px; font-size: 1.1rem; display: block; color: #fff;">WIMBLEDON</span>
+          <span style="font-size: 0.65rem; color: #fbbf24; letter-spacing: 1px; font-weight: bold;">SISTEMA ADMINISTRATIVO INTERNO</span>
+        </div>
+      </a>
+
+      <a href="index.html" class="btn-editorial-outline" style="padding: 0.5rem 1rem; font-size: 0.8rem; border-color: #475569; color: #cbd5e1;">
+        ⬅️ Volver a la Web Principal
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Administrative Container -->
+  <main id="adminApp" style="max-width: 1200px; margin: 3rem auto; padding: 0 1.5rem;">
+    <!-- Injected by src/admin.js -->
+  </main>
+
+  <script type="module" src="/src/admin.js"></script>
+</body>
+</html>
