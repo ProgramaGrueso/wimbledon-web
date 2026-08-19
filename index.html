@@ -37,9 +37,9 @@
 
       <div class="header-actions">
         <div class="header-contact">
-          <a href="https://wa.me/51990370681?text=Hola%20Hotel%20Wimbledon,%20deseo%20consultar%20disponibilidad" target="_blank" rel="noopener noreferrer" class="btn-editorial-text">
-            RESERVAR — WhatsApp
-          </a>
+          <button id="btnHeaderReserve" class="btn-editorial-text" style="background: none; border: none; cursor: pointer;">
+            RESERVAR AHORA
+          </button>
         </div>
 
         <button id="hamburgerBtn" class="hamburger-btn" aria-label="Abrir menú de navegación" aria-expanded="false">
@@ -66,6 +66,16 @@
       <button class="drawer-close" id="drawerClose" aria-label="Cerrar">&times;</button>
       <div class="drawer-body" id="drawerBody">
         <!-- Injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Digital Checkout Modal (Interactive 3-Step Flow) -->
+  <div id="checkoutModal" class="checkout-modal-overlay" aria-hidden="true">
+    <div class="checkout-modal-panel">
+      <button class="checkout-modal-close" id="checkoutCloseBtn" aria-label="Cerrar Checkout">&times;</button>
+      <div id="checkoutModalBody">
+        <!-- Injected dynamically by src/main.js -->
       </div>
     </div>
   </div>

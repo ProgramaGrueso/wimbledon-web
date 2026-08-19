@@ -1519,3 +1519,343 @@ button {
     display: none;
   }
 }
+
+/* ==========================================================================
+   DIGITAL CHECKOUT MODAL (DARK LUXE EDITORIAL STYLING)
+   ========================================================================== */
+.checkout-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(6, 9, 17, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.checkout-modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.checkout-modal-panel {
+  background: #0b0f19;
+  border: 1.5px solid rgba(217, 119, 6, 0.4);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 2.5rem;
+  color: #ffffff;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.95), 0 0 30px rgba(217, 119, 6, 0.15);
+  position: relative;
+  transform: translateY(20px) scale(0.98);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.checkout-modal-overlay.open .checkout-modal-panel {
+  transform: translateY(0) scale(1);
+}
+
+.checkout-modal-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #94a3b8;
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.checkout-modal-close:hover {
+  color: #fff;
+  background: rgba(244, 63, 94, 0.2);
+  border-color: #f43f5e;
+}
+
+/* Stepper Indicator */
+.checkout-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  position: relative;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: color 0.3s ease;
+}
+
+.step-indicator.active {
+  color: #fbbf24;
+}
+
+.step-indicator.completed {
+  color: #10b981;
+}
+
+.step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #1e293b;
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+}
+
+.step-indicator.active .step-num {
+  background: rgba(217, 119, 6, 0.25);
+  border-color: #fbbf24;
+  color: #fbbf24;
+}
+
+.step-indicator.completed .step-num {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.step-divider {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 0.5rem;
+}
+
+/* Chip Selectors */
+.chip-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.chip-option {
+  background: #0f172a;
+  border: 1.5px solid #334155;
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.chip-option:hover {
+  border-color: #64748b;
+  background: #1e293b;
+}
+
+.chip-option.active {
+  background: rgba(217, 119, 6, 0.18);
+  border-color: #fbbf24;
+  color: #fbbf24;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.15);
+}
+
+.chip-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.chip-sub {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+/* Payment Cards */
+.payment-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.payment-card {
+  background: #0f172a;
+  border: 1.5px solid #334155;
+  border-radius: 16px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.payment-card:hover {
+  border-color: #64748b;
+}
+
+.payment-card.active {
+  background: rgba(217, 119, 6, 0.18);
+  border-color: #fbbf24;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.15);
+}
+
+.payment-icon {
+  font-size: 1.5rem;
+}
+
+.payment-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.payment-card.active .payment-title {
+  color: #fbbf24;
+}
+
+.payment-desc {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+/* Summary Box */
+.price-summary-box {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-total-label {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.summary-total-val {
+  font-family: var(--font-serif);
+  font-size: 1.85rem;
+  font-weight: bold;
+  color: #fbbf24;
+}
+
+/* Receipt Screen */
+.receipt-container {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.receipt-badge-icon {
+  width: 70px;
+  height: 70px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 2px solid #10b981;
+  color: #10b981;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.25rem;
+  margin: 0 auto 1.25rem;
+}
+
+.receipt-code-box {
+  background: rgba(217, 119, 6, 0.15);
+  border: 1px dashed #fbbf24;
+  border-radius: 12px;
+  padding: 0.85rem 1.5rem;
+  display: inline-block;
+  margin: 1rem 0;
+}
+
+.receipt-code-num {
+  font-family: monospace;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #fbbf24;
+  letter-spacing: 0.1em;
+}
+
+.receipt-details-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  text-align: left;
+  background: #0f172a;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #1e293b;
+}
+
+.receipt-details-table td {
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid #1e293b;
+  font-size: 0.85rem;
+}
+
+.receipt-details-table tr:last-child td {
+  border-bottom: none;
+}
+
+.receipt-label {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.receipt-val {
+  color: #ffffff;
+  font-weight: 700;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .checkout-modal-panel {
+    padding: 1.75rem 1.25rem;
+    border-radius: 18px;
+  }
+
+  .payment-group {
+    grid-template-columns: 1fr;
+  }
+
+  .step-label {
+    display: none;
+  }
+}
+

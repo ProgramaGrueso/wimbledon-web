@@ -5,6 +5,17 @@ let roomsData = [];
 let figmaData = null;
 let specsData = {};
 
+// Estado global para el Checkout Modal de 3 Pasos
+let checkoutState = {
+  roomId: null,
+  duration: '6 Horas', // '3 Horas', '6 Horas', 'Toda la Noche'
+  arrivalTime: 'En 30 min', // 'En 30 min', '20:00', '21:00', '22:00', '00:00', 'custom'
+  customTime: '',
+  paymentMethod: 'yape', // 'yape', 'card'
+  customerName: '',
+  customerPhone: ''
+};
+
 // Amenity Text Parser (Clean Editorial Format)
 function parseAmenitiesText(desc) {
   const text = (desc || '').toLowerCase();
@@ -37,6 +48,23 @@ function getRoomCategory(room) {
   return 'tematica';
 }
 
+// Helper: Extraer número de precio base
+function parseBasePrice(priceStr) {
+  if (!priceStr) return 150;
+  const num = parseInt(priceStr.replace(/[^0-9]/g, ''), 10);
+  return isNaN(num) || num <= 0 ? 150 : num;
+}
+
+// Helper: Calcular precio dinámico según duración
+function calculateDynamicPrice(basePrice, duration) {
+  if (duration === '3 Horas') {
+    return Math.round(basePrice * 0.70);
+  } else if (duration === 'Toda la Noche') {
+    return Math.round(basePrice * 1.60);
+  }
+  return basePrice; // '6 Horas' o default
+}
+
 // Data Fetcher
 async function initApp() {
   try {
@@ -56,6 +84,7 @@ async function initApp() {
     setupIntersectionObserver();
     setupHeaderScroll();
     setupMobileNav();
+    setupCheckoutModalListeners();
   } catch (error) {
     console.error('Error al cargar datos:', error);
     document.getElementById('app').innerHTML = `
@@ -166,7 +195,7 @@ function renderEditorialApp() {
 
           <div class="experiencia-card-editorial reveal">
             <div class="experiencia-num">02</div>
-            <div class="experiencia-title">Minibar Gourmet</div>
+            <h3 class="experiencia-title">Minibar Gourmet</h3>
             <p class="experiencia-desc">
               Disfruta de bebidas siempre frescas, licores seleccionados, espumantes y piqueos de alta calidad disponibles dentro de tu suite las 24 horas del día.
             </p>
@@ -212,7 +241,7 @@ function renderEditorialApp() {
           <span class="editorial-tag">DISPONIBILIDAD INMEDIATA</span>
           <h2 class="editorial-headline" style="color: var(--color-white);">Reservar una Suite & Ubicación</h2>
           <p style="color: #999999; margin-top: 1rem;">
-            Selecciona la fecha y habitación de tu interés. Tu solicitud se enviará a nuestra central de atención confidencial por WhatsApp.
+            Selecciona la suite de tu preferencia para iniciar el proceso de checkout digital 100% privado y confirmar tu reserva de forma inmediata.
           </p>
         </div>
 
@@ -234,27 +263,33 @@ function renderEditorialApp() {
                 <div class="editorial-field">
                   <label class="editorial-label">Suite Seleccionada</label>
                   <select id="edRoom" class="editorial-select" required>
-                    ${roomsData.map(r => `<option value="${r.nombre}">${r.nombre}</option>`).join('')}
+                    ${roomsData.map(r => `<option value="${r.id}">${r.nombre}</option>`).join('')}
                   </select>
                 </div>
 
                 <div class="editorial-field">
                   <label class="editorial-label">Tiempo de Estadía</label>
                   <select id="edDuration" class="editorial-select">
-                    <option value="6 Horas">Estadía por 6 Horas</option>
-                    <option value="12 Horas">Estadía por 12 Horas</option>
-                    <option value="Noche Completa">Noche Completa</option>
+                    <option value="3 Horas">Estadía por 3 Horas</option>
+                    <option value="6 Horas" selected>Estadía por 6 Horas</option>
+                    <option value="Toda la Noche">Toda la Noche</option>
                   </select>
                 </div>
 
                 <div class="editorial-field full">
-                  <label class="editorial-label">Fecha y Hora Estimada</label>
-                  <input type="datetime-local" id="edDate" class="editorial-input" required />
+                  <label class="editorial-label">Hora Estimada de Llegada</label>
+                  <select id="edArrivalTime" class="editorial-select">
+                    <option value="En 30 min">En 30 minutos</option>
+                    <option value="20:00">20:00 hrs</option>
+                    <option value="21:00">21:00 hrs</option>
+                    <option value="22:00">22:00 hrs</option>
+                    <option value="00:00">00:00 hrs</option>
+                  </select>
                 </div>
 
                 <div class="editorial-field full" style="margin-top: 2rem; text-align: center;">
-                  <button type="submit" class="btn-editorial-light" style="width: 100%;">
-                    CONFIRMAR VÍA WHATSAPP
+                  <button type="submit" class="btn-editorial-light" style="width: 100%; cursor: pointer;">
+                    INICIAR RESERVA DIGITAL
                   </button>
                 </div>
               </div>
@@ -356,7 +391,7 @@ const EDITORIAL_ROOM_COPY = {
   22:  { num: "XIII", resumen: "Líneas fluidas y sobriedad táctil. Diseñada para brindar confort pleno y una atmósfera cálida durante su estadía." },
   20:  { num: "XIV", resumen: "Detalles delicados y ambientación acogedora. Un refugio pensado para la pausa y el encuentro íntimo sin interrupciones." },
   16:  { num: "XV", resumen: "Elegancia atemporal con el rumor del mar de fondo. Equipamiento de primera clase y vistas seleccionadas hacia la costa." },
-  14:  { num: "XVI", resumen: "La cúspide de la hospitalidad discreta. Amplitud, jacuzzi con hidromasaje y vista privilegiada sobre la bahía de Lima." }
+  14:  { num: "XVI", resumen: "La cúspide de la hospitalidad discreta. Amplitud, jacuzzi con hidromasaje y vista privileged sobre la bahía de Lima." }
 };
 
 // Render Editorial Suites List
@@ -379,7 +414,7 @@ function renderSuitesList(filterCategory = 'all') {
       resumen: room.resumen || room.descripcion.substring(0, 150) + '...'
     };
 
-    const priceDisplay = room.precio ? `${room.precio}` : 'CONSULTAR';
+    const priceDisplay = room.precio ? `${room.precio}` : 'S/ 150';
 
     return `
       <div class="suite-editorial-item ${isReverse} reveal" data-id="${room.id}">
@@ -407,9 +442,9 @@ function renderSuitesList(filterCategory = 'all') {
 
           <div class="suite-actions">
             <button class="btn-editorial js-open-drawer" data-id="${room.id}">VER ESPECIFICACIONES</button>
-            <a href="https://wa.me/51990370681?text=Hola%20Hotel%20Wimbledon,%20deseo%20reservar%20la%20habitacion%20${encodeURIComponent(room.nombre)}" target="_blank" class="btn-editorial-text" style="color: var(--color-black);">
-              Reservar por WhatsApp
-            </a>
+            <button class="btn-editorial-text js-reserve-now" data-id="${room.id}" style="color: var(--color-black); background: none; border: none; cursor: pointer; text-decoration: underline; font-weight: bold;">
+              Reservar Ahora
+            </button>
           </div>
         </div>
       </div>
@@ -481,15 +516,25 @@ function openDrawer(roomId) {
         ${spec.impuestos}
       </p>
 
-      <a href="https://wa.me/51990370681?text=Hola%20Hotel%20Wimbledon,%20deseo%20reservar%20la%20${encodeURIComponent(titleFormatted)}" target="_blank" class="btn-editorial" style="width: 100%; text-align: center; margin-top: 2rem;">
-        RESERVAR AHORA VÍA WHATSAPP
-      </a>
+      <button id="btnDrawerReserve" class="btn-editorial js-drawer-reserve-now" data-id="${room.id}" style="width: 100%; text-align: center; margin-top: 2rem; cursor: pointer;">
+        RESERVAR AHORA
+      </button>
     </div>
   `;
 
   const drawer = document.getElementById('roomDrawer');
   drawer.classList.add('open');
   drawer.setAttribute('aria-hidden', 'false');
+
+  // Bind drawer inner reserve button
+  const drawerBtn = document.getElementById('btnDrawerReserve');
+  if (drawerBtn) {
+    drawerBtn.onclick = () => {
+      drawer.classList.remove('open');
+      drawer.setAttribute('aria-hidden', 'true');
+      openCheckoutModal(room.id);
+    };
+  }
 }
 
 // Setup Event Listeners
@@ -498,6 +543,14 @@ function setupDrawerListeners() {
   openBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       openDrawer(btn.getAttribute('data-id'));
+    });
+  });
+
+  const reserveNowBtns = document.querySelectorAll('.js-reserve-now');
+  reserveNowBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      openCheckoutModal(id);
     });
   });
 
@@ -525,6 +578,373 @@ function setupDrawerListeners() {
       renderSuitesList(e.target.getAttribute('data-filter'));
     });
   });
+}
+
+// ==========================================================================
+// DIGITAL CHECKOUT MODAL ENGINE (3-STEP FORM)
+// ==========================================================================
+
+function setupCheckoutModalListeners() {
+  const headerBtn = document.getElementById('btnHeaderReserve');
+  if (headerBtn) {
+    headerBtn.onclick = () => {
+      const defaultRoomId = roomsData.length > 0 ? roomsData[0].id : 860;
+      openCheckoutModal(defaultRoomId);
+    };
+  }
+
+  const closeBtn = document.getElementById('checkoutCloseBtn');
+  const modal = document.getElementById('checkoutModal');
+  if (closeBtn && modal) {
+    closeBtn.onclick = () => {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    };
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+    };
+  }
+}
+
+function openCheckoutModal(roomId, initialOptions = {}) {
+  const room = roomsData.find(r => r.id === parseInt(roomId)) || roomsData[0];
+  if (!room) return;
+
+  checkoutState = {
+    roomId: room.id,
+    duration: initialOptions.duration || '6 Horas',
+    arrivalTime: initialOptions.arrivalTime || 'En 30 min',
+    customTime: '',
+    paymentMethod: 'yape',
+    customerName: initialOptions.customerName || '',
+    customerPhone: initialOptions.customerPhone || ''
+  };
+
+  renderCheckoutModalContent();
+
+  const modal = document.getElementById('checkoutModal');
+  if (modal) {
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+}
+
+function renderCheckoutModalContent() {
+  const modalBody = document.getElementById('checkoutModalBody');
+  if (!modalBody) return;
+
+  const room = roomsData.find(r => r.id === checkoutState.roomId) || roomsData[0];
+  const basePrice = parseBasePrice(room.precio);
+  const totalPrice = calculateDynamicPrice(basePrice, checkoutState.duration);
+
+  modalBody.innerHTML = `
+    <div style="text-align: center; margin-bottom: 1.5rem;">
+      <span style="color: #fbbf24; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">FLUJO DE CHECKOUT DIGITAL</span>
+      <h2 style="font-family: var(--font-serif); font-size: 1.85rem; color: #fff; margin-top: 0.25rem;">
+        Reservar ${room.nombre}
+      </h2>
+      <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.2rem;">
+        ${room.categoria_nombre || 'Suite de Lujo'} • Tarifa Base: ${room.precio || 'S/ 150'}
+      </p>
+    </div>
+
+    <!-- 3-STEP PROGRESS STEPPER -->
+    <div class="checkout-stepper">
+      <div class="step-indicator active">
+        <div class="step-num">1</div>
+        <span class="step-label">Duración</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-indicator active">
+        <div class="step-num">2</div>
+        <span class="step-label">Horario</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-indicator active">
+        <div class="step-num">3</div>
+        <span class="step-label">Pago</span>
+      </div>
+    </div>
+
+    <form id="checkoutDynamicForm">
+      <!-- PASO A: DURACIÓN DE ESTADÍA -->
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; font-size: 0.8rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">
+          PASO A — SELECCIONA LA DURACIÓN
+        </label>
+        <div class="chip-group">
+          <div class="chip-option ${checkoutState.duration === '3 Horas' ? 'active' : ''}" data-duration="3 Horas">
+            <span class="chip-title">3 Horas</span>
+            <span class="chip-sub">S/ ${calculateDynamicPrice(basePrice, '3 Horas')} (-30%)</span>
+          </div>
+
+          <div class="chip-option ${checkoutState.duration === '6 Horas' ? 'active' : ''}" data-duration="6 Horas">
+            <span class="chip-title">6 Horas</span>
+            <span class="chip-sub">S/ ${calculateDynamicPrice(basePrice, '6 Horas')} (Estándar)</span>
+          </div>
+
+          <div class="chip-option ${checkoutState.duration === 'Toda la Noche' ? 'active' : ''}" data-duration="Toda la Noche">
+            <span class="chip-title">Toda la Noche</span>
+            <span class="chip-sub">S/ ${calculateDynamicPrice(basePrice, 'Toda la Noche')} (hasta 12 PM)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO B: HORARIO ESTIMADO DE LLEGADA -->
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; font-size: 0.8rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">
+          PASO B — HORA DE LLEGADA ESTIMADA
+        </label>
+        <div class="chip-group">
+          <div class="chip-option ${checkoutState.arrivalTime === 'En 30 min' ? 'active' : ''}" data-time="En 30 min">
+            <span class="chip-title">En 30 min</span>
+            <span class="chip-sub">Inmediato</span>
+          </div>
+
+          <div class="chip-option ${checkoutState.arrivalTime === '20:00' ? 'active' : ''}" data-time="20:00">
+            <span class="chip-title">20:00 hrs</span>
+            <span class="chip-sub">Turno Noche</span>
+          </div>
+
+          <div class="chip-option ${checkoutState.arrivalTime === '21:00' ? 'active' : ''}" data-time="21:00">
+            <span class="chip-title">21:00 hrs</span>
+            <span class="chip-sub">Turno Noche</span>
+          </div>
+
+          <div class="chip-option ${checkoutState.arrivalTime === '22:00' ? 'active' : ''}" data-time="22:00">
+            <span class="chip-title">22:00 hrs</span>
+            <span class="chip-sub">Turno Noche</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO C: MEDIO DE PAGO & DATOS DEL HUÉSPED -->
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; font-size: 0.8rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">
+          PASO C — MEDIO DE PAGO
+        </label>
+        <div class="payment-group">
+          <div class="payment-card ${checkoutState.paymentMethod === 'yape' ? 'active' : ''}" data-method="yape">
+            <span class="payment-icon">📱</span>
+            <div>
+              <div class="payment-title">Yape / Plin</div>
+              <div class="payment-desc">Transferencia instantánea</div>
+            </div>
+          </div>
+
+          <div class="payment-card ${checkoutState.paymentMethod === 'card' ? 'active' : ''}" data-method="card">
+            <span class="payment-icon">💳</span>
+            <div>
+              <div class="payment-title">Tarjeta Crédito / Débito</div>
+              <div class="payment-desc">Visa, Mastercard, Amex</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DETALLES CONDICIONALES DE PAGO -->
+      ${checkoutState.paymentMethod === 'yape' ? `
+        <div style="background: rgba(217, 119, 6, 0.1); border: 1px solid rgba(217, 119, 6, 0.3); border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; font-size: 0.82rem; color: #fef08a;">
+          📱 <strong>Instrucciones Yape / Plin:</strong> Yapear al número <code>990 370 681</code> (Hotel Wimbledon S.A.C.). Tu reserva quedará lista para check-in inmediato.
+        </div>
+      ` : `
+        <div style="background: #0f172a; border: 1px solid #334155; border-radius: 14px; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.85rem;">
+          <div>
+            <label style="display: block; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 0.25rem; font-weight: 600;">NÚMERO DE TARJETA</label>
+            <input type="text" placeholder="4557 •••• •••• 8821" style="width: 100%; padding: 0.75rem; background: #0b0f19; border: 1px solid #334155; border-radius: 8px; color: #fff; font-size: 0.9rem; font-family: monospace;" required />
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div>
+              <label style="display: block; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 0.25rem; font-weight: 600;">VENCIMIENTO</label>
+              <input type="text" placeholder="MM/AA" style="width: 100%; padding: 0.75rem; background: #0b0f19; border: 1px solid #334155; border-radius: 8px; color: #fff; font-size: 0.9rem;" required />
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 0.25rem; font-weight: 600;">CVC / CVV</label>
+              <input type="password" placeholder="•••" maxlength="4" style="width: 100%; padding: 0.75rem; background: #0b0f19; border: 1px solid #334155; border-radius: 8px; color: #fff; font-size: 0.9rem;" required />
+            </div>
+          </div>
+        </div>
+      `}
+
+      <!-- DATOS DE REGISTRO CLIENTE -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+          <label style="display: block; font-size: 0.75rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.35rem;">NOMBRE COMPLETO</label>
+          <input type="text" id="checkoutName" value="${checkoutState.customerName}" placeholder="Nombre completo" style="width: 100%; padding: 0.85rem; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: #fff; font-size: 0.9rem;" required />
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.75rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.35rem;">TELÉFONO CELULAR</label>
+          <input type="tel" id="checkoutPhone" value="${checkoutState.customerPhone}" placeholder="990370681" style="width: 100%; padding: 0.85rem; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: #fff; font-size: 0.9rem;" required />
+        </div>
+      </div>
+
+      <!-- PRICE SUMMARY BOX -->
+      <div class="price-summary-box">
+        <div>
+          <span class="summary-total-label">Monto Total a Pagar</span>
+          <div style="font-size: 0.75rem; color: #64748b;">${checkoutState.duration} • Impuestos incluidos (IGV 18%)</div>
+        </div>
+        <span class="summary-total-val">S/ ${totalPrice}.00</span>
+      </div>
+
+      <button type="submit" class="btn-editorial-light" style="width: 100%; text-align: center; justify-content: center; padding: 1.1rem; font-weight: bold; font-size: 1rem; cursor: pointer; background: #fff; color: #000;">
+        CONFIRMAR Y PAGAR (S/ ${totalPrice}.00)
+      </button>
+    </form>
+  `;
+
+  // Attach interactive listeners for tabs/chips
+  const durationOptions = modalBody.querySelectorAll('[data-duration]');
+  durationOptions.forEach(opt => {
+    opt.onclick = () => {
+      checkoutState.duration = opt.getAttribute('data-duration');
+      checkoutState.customerName = document.getElementById('checkoutName')?.value || '';
+      checkoutState.customerPhone = document.getElementById('checkoutPhone')?.value || '';
+      renderCheckoutModalContent();
+    };
+  });
+
+  const timeOptions = modalBody.querySelectorAll('[data-time]');
+  timeOptions.forEach(opt => {
+    opt.onclick = () => {
+      checkoutState.arrivalTime = opt.getAttribute('data-time');
+      checkoutState.customerName = document.getElementById('checkoutName')?.value || '';
+      checkoutState.customerPhone = document.getElementById('checkoutPhone')?.value || '';
+      renderCheckoutModalContent();
+    };
+  });
+
+  const paymentOptions = modalBody.querySelectorAll('[data-method]');
+  paymentOptions.forEach(opt => {
+    opt.onclick = () => {
+      checkoutState.paymentMethod = opt.getAttribute('data-method');
+      checkoutState.customerName = document.getElementById('checkoutName')?.value || '';
+      checkoutState.customerPhone = document.getElementById('checkoutPhone')?.value || '';
+      renderCheckoutModalContent();
+    };
+  });
+
+  // Attach Form Submit
+  const form = document.getElementById('checkoutDynamicForm');
+  if (form) {
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const name = document.getElementById('checkoutName').value;
+      const phone = document.getElementById('checkoutPhone').value;
+      
+      checkoutState.customerName = name;
+      checkoutState.customerPhone = phone;
+
+      confirmAndSaveBooking(room, totalPrice);
+    };
+  }
+}
+
+// Guardar reserva en LocalStorage y renderizar comprobante #WMB-XXXX
+function confirmAndSaveBooking(room, totalAmount) {
+  const randomId = Math.floor(1000 + Math.random() * 9000);
+  const bookingCode = `#WMB-${randomId}`;
+
+  const booking = {
+    id: bookingCode,
+    habitacionId: room.id,
+    habitacionNombre: room.nombre,
+    duracion: checkoutState.duration,
+    horarioLlegada: checkoutState.arrivalTime,
+    monto: totalAmount,
+    medioPago: checkoutState.paymentMethod === 'yape' ? 'Yape / Plin' : 'Tarjeta de Crédito / Débito',
+    clienteNombre: checkoutState.customerName,
+    clienteTelefono: checkoutState.customerPhone,
+    estado: 'CONFIRMADA',
+    fechaReserva: new Date().toISOString()
+  };
+
+  // Persistir en LocalStorage
+  try {
+    const existing = JSON.parse(localStorage.getItem('wimbledon_bookings') || '[]');
+    existing.unshift(booking);
+    localStorage.setItem('wimbledon_bookings', JSON.stringify(existing));
+  } catch (err) {
+    console.error('Error al guardar en LocalStorage:', err);
+  }
+
+  // Renderizar Vista de Comprobante / Recibo
+  const modalBody = document.getElementById('checkoutModalBody');
+  if (!modalBody) return;
+
+  modalBody.innerHTML = `
+    <div class="receipt-container">
+      <div class="receipt-badge-icon">✓</div>
+      
+      <span style="color: #10b981; font-size: 0.8rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">
+        RESERVA CONFIRMADA EXITOSAMENTE
+      </span>
+      
+      <h2 style="font-family: var(--font-serif); font-size: 2rem; color: #fff; margin-top: 0.25rem;">
+        ¡Gracias por tu reserva, ${booking.clienteNombre}!
+      </h2>
+      
+      <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
+        Tu estancia ha sido registrada y garantizada con hermetismo absoluto.
+      </p>
+
+      <div class="receipt-code-box">
+        <span style="display: block; font-size: 0.7rem; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px;">CÓDIGO DE RESERVA ÚNICO</span>
+        <span class="receipt-code-num">${bookingCode}</span>
+      </div>
+
+      <table class="receipt-details-table">
+        <tbody>
+          <tr>
+            <td class="receipt-label">Suite / Habitación</td>
+            <td class="receipt-val">${booking.habitacionNombre}</td>
+          </tr>
+          <tr>
+            <td class="receipt-label">Tiempo de Estadía</td>
+            <td class="receipt-val">${booking.duracion}</td>
+          </tr>
+          <tr>
+            <td class="receipt-label">Llegada Estimada</td>
+            <td class="receipt-val">${booking.horarioLlegada}</td>
+          </tr>
+          <tr>
+            <td class="receipt-label">Medio de Pago</td>
+            <td class="receipt-val">${booking.medioPago}</td>
+          </tr>
+          <tr>
+            <td class="receipt-label">Estado de Reserva</td>
+            <td class="receipt-val" style="color: #10b981;">● ${booking.estado}</td>
+          </tr>
+          <tr>
+            <td class="receipt-label">Monto Total Pagado</td>
+            <td class="receipt-val" style="color: #fbbf24; font-size: 1.1rem;">S/ ${booking.monto}.00</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 0.85rem 1rem; font-size: 0.8rem; color: #a7f3d0; margin-bottom: 1.5rem;">
+        🔒 Presenta tu código <code>${bookingCode}</code> o tu nombre en el acceso privado al estacionamiento o recepción.
+      </div>
+
+      <button id="btnFinishCheckout" class="btn-editorial-light" style="width: 100%; padding: 1rem; font-weight: bold; background: #fff; color: #000; cursor: pointer;">
+        FINALIZAR Y VOLVER
+      </button>
+    </div>
+  `;
+
+  const btnFinish = document.getElementById('btnFinishCheckout');
+  if (btnFinish) {
+    btnFinish.onclick = () => {
+      const modal = document.getElementById('checkoutModal');
+      if (modal) {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+    };
+  }
 }
 
 // Header Scroll Trigger
@@ -614,7 +1034,7 @@ function setupMobileNav() {
   });
 }
 
-// Form Handler
+// Form Handler en sección #reserva
 function setupFormHandler() {
   const form = document.getElementById('editorialForm');
   if (form) {
@@ -622,17 +1042,16 @@ function setupFormHandler() {
       e.preventDefault();
       const name = document.getElementById('edName').value;
       const phone = document.getElementById('edPhone').value;
-      const room = document.getElementById('edRoom').value;
+      const roomId = document.getElementById('edRoom').value;
       const duration = document.getElementById('edDuration').value;
-      const date = document.getElementById('edDate').value;
+      const arrivalTime = document.getElementById('edArrivalTime').value;
 
-      const message = `Hola Hotel Wimbledon, deseo solicitar una reserva:
-- Cliente: ${name} (${phone})
-- Suite: ${room}
-- Tiempo: ${duration}
-- Fecha: ${date}`;
-
-      window.open(`https://wa.me/51990370681?text=${encodeURIComponent(message)}`, '_blank');
+      openCheckoutModal(roomId, {
+        customerName: name,
+        customerPhone: phone,
+        duration: duration,
+        arrivalTime: arrivalTime
+      });
     });
   }
 }
