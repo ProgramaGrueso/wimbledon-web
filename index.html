@@ -5,16 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hotel Wimbledon — Experiencia Editorial & Discreción</title>
   <meta name="description" content="Hotel Wimbledon. Suites de lujo y estadía por horas en San Miguel, Lima. Discreción absoluta, jacuzzi, cámara seca y atención 24 horas frente al mar." />
-  
-  <!-- Editorial Typography: Fraunces (Serif H1/H2) & Plus Jakarta Sans (Clean Sans Body) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body class="editorial-body">
-  <!-- Minimal Editorial Navigation -->
   <header id="navbar" class="editorial-header">
     <div class="header-container">
       <a href="#hero" class="brand-logo" title="Hotel Wimbledon">
@@ -24,7 +20,6 @@
           <span class="brand-sub">HOTEL & SUITES</span>
         </div>
       </a>
-
       <nav class="nav-links" id="navLinks">
         <button id="navCloseBtn" class="nav-close-btn" aria-label="Cerrar menú">&times;</button>
         <a href="#concepto" class="nav-item">El Concepto</a>
@@ -34,14 +29,12 @@
         <a href="#reserva" class="nav-item">Reservas</a>
         <a href="admin.html" class="nav-item btn-editorial-badge" style="background: rgba(217, 119, 6, 0.2); border: 1px solid rgba(217, 119, 6, 0.4); color: #fbbf24; padding: 0.4rem 0.8rem; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: bold;">PANEL ADMIN</a>
       </nav>
-
       <div class="header-actions">
         <div class="header-contact">
           <button id="btnHeaderReserve" class="btn-editorial-text" style="background: none; border: none; cursor: pointer;">
             RESERVAR AHORA
           </button>
         </div>
-
         <button id="hamburgerBtn" class="hamburger-btn" aria-label="Abrir menú de navegación" aria-expanded="false">
           <span class="hamburger-line"></span>
           <span class="hamburger-line"></span>
@@ -51,35 +44,25 @@
     </div>
   </header>
   <div id="navBackdrop" class="nav-backdrop" aria-hidden="true"></div>
-
-  <!-- Main Container -->
   <main id="app">
-    <!-- Initial Loading State -->
     <div class="loader-container">
       <p class="loader-text">WIMBLEDON</p>
     </div>
   </main>
-
-  <!-- Room Detail Drawer / Overlay (Editorial Style) -->
   <div id="roomDrawer" class="drawer-overlay" aria-hidden="true">
     <div class="drawer-panel">
       <button class="drawer-close" id="drawerClose" aria-label="Cerrar">&times;</button>
       <div class="drawer-body" id="drawerBody">
-        <!-- Injected dynamically -->
       </div>
     </div>
   </div>
-
-  <!-- Digital Checkout Modal (Interactive 3-Step Flow) -->
   <div id="checkoutModal" class="checkout-modal-overlay" aria-hidden="true">
     <div class="checkout-modal-panel">
       <button class="checkout-modal-close" id="checkoutCloseBtn" aria-label="Cerrar Checkout">&times;</button>
       <div id="checkoutModalBody">
-        <!-- Injected dynamically by src/main.js -->
       </div>
     </div>
   </div>
-
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
