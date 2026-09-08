@@ -144,6 +144,90 @@ function renderEditorialApp() {
         </div>
       </div>
     </section>
+    <!-- SECCIÓN PROMOCIÓN EDITORIAL CON VIDEO EN TAMAÑO ORIGINAL (608x352) -->
+    <section id="promocion" class="section-editorial section-promo bg-black">
+      <div class="editorial-container">
+        <div class="promo-grid">
+          <!-- Columna Información de Promoción -->
+          <div class="promo-info-col reveal">
+            <span class="editorial-tag text-gold">PROMOCIÓN ESPECIAL</span>
+            <h2 class="editorial-headline text-white promo-title">
+              Momentos Inolvidables, <br/><span class="promo-title-sub">Tarifas Exclusivas</span>
+            </h2>
+            <p class="promo-editorial-desc text-light">
+              Aprovecha nuestras promociones y tarifas preferenciales de temporada en Hotel Wimbledon. Diseñadas para brindarte privacidad absoluta, confort superior y el mejor equipamiento en San Miguel, frente al mar.
+            </p>
+            <div class="promo-perks-list">
+              <div class="promo-perk-item">
+                <span class="promo-perk-bullet">✦</span>
+                <div>
+                  <h4 class="promo-perk-title">Estadías por Horas o Noche Completa</h4>
+                  <p class="promo-perk-desc">Flexibilidad total de 3 horas, 6 horas o pernocte con servicio privado 24/7.</p>
+                </div>
+              </div>
+              <div class="promo-perk-item">
+                <span class="promo-perk-bullet">✦</span>
+                <div>
+                  <h4 class="promo-perk-title">Suites Temáticas & Jacuzzi con Hidromasaje</h4>
+                  <p class="promo-perk-desc">Cámara seca, pole dance, cama giratoria y acabados de lujo para cada ocasión.</p>
+                </div>
+              </div>
+              <div class="promo-perk-item">
+                <span class="promo-perk-bullet">✦</span>
+                <div>
+                  <h4 class="promo-perk-title">Discreción y Cochera Privada</h4>
+                  <p class="promo-perk-desc">Ingreso directo a habitaciones seleccionadas con máxima reserva y discreción.</p>
+                </div>
+              </div>
+            </div>
+            <div class="promo-actions-row">
+              <a href="#reserva" class="btn-hero-primary">RESERVAR PROMOCIÓN</a>
+              <a href="#habitaciones" class="btn-hero-secondary">EXPLORAR SUITES</a>
+            </div>
+          </div>
+
+          <!-- Columna Video a Tamaño Original (608 x 352) -->
+          <div class="promo-video-col reveal">
+            <div class="promo-video-card">
+              <div class="promo-video-header">
+                <div class="promo-tag-pill">
+                  <span class="promo-pulse-dot"></span>
+                  <span>SPOT PROMOCIONAL</span>
+                </div>
+                <span class="promo-badge-tag">HOTEL WIMBLEDON</span>
+              </div>
+              <div class="promo-video-viewport">
+                <video 
+                  id="promoVideo" 
+                  class="promo-video-media" 
+                  width="608" 
+                  height="352" 
+                  controls 
+                  autoplay 
+                  muted 
+                  loop 
+                  playsinline 
+                  preload="metadata"
+                >
+                  <source src="/video/promo.mp4" type="video/mp4" />
+                  Tu navegador no soporta la reproducción de video.
+                </video>
+              </div>
+              <div class="promo-video-footer">
+                <div class="promo-video-meta">
+                  <span class="promo-video-title">Hotel & Suites Wimbledon</span>
+                  <span class="promo-video-sub">Av. Costanera 2098 • San Miguel, Lima</span>
+                </div>
+                <button id="promoAudioToggle" class="promo-audio-btn" type="button" aria-label="Activar o silenciar sonido">
+                  <span id="promoAudioIcon">🔇</span>
+                  <span id="promoAudioText">Activar Audio</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
     <!-- SECCIÓN HORIZONTAL SCROLL: NUESTRAS SUITES (GSAP PIN + PARALLAX INTERNO + SKEW) -->
     <div id="suitesHorizontalPinWrapper" class="suites-horizontal-wrapper">
       <section id="suitesHorizontalPinned" class="suites-horizontal-pinned">
@@ -341,6 +425,7 @@ function renderEditorialApp() {
         <!-- Navigation Links -->
         <nav class="footer-nav-editorial">
           <a href="#hero">INICIO</a>
+          <a href="#promocion">PROMOCIÓN</a>
           <a href="#habitaciones">HABITACIONES</a>
           <a href="#experiencia">SERVICIOS</a>
           <a href="#reserva">CONTACTANOS</a>
@@ -368,6 +453,7 @@ function renderEditorialApp() {
   renderSuitesList('all');
   renderGastronomiaList();
   setupFormHandler();
+  setupPromoVideo();
 }
 const EDITORIAL_ROOM_COPY = {
   860: { num: "I", resumen: "Un santuario concebido para el descanso más exclusivo. Equipada con jacuzzi de hidromasaje, cámara seca y detalles de arquitectura sutil diseñados para una privacidad absoluta frente al mar." },
@@ -927,5 +1013,30 @@ function setupFormHandler() {
       });
     });
   }
+}
+function setupPromoVideo() {
+  const video = document.getElementById('promoVideo');
+  const audioBtn = document.getElementById('promoAudioToggle');
+  const audioIcon = document.getElementById('promoAudioIcon');
+  const audioText = document.getElementById('promoAudioText');
+  if (!video || !audioBtn) return;
+
+  function updateAudioState() {
+    const isMuted = video.muted || video.volume === 0;
+    if (audioIcon) audioIcon.textContent = isMuted ? '🔇' : '🔊';
+    if (audioText) audioText.textContent = isMuted ? 'Activar Audio' : 'Silenciar Audio';
+    audioBtn.classList.toggle('active', !isMuted);
+  }
+
+  audioBtn.addEventListener('click', () => {
+    video.muted = !video.muted;
+    if (!video.muted && video.paused) {
+      video.play().catch(() => {});
+    }
+    updateAudioState();
+  });
+
+  video.addEventListener('volumechange', updateAudioState);
+  updateAudioState();
 }
 initApp();
