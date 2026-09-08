@@ -1,0 +1,18 @@
+# ── Backend: archivos sensibles ───────────────────────────────────────
+# Credenciales locales (NUNCA subir al repo)
+src/main/resources/application-local.properties
+
+# Compilación Maven
+target/
+*.class
+
+# IDE
+.idea/
+*.iml
+.settings/
+.classpath
+.project
+
+# Logs
+*.log
+logs/

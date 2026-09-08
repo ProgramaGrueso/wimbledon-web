@@ -1,0 +1,14 @@
+# Configuración local con credenciales reales — NO SUBIR AL REPO
+# Copia application.properties → application-local.properties y edita aquí
+
+spring.config.import=optional:application-local.properties
+
+# ── Base de datos local ───────────────────────────────────────────────
+# spring.datasource.password=mi_password_real
+
+# ── JWT ───────────────────────────────────────────────────────────────
+# wimbledon.jwt.secret=mi_clave_base64_real
+
+# ── SMTP ─────────────────────────────────────────────────────────────
+# spring.mail.username=mi_usuario_mailtrap
+# spring.mail.password=mi_clave_mailtrap

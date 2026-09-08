@@ -1,5 +1,38 @@
-# Logs
-logs
+# ==========================================
+# Dependencias y Build (Frontend / Node.js)
+# ==========================================
+node_modules/
+dist/
+dist-ssr/
+.vite/
+.vite-temp/
+
+# ==========================================
+# Backend (Java / Maven / Spring Boot)
+# ==========================================
+target/
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+
+# ==========================================
+# Credenciales, Secretos y Configuración Local
+# ==========================================
+*.local
+.env
+.env.local
+.env.*.local
+src/main/resources/application-local.properties
+**/application-local.properties
+
+# ==========================================
+# Logs y Diagnóstico
+# ==========================================
+logs/
+**/logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,18 +40,33 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# ==========================================
+# Editores e IDEs
+# ==========================================
+.idea/
+*.iml
+*.iws
+*.ipr
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+.settings/
+.classpath
+.project
+.factorypath
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*~
+
+# ==========================================
+# Archivos del Sistema Operativo
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
