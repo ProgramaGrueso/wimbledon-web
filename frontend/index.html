@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotel Wimbledon — Experiencia Editorial & Discreción</title>
+  <meta name="description" content="Hotel Wimbledon. Suites de lujo y estadía por horas en San Miguel, Lima. Discreción absoluta, jacuzzi, cámara seca y atención 24 horas frente al mar." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body class="editorial-body">
+  <header id="navbar" class="editorial-header">
+    <div class="header-container">
+      <a href="#hero" class="brand-logo" title="Hotel Wimbledon">
+        <img src="/images/logo.png" alt="Icono Hotel Wimbledon" class="official-brand-logo" />
+        <div class="brand-wordmark">
+          <span class="brand-name">WIMBLEDON</span>
+          <span class="brand-sub">HOTEL & SUITES</span>
+        </div>
+      </a>
+      <!-- ACCIONES DE CABECERA ELEGANTE Y LIMPIA -->
+      <div class="header-actions">
+        <button id="btnHeaderMyBooking" class="nav-key-badge" title="Consultar mi Pase Digital">
+          🔑 MI RESERVA
+        </button>
+        <button id="btnHeaderReserve" class="btn-editorial-text" style="background: linear-gradient(135deg, #d97706, #fbbf24); color: #060911; font-weight: 800; border: none; border-radius: 9999px; padding: 0.5rem 1.25rem; font-size: 0.8rem; cursor: pointer; letter-spacing: 1px;">
+          RESERVAR
+        </button>
+        <button id="btnSandwichToggle" class="sandwich-menu-btn" aria-label="Abrir Menú Principal">
+          <div class="sandwich-bars">
+            <span class="sandwich-bar"></span>
+            <span class="sandwich-bar"></span>
+            <span class="sandwich-bar"></span>
+          </div>
+          <span>MENÚ</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- LUXURY OVERLAY DRAWER (MENU SANDWICH DE ALTA GAMA) -->
+  <div id="luxuryNavDrawer" class="luxury-drawer-overlay" aria-hidden="true">
+    <div class="drawer-top-bar">
+      <div class="brand-logo">
+        <img src="/images/logo.png" alt="Hotel Wimbledon" class="official-brand-logo" />
+        <div class="brand-wordmark">
+          <span class="brand-name">WIMBLEDON</span>
+          <span class="brand-sub">HOTEL & SUITES</span>
+        </div>
+      </div>
+      <button id="luxuryDrawerClose" class="luxury-drawer-close-btn" aria-label="Cerrar Menú">✕ CERRAR</button>
+    </div>
+
+    <nav class="drawer-nav-list" id="luxuryDrawerNav">
+      <a href="#concepto" class="drawer-nav-link"><span class="drawer-nav-num">01</span> EL CONCEPTO</a>
+      <a href="#promocion" class="drawer-nav-link"><span class="drawer-nav-num">02</span> PROMOCIÓN EXCLUSIVA</a>
+      <a href="#habitaciones" class="drawer-nav-link"><span class="drawer-nav-num">03</span> COLECCIÓN DE SUITES</a>
+      <a href="#experiencia" class="drawer-nav-link"><span class="drawer-nav-num">04</span> SERVICIOS & EXPERIENCIA</a>
+      <a href="#gastronomia" class="drawer-nav-link"><span class="drawer-nav-num">05</span> CARTA GASTRONÓMICA</a>
+      <a href="#reserva" class="drawer-nav-link"><span class="drawer-nav-num">06</span> RESERVA INMEDIATA & MAPA</a>
+    </nav>
+
+    <div class="drawer-bottom-actions">
+      <div class="drawer-action-card" id="btnDrawerMyBooking">
+        <span style="font-size: 1.6rem;">🔑</span>
+        <div>
+          <strong style="color: #fbbf24; display: block; font-size: 0.95rem;">Mi Llave Digital / PIN de Acceso</strong>
+          <span style="font-size: 0.75rem; color: #94a3b8;">Consulta tu reserva, código QR o extiende tu tiempo de estadía</span>
+        </div>
+      </div>
+      <a href="admin.html" class="drawer-action-card" style="text-decoration: none;">
+        <span style="font-size: 1.6rem;">⚙️</span>
+        <div>
+          <strong style="color: #ffffff; display: block; font-size: 0.95rem;">Panel Administrativo Interno</strong>
+          <span style="font-size: 0.75rem; color: #94a3b8;">Acceso seguro para Recepción, Limpieza y Gerencia</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="drawer-footer-info">
+      <span>📍 Av. Costanera 2098, San Miguel (Lima, Perú)</span>
+      <span>🕒 Atención Discreta 24 Horas • Tel: 578-6000 • WhatsApp: +51 990 370 681</span>
+    </div>
+  </div>
+  <div id="navBackdrop" class="nav-backdrop" aria-hidden="true"></div>
+  <main id="app">
+    <div class="loader-container">
+      <p class="loader-text">WIMBLEDON</p>
+    </div>
+  </main>
+  <div id="roomDrawer" class="drawer-overlay" aria-hidden="true">
+    <div class="drawer-panel">
+      <button class="drawer-close" id="drawerClose" aria-label="Cerrar">&times;</button>
+      <div class="drawer-body" id="drawerBody">
+      </div>
+    </div>
+  </div>
+  <div id="checkoutModal" class="checkout-modal-overlay" aria-hidden="true">
+    <div class="checkout-modal-panel">
+      <button class="checkout-modal-close" id="checkoutCloseBtn" aria-label="Cerrar Checkout">&times;</button>
+      <div id="checkoutModalBody">
+      </div>
+    </div>
+  </div>
+  <!-- MODAL: MI LLAVE DIGITAL & CONSULTA / EXTENSIÓN DE ESTADÍA (HU.03, HU.04, HU.07) -->
+  <div id="myBookingModal" class="mybooking-modal-overlay" aria-hidden="true">
+    <div class="mybooking-modal-panel">
+      <button class="mybooking-close-btn" id="myBookingCloseBtn" aria-label="Cerrar">&times;</button>
+      <div id="myBookingModalBody">
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

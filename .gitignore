@@ -8,10 +8,10 @@ dist-ssr/
 .vite-temp/
 
 # ==========================================
-# Trabajo Local / Privado / Expo
+# Material de Exposición y Entregables
 # ==========================================
-expo/
-**/expo/
+exposicion/
+**/exposicion/
 
 # ==========================================
 # Backend (Java / Maven / Spring Boot)

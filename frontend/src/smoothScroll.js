@@ -140,27 +140,86 @@ export function initServicesHoverAnimation() {
     });
   });
 }
-export function initHorizontalSuitesScroll() {
-  const mm = gsap.matchMedia();
-  mm.add('(min-width: 768px)', () => {
-    const section = document.getElementById('suitesHorizontalPinWrapper');
-    const track = document.getElementById('suitesHorizontalTrack');
-    const cards = document.querySelectorAll('.suite-card-horizontal');
-    const imgs = document.querySelectorAll('.suite-card-img');
-    if (!section || !track || cards.length === 0) return;
-    const getScrollAmount = () => {
-      return -(track.scrollWidth - window.innerWidth + 120);
-    };
-    const tl = gsap.timeline({
+let horizontalSuitesTL = null;
+
+export function refreshHorizontalSuitesScroll() {
+  const section = document.getElementById('suitesHorizontalPinWrapper');
+  const pinnedEl = document.getElementById('suitesHorizontalPinned');
+  const track = document.getElementById('suitesHorizontalTrack');
+
+  // 1. Limpiar timeline y ScrollTriggers previos vinculados a suites
+  if (horizontalSuitesTL) {
+    if (horizontalSuitesTL.scrollTrigger) {
+      horizontalSuitesTL.scrollTrigger.kill(true);
+    }
+    horizontalSuitesTL.kill();
+    horizontalSuitesTL = null;
+  }
+
+  ScrollTrigger.getAll().forEach(st => {
+    if (st.trigger === section || st.pin === pinnedEl) {
+      st.kill(true);
+    }
+  });
+
+  if (!section || !pinnedEl || !track) {
+    ScrollTrigger.refresh();
+    return;
+  }
+
+  // 2. Limpiar estilos y transformaciones aplicadas previamente por GSAP
+  const cards = track.querySelectorAll('.suite-card-horizontal');
+  const imgs = track.querySelectorAll('.suite-card-img');
+  gsap.set([track, cards, imgs, pinnedEl, section], { clearProps: 'all' });
+
+  // Si la sección está oculta (modo grid activo) o no hay tarjetas, no creamos pin
+  if (section.style.display === 'none' || section.offsetParent === null || cards.length === 0) {
+    ScrollTrigger.refresh();
+    return;
+  }
+
+  const isDesktop = window.innerWidth >= 768;
+  const viewportWidth = window.innerWidth;
+
+  // Medir ancho total requerido por las tarjetas en fila
+  let totalCardsWidth = 0;
+  cards.forEach(c => {
+    totalCardsWidth += c.offsetWidth || 440;
+  });
+  const gap = 40; // 2.5rem
+  const totalTrackWidth = totalCardsWidth + (Math.max(0, cards.length - 1) * gap) + 160;
+  const overflow = totalTrackWidth - viewportWidth;
+
+  // 3. Si hay desborde horizontal real en desktop, habilitamos el pin sincronizado al overflow
+  if (isDesktop && overflow > 80) {
+    pinnedEl.style.height = '100vh';
+    pinnedEl.style.display = 'flex';
+    pinnedEl.style.flexDirection = 'column';
+    pinnedEl.style.justifyContent = 'center';
+    pinnedEl.style.alignItems = 'flex-start';
+    pinnedEl.style.padding = '3rem 0';
+    pinnedEl.style.overflow = 'hidden';
+
+    track.style.display = 'flex';
+    track.style.flexWrap = 'nowrap';
+    track.style.justifyContent = 'flex-start';
+    track.style.gap = '2.5rem';
+    track.style.padding = '0 4rem';
+    track.style.width = 'max-content';
+
+    const scrollDistance = Math.round(overflow * 1.05);
+
+    horizontalSuitesTL = gsap.timeline({
       scrollTrigger: {
         trigger: section,
         start: 'top top',
-        end: () => `+=${track.scrollWidth}`,
-        pin: '#suitesHorizontalPinned',
-        scrub: 1.2,
+        end: () => `+=${scrollDistance}`, // Fin exacto al terminar las tarjetas, NUNCA espacio vacío
+        pin: pinnedEl,
+        scrub: 1.0,
         invalidateOnRefresh: true,
+        anticipatePin: 1,
         onUpdate: (self) => {
-          const skew = gsap.utils.clamp(-6, 6, self.getVelocity() / -250);
+          const skew = gsap.utils.clamp(-5, 5, self.getVelocity() / -300);
           gsap.to(cards, {
             skewX: skew,
             duration: 0.25,
@@ -170,26 +229,54 @@ export function initHorizontalSuitesScroll() {
         },
       },
     });
-    tl.to(track, {
-      x: getScrollAmount,
+
+    horizontalSuitesTL.to(track, {
+      x: -overflow,
       ease: 'none',
     });
+
     imgs.forEach((img) => {
-      tl.fromTo(
+      horizontalSuitesTL.fromTo(
         img,
-        { xPercent: 15 },
-        {
-          xPercent: -15,
-          ease: 'none',
-        },
+        { xPercent: 12 },
+        { xPercent: -12, ease: 'none' },
         0
       );
     });
-    return () => {
-      gsap.set([track, cards, imgs], { clearProps: 'all' });
-    };
+  } else {
+    // 4. Si las tarjetas caben en pantalla (ej: Vista al Mar, Presidenciales con pocas suites):
+    // ¡NO SE FIJA (NO PIN)! Las tarjetas se muestran centradas estáticamente y el usuario
+    // continúa escroleando suavemente hacia la siguiente sección sin quedar atrapado en el vacío.
+    pinnedEl.style.height = 'auto';
+    pinnedEl.style.minHeight = '65vh';
+    pinnedEl.style.display = 'flex';
+    pinnedEl.style.flexDirection = 'column';
+    pinnedEl.style.justifyContent = 'center';
+    pinnedEl.style.alignItems = 'center';
+    pinnedEl.style.padding = '3.5rem 1.5rem';
+    pinnedEl.style.overflow = 'visible';
+
+    track.style.display = 'flex';
+    track.style.flexWrap = 'wrap';
+    track.style.justifyContent = 'center';
+    track.style.alignItems = 'center';
+    track.style.gap = '2rem';
+    track.style.width = '100%';
+    track.style.maxWidth = '1440px';
+    track.style.margin = '0 auto';
+    track.style.padding = '0';
+    track.style.transform = 'none';
+  }
+
+  ScrollTrigger.refresh();
+}
+
+export function initHorizontalSuitesScroll() {
+  window.addEventListener('resize', () => {
+    refreshHorizontalSuitesScroll();
   });
-  return mm;
+  refreshHorizontalSuitesScroll();
+  return { refresh: refreshHorizontalSuitesScroll };
 }
 export function initMagneticButton(targetSelector = '#btnHeaderReserve') {
   const elements = typeof targetSelector === 'string' ? document.querySelectorAll(targetSelector) : [targetSelector];

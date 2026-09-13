@@ -7,7 +7,7 @@ package com.wimbledon.backend.domain.enums;
  * Jerarquía de permisos (mayor → menor):
  *   SUPER_ADMIN > ADMINISTRADOR > RECEPCIONISTA > LIMPIEZA > CLIENTE
  *
- * Ver matriz completa en arquitectura/01-RBAC-Hotel-Wimbledon.md
+ * Ver matriz completa en exposicion/avanze1/arquitectura/01-RBAC-Hotel-Wimbledon.md
  */
 public enum Rol {
     /** DevOps / TI — acceso total incluyendo configuración de infraestructura */
