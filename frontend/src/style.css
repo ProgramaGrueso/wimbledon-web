@@ -2293,12 +2293,24 @@ button {
   color: #fbbf24;
 }
 
+/* Control de Visibilidad de Vistas de Catálogo */
+.view-mode-hidden {
+  display: none !important;
+}
+
 /* Suites Grid View */
 .suites-grid-layout {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
   gap: 2rem;
   margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .suites-grid-layout {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
 }
 
 .suite-grid-card {

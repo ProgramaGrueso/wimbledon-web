@@ -167,13 +167,29 @@ export function refreshHorizontalSuitesScroll() {
     return;
   }
 
-  // 2. Limpiar estilos y transformaciones aplicadas previamente por GSAP
   const cards = track.querySelectorAll('.suite-card-horizontal');
   const imgs = track.querySelectorAll('.suite-card-img');
-  gsap.set([track, cards, imgs, pinnedEl, section], { clearProps: 'all' });
 
-  // Si la sección está oculta (modo grid activo) o no hay tarjetas, no creamos pin
-  if (section.style.display === 'none' || section.offsetParent === null || cards.length === 0) {
+  // 2. Verificar si la sección cinemática está oculta (Modo Grid activo)
+  const isHidden = section.classList.contains('view-mode-hidden') ||
+                   section.style.display === 'none' ||
+                   (section.offsetParent === null && window.getComputedStyle(section).position !== 'fixed');
+
+  if (isHidden) {
+    // Si la sección cinemática está oculta, eliminamos cualquier residual y salimos
+    gsap.set([track, cards, imgs, pinnedEl], { clearProps: 'all' });
+    pinnedEl.style.height = 'auto';
+    pinnedEl.style.minHeight = '0';
+    pinnedEl.style.overflow = 'visible';
+    track.style.transform = 'none';
+    ScrollTrigger.refresh();
+    return;
+  }
+
+  // 3. Limpiar estilos y transformaciones en elementos hijos de la pista (NUNCA en section)
+  gsap.set([track, cards, imgs, pinnedEl], { clearProps: 'all' });
+
+  if (cards.length === 0) {
     ScrollTrigger.refresh();
     return;
   }

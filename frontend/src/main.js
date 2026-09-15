@@ -148,6 +148,7 @@ async function initApp() {
     setupIntersectionObserver();
     setupHeaderScroll();
     setupMobileNav();
+    setupDrawerModalStaticListeners();
     setupCheckoutModalListeners();
     setupMyBookingListeners();
     setupCatalogControls();
@@ -324,10 +325,10 @@ function renderEditorialApp() {
           </div>
           <div class="amenity-filters-row" id="amenityFiltersRow">
             <button class="amenity-chip-btn active" data-filter="all">Todas (16)</button>
-            <button class="amenity-chip-btn" data-filter="presidencial">Presidenciales</button>
-            <button class="amenity-chip-btn" data-filter="jacuzzi">Jacuzzi Privado</button>
-            <button class="amenity-chip-btn" data-filter="camara-seca">Cámara Seca</button>
-            <button class="amenity-chip-btn" data-filter="vista-mar">Vista al Mar</button>
+            <button class="amenity-chip-btn" data-filter="presidencial">Presidenciales (4)</button>
+            <button class="amenity-chip-btn" data-filter="jacuzzi">Jacuzzi Privado (13)</button>
+            <button class="amenity-chip-btn" data-filter="camara-seca">Cámara Seca (3)</button>
+            <button class="amenity-chip-btn" data-filter="vista-mar">Vista al Mar (6)</button>
           </div>
         </div>
       </div>
@@ -342,7 +343,7 @@ function renderEditorialApp() {
       </div>
 
       <!-- SECCIÓN GRID VIEW ALTERNATIVO CON AMBIENT GLOW Y DETALLES -->
-      <div id="suitesGridSection" class="editorial-container" style="display: none; padding-bottom: 5rem; margin-top: 2rem;">
+      <div id="suitesGridSection" class="editorial-container view-mode-hidden" style="display: none; padding-bottom: 5rem; margin-top: 2rem;">
         <div id="suitesGridView" class="suites-grid-layout">
           <!-- Inyectado dinámicamente -->
         </div>
@@ -602,76 +603,83 @@ function renderSuitesList(filterCategory = 'all') {
 
   // 1. Render Track Cinemático Horizontal
   if (trackContainer) {
-    trackContainer.innerHTML = filtered.map((room, index) => {
-      const amenities = parseAmenitiesText(room.descripcion);
-      const categoryName = room.categoria_nombre || 'Suite de Lujo';
-      const priceDisplay = room.precio ? `${room.precio}` : 'S/ 150';
-      return `
-        <div class="suite-card-horizontal" data-id="${room.id}">
-          <div class="suite-card-img-wrapper">
-            <img src="${room.imagen_url || 'https://wimbledon-hotel.com/wp-content/uploads/2022/12/suite-presidencial-1.jpg'}" alt="${room.nombre}" class="suite-card-img" loading="lazy" />
-            <span class="suite-card-price-badge">${priceDisplay}</span>
-          </div>
-          <div class="suite-card-info">
-            <div class="suite-card-meta-row">
-              <span class="suite-card-num">${String(index + 1).padStart(2, '0')}</span>
-              <span class="suite-card-category">— ${categoryName}</span>
+    if (filtered.length === 0) {
+      trackContainer.innerHTML = `<div style="padding: 3rem; text-align: center; color: #94a3b8; width: 100%;">No hay suites disponibles con este filtro.</div>`;
+    } else {
+      trackContainer.innerHTML = filtered.map((room, index) => {
+        const amenities = parseAmenitiesText(room.descripcion);
+        const categoryName = room.categoria_nombre || 'Suite de Lujo';
+        const priceDisplay = room.precio ? `${room.precio}` : 'S/ 150';
+        return `
+          <div class="suite-card-horizontal" data-id="${room.id}">
+            <div class="suite-card-img-wrapper js-open-drawer" data-id="${room.id}" style="cursor: pointer;" title="Ver Ficha Técnica">
+              <img src="${room.imagen_url || 'https://wimbledon-hotel.com/wp-content/uploads/2022/12/suite-presidencial-1.jpg'}" alt="${room.nombre}" class="suite-card-img" loading="lazy" />
+              <span class="suite-card-price-badge">${priceDisplay}</span>
             </div>
-            <h3 class="suite-card-title">${room.nombre}</h3>
-            <div class="suite-card-badges">
-              ${amenities.slice(0, 3).map(a => `<span class="suite-badge">— ${a}</span>`).join('')}
+            <div class="suite-card-info">
+              <div class="suite-card-meta-row">
+                <span class="suite-card-num">${String(index + 1).padStart(2, '0')}</span>
+                <span class="suite-card-category">— ${categoryName}</span>
+              </div>
+              <h3 class="suite-card-title">${room.nombre}</h3>
+              <div class="suite-card-badges">
+                ${amenities.slice(0, 3).map(a => `<span class="suite-badge">— ${a}</span>`).join('')}
+              </div>
+              <button class="btn-suite-card-reserve js-open-drawer" data-id="${room.id}">
+                VER DETALLES & RESERVAR →
+              </button>
             </div>
-            <button class="btn-suite-card-reserve js-open-drawer" data-id="${room.id}">
-              VER DETALLES & RESERVAR →
-            </button>
           </div>
-        </div>
-      `;
-    }).join('');
+        `;
+      }).join('');
+    }
   }
 
   // 2. Render Grid View Responsivo Alternativo
   if (gridContainer) {
-    gridContainer.innerHTML = filtered.map((room, index) => {
-      const amenities = parseAmenitiesText(room.descripcion);
-      const categoryName = room.categoria_nombre || 'Suite de Lujo';
-      const priceDisplay = room.precio ? `${room.precio}` : 'S/ 150';
-      return `
-        <div class="suite-grid-card" data-id="${room.id}">
-          <div class="suite-grid-img-wrap">
-            <img src="${room.imagen_url || 'https://wimbledon-hotel.com/wp-content/uploads/2022/12/suite-presidencial-1.jpg'}" alt="${room.nombre}" class="suite-grid-img" loading="lazy" />
-            <span class="suite-grid-badge">${categoryName}</span>
-            <span class="suite-grid-avail">
-              <span class="avail-dot"></span>
-              <span>Disponible Inmediato</span>
-            </span>
+    if (filtered.length === 0) {
+      gridContainer.innerHTML = `<div style="padding: 3rem; text-align: center; color: #94a3b8; grid-column: 1 / -1;">No hay suites disponibles con este filtro.</div>`;
+    } else {
+      gridContainer.innerHTML = filtered.map((room) => {
+        const amenities = parseAmenitiesText(room.descripcion);
+        const categoryName = room.categoria_nombre || 'Suite de Lujo';
+        const priceDisplay = room.precio ? `${room.precio}` : 'S/ 150';
+        const copyText = EDITORIAL_ROOM_COPY[room.id]?.resumen || room.resumen || room.descripcion || 'Confort de lujo y privacidad total.';
+        return `
+          <div class="suite-grid-card" data-id="${room.id}">
+            <div class="suite-grid-img-wrap js-open-drawer" data-id="${room.id}" style="cursor: pointer;" title="Ver Ficha Técnica">
+              <img src="${room.imagen_url || 'https://wimbledon-hotel.com/wp-content/uploads/2022/12/suite-presidencial-1.jpg'}" alt="${room.nombre}" class="suite-grid-img" loading="lazy" />
+              <span class="suite-grid-badge">${categoryName}</span>
+              <span class="suite-grid-avail">
+                <span class="avail-dot"></span>
+                <span>Disponible Inmediato</span>
+              </span>
+            </div>
+            <div class="suite-grid-body">
+              <div class="suite-grid-header">
+                <h3 class="suite-grid-title">${room.nombre}</h3>
+                <span class="suite-grid-price">${priceDisplay}</span>
+              </div>
+              <p class="suite-grid-desc">${copyText}</p>
+              <div class="suite-grid-amenities">
+                ${amenities.slice(0, 3).map(a => `<span class="suite-amenity-tag">✦ ${a}</span>`).join('')}
+              </div>
+              <div class="suite-grid-actions">
+                <button class="btn-grid-details js-open-drawer" data-id="${room.id}">Ficha Técnica</button>
+                <button class="btn-grid-book js-direct-checkout" data-id="${room.id}">RESERVAR AHORA</button>
+              </div>
+            </div>
           </div>
-          <div class="suite-grid-body">
-            <div class="suite-grid-header">
-              <h3 class="suite-grid-title">${room.nombre}</h3>
-              <span class="suite-grid-price">${priceDisplay}</span>
-            </div>
-            <p class="suite-grid-desc">${room.resumen || room.descripcion || 'Confort de lujo y privacidad total.'}</p>
-            <div class="suite-grid-amenities">
-              ${amenities.slice(0, 3).map(a => `<span class="suite-amenity-tag">✦ ${a}</span>`).join('')}
-            </div>
-            <div class="suite-grid-actions">
-              <button class="btn-grid-details js-open-drawer" data-id="${room.id}">Ficha Técnica</button>
-              <button class="btn-grid-book js-direct-checkout" data-id="${room.id}">RESERVAR AHORA</button>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
+        `;
+      }).join('');
+    }
   }
 
   setupDrawerListeners();
   setupDirectCheckoutListeners();
 
-  // Recalcular dimensiones y ScrollTrigger de suites cinemáticas para eliminar espacios en blanco
-  requestAnimationFrame(() => {
-    refreshHorizontalSuitesScroll();
-  });
+  // Asegurar que solo la vista activa esté visible sin duplicados
+  applyCatalogViewMode(catalogViewMode);
 }
 
 function renderGastronomiaList(categoryKey = 'gourmet') {
@@ -752,19 +760,21 @@ function openDrawer(roomId) {
   }
 }
 function setupDrawerListeners() {
-  const openBtns = document.querySelectorAll('.js-open-drawer');
-  openBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      openDrawer(btn.getAttribute('data-id'));
-    });
+  document.querySelectorAll('.js-open-drawer').forEach(btn => {
+    btn.onclick = (e) => {
+      const id = e.currentTarget.getAttribute('data-id');
+      if (id) openDrawer(id);
+    };
   });
-  const reserveNowBtns = document.querySelectorAll('.js-reserve-now');
-  reserveNowBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-id');
-      openCheckoutModal(id);
-    });
+  document.querySelectorAll('.js-reserve-now').forEach(btn => {
+    btn.onclick = (e) => {
+      const id = e.currentTarget.getAttribute('data-id');
+      if (id) openCheckoutModal(id);
+    };
   });
+}
+
+function setupDrawerModalStaticListeners() {
   const drawerClose = document.getElementById('drawerClose');
   const drawer = document.getElementById('roomDrawer');
   if (drawerClose && drawer) {
@@ -779,14 +789,6 @@ function setupDrawerListeners() {
       }
     };
   }
-  const filterBtns = document.querySelectorAll('.editorial-filter-btn');
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      filterBtns.forEach(b => b.classList.remove('active'));
-      e.target.classList.add('active');
-      renderSuitesList(e.target.getAttribute('data-filter'));
-    });
-  });
 }
 function setupCheckoutModalListeners() {
   const headerBtn = document.getElementById('btnHeaderReserve');
@@ -815,8 +817,8 @@ function setupCheckoutModalListeners() {
 function setupDirectCheckoutListeners() {
   document.querySelectorAll('.js-direct-checkout').forEach(btn => {
     btn.onclick = (e) => {
-      const id = e.target.getAttribute('data-id');
-      openCheckoutModal(id);
+      const id = e.currentTarget.getAttribute('data-id');
+      if (id) openCheckoutModal(id);
     };
   });
 }
@@ -1440,34 +1442,49 @@ function setupBookingManageActions(booking) {
   }
 }
 
-function setupCatalogControls() {
+function applyCatalogViewMode(mode) {
+  catalogViewMode = mode;
   const btnCinematic = document.getElementById('btnViewCinematic');
   const btnGrid = document.getElementById('btnViewGrid');
   const trackWrapper = document.getElementById('suitesHorizontalPinWrapper');
   const gridSection = document.getElementById('suitesGridSection');
 
   if (btnCinematic && btnGrid && trackWrapper && gridSection) {
-    btnCinematic.onclick = () => {
-      catalogViewMode = 'cinematic';
+    if (mode === 'cinematic') {
       btnCinematic.classList.add('active');
       btnGrid.classList.remove('active');
+      trackWrapper.classList.remove('view-mode-hidden');
       trackWrapper.style.display = 'block';
+      gridSection.classList.add('view-mode-hidden');
       gridSection.style.display = 'none';
       requestAnimationFrame(() => {
         refreshHorizontalSuitesScroll();
       });
-    };
-
-    btnGrid.onclick = () => {
-      catalogViewMode = 'grid';
+    } else {
       btnGrid.classList.add('active');
       btnCinematic.classList.remove('active');
+      trackWrapper.classList.add('view-mode-hidden');
       trackWrapper.style.display = 'none';
+      gridSection.classList.remove('view-mode-hidden');
       gridSection.style.display = 'block';
       requestAnimationFrame(() => {
         refreshHorizontalSuitesScroll();
       });
-      renderSuitesList(currentAmenityFilter);
+    }
+  }
+}
+
+function setupCatalogControls() {
+  const btnCinematic = document.getElementById('btnViewCinematic');
+  const btnGrid = document.getElementById('btnViewGrid');
+
+  if (btnCinematic && btnGrid) {
+    btnCinematic.onclick = () => {
+      applyCatalogViewMode('cinematic');
+    };
+
+    btnGrid.onclick = () => {
+      applyCatalogViewMode('grid');
     };
   }
 
