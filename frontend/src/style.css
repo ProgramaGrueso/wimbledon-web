@@ -1008,13 +1008,15 @@ button {
   width: 100%;
   max-width: 650px;
   height: 100%;
-  background: var(--color-white);
-  color: var(--color-black);
+  background: #0b0f19;
+  color: #f1f5f9;
+  border-left: 1px solid rgba(217, 119, 6, 0.3);
   overflow-y: auto;
   padding: 4rem 3rem;
   position: relative;
   transform: translateX(100%);
   transition: transform 0.5s var(--easing-editorial);
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.7);
 }
 .drawer-spec-layout {
   font-family: var(--font-sans);
@@ -1024,20 +1026,20 @@ button {
   font-family: var(--font-serif);
   font-size: clamp(2.2rem, 4vw, 2.85rem);
   font-weight: 400;
-  color: #d00a1e;
+  color: #fffdf7;
   line-height: 1.15;
   margin-bottom: 1rem;
 }
 .drawer-spec-price {
   font-family: var(--font-serif);
   font-size: 2.15rem;
-  color: #1e2928;
+  color: #fbbf24;
   font-weight: 300;
   margin-bottom: 1.5rem;
 }
 .drawer-spec-intro {
   font-size: 0.95rem;
-  color: #666666;
+  color: #94a3b8;
   line-height: 1.65;
   margin-bottom: 1.75rem;
 }
@@ -1046,15 +1048,16 @@ button {
   aspect-ratio: 16 / 10;
   object-fit: cover;
   margin-bottom: 2rem;
-  border-radius: 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 .drawer-spec-heading {
-  color: #d00a1e;
+  color: #fbbf24;
   font-size: 0.95rem;
   font-weight: 700;
   margin-bottom: 1.25rem;
-  text-transform: none;
-  letter-spacing: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 .drawer-spec-bullets {
   list-style-type: disc;
@@ -1062,19 +1065,19 @@ button {
   margin-bottom: 2rem;
 }
 .drawer-spec-bullets li {
-  color: #555555;
+  color: #cbd5e1;
   font-size: 0.95rem;
   margin-bottom: 0.65rem;
   line-height: 1.5;
 }
 .drawer-spec-duration {
-  color: #666666;
+  color: #94a3b8;
   font-size: 0.9rem;
   margin-bottom: 1.25rem;
 }
 .drawer-spec-tax {
-  font-weight: 700;
-  color: #111111;
+  font-weight: 600;
+  color: #e2e8f0;
   font-size: 0.85rem;
   line-height: 1.5;
 }
@@ -1087,7 +1090,15 @@ button {
   right: 2rem;
   font-size: 2.5rem;
   font-weight: 300;
-  color: var(--color-black);
+  color: #94a3b8;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+.drawer-close:hover {
+  color: #fbbf24;
 }
 .loader-container {
   min-height: 80vh;
@@ -1554,7 +1565,7 @@ button {
 }
 .summary-total-label {
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: #cbd5e1;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 600;
@@ -3501,6 +3512,176 @@ button {
   display: inline-block;
   margin-right: 0.5rem;
 }
+
+/* ==========================================================================
+   GERENCIA DASHBOARD: GRÁFICO CON EJE Y Y BASE SIN DESFASE (SOLUCIÓN #12 - v4)
+   ========================================================================== */
+.gerente-chart {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  grid-template-rows: 240px auto; /* área de barras | fila de etiquetas eje X */
+  position: relative;
+  margin-top: 1.5rem;
+}
+
+.bar-chart-yaxis {
+  grid-column: 1;
+  grid-row: 1; /* misma fila que .bar-chart-bars, sin padding extra */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-right: 8px;
+  font-size: 0.72rem;
+  font-family: monospace;
+  color: #94a3b8;
+  text-align: right;
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.bar-chart-bars {
+  grid-column: 2;
+  grid-row: 1; /* misma altura exacta que .bar-chart-yaxis: 240px, sin padding */
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(25% - 1px),
+    rgba(255, 255, 255, 0.08) calc(25% - 1px),
+    rgba(255, 255, 255, 0.08) 25%
+  );
+  padding: 0 12px;
+}
+
+.chart-x-labels {
+  grid-column: 2;
+  grid-row: 2; /* fuera del área de 240px, ya no compite por espacio con el 0% */
+  display: flex;
+  justify-content: space-between;
+  padding-top: 8px;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/* ==========================================================================
+   CHECKOUT: ÍNDICE HONESTO DE SECCIONES (SOLUCIÓN #6)
+   ========================================================================== */
+.checkout-sections-index {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+  padding: 0.6rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+.checkout-sections-index span {
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.checkout-sections-index .step-sep {
+  opacity: 0.35;
+  color: #fbbf24;
+}
+
+/* ==========================================================================
+   ACCESIBILIDAD WCAG 2.1: FOCO DE TECLADO VISIBLE (SOLUCIÓN #14)
+   ========================================================================== */
+.chip-option:focus-visible,
+.amenity-chip-btn:focus-visible,
+.payment-card:focus-visible,
+.extra-option-card:focus-visible,
+.room-switcher:focus-visible,
+.btn-editorial-light:focus-visible,
+.btn-editorial-outline:focus-visible,
+.js-order-gastro:focus-visible,
+.btn-suite-card-reserve:focus-visible {
+  outline: 2px solid #fbbf24 !important;
+  outline-offset: 2px !important;
+}
+
+/* ==========================================================================
+   KEYCARD DIGITAL: ESTILOS DE IMPRESIÓN LIMPIA (SOLUCIÓN #3)
+   ========================================================================== */
+@media print {
+  #navbar,
+  footer,
+  video,
+  .checkout-modal-overlay::before,
+  #app > *:not(.checkout-modal-overlay),
+  .keycard-actions-row,
+  .btn-modal-close,
+  #checkoutCloseBtn,
+  .drawer-overlay {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #0b0f19 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .checkout-modal-overlay {
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .checkout-modal-container {
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+  }
+
+  .wimbledon-keycard {
+    position: static !important;
+    margin: 2rem auto !important;
+    width: 100% !important;
+    max-width: 480px !important;
+    background: #ffffff !important;
+    color: #0b0f19 !important;
+    border: 2px solid #0b0f19 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .wimbledon-keycard img,
+  .wimbledon-keycard svg {
+    filter: none !important;
+  }
+
+  .keycard-suite-title,
+  .keycard-brand-text {
+    color: #0b0f19 !important;
+  }
+
+  .keycard-pin-box {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+
+  .keycard-pin-code {
+    color: #0b0f19 !important;
+  }
+}
+
 
 
 

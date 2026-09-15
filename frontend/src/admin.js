@@ -658,9 +658,42 @@ const gerenteAnalyticsData = {
   }
 };
 
+function computeRealGerenteKPIs() {
+  let bookings = [];
+  try {
+    bookings = JSON.parse(localStorage.getItem('wimbledon_bookings') || '[]');
+  } catch (e) {}
+
+  const now = new Date();
+  const todayPrefix = now.toISOString().slice(0, 10);
+  const activeBookings = bookings.filter(b => b.estado !== 'CANCELADA');
+  const todayBookings = activeBookings.filter(b => {
+    if (!b.fechaReserva) return true;
+    return b.fechaReserva.startsWith(todayPrefix);
+  });
+
+  const todayRevenue = todayBookings.reduce((sum, b) => sum + (Number(b.monto) || 0), 0);
+  return {
+    totalActive: activeBookings.length,
+    todayCount: todayBookings.length,
+    todayRevenue
+  };
+}
+
 function renderGerenteWorkspace() {
-  const data = gerenteAnalyticsData[currentGerentePeriod];
+  const realKPIs = computeRealGerenteKPIs();
+  const data = JSON.parse(JSON.stringify(gerenteAnalyticsData[currentGerentePeriod]));
   const { kpis, bars, breakdown, ranking } = data;
+
+  // Integrar reservas reales en tiempo real al período de Hoy (Día)
+  if (currentGerentePeriod === 'dia') {
+    const baseRevenue = 4820;
+    const totalTodayRev = baseRevenue + realKPIs.todayRevenue;
+    kpis.ingresos.val = `S/ ${totalTodayRev.toLocaleString('es-PE')}`;
+    if (realKPIs.todayCount > 0) {
+      kpis.ingresos.sub = `S/ ${baseRevenue} base + S/ ${realKPIs.todayRevenue} (${realKPIs.todayCount} res. en vivo)`;
+    }
+  }
 
   const renderGauge = (num, color) => {
     const strokeDash = Math.min(100, Math.max(0, num));
@@ -775,17 +808,30 @@ function renderGerenteWorkspace() {
             </span>
           </div>
 
-          <!-- Cuadrícula visual de barras verticales -->
-          <div class="bar-chart-visual">
-            ${bars.map(b => `
-              <div class="bar-col-item">
-                <span class="bar-val-badge" style="color: ${b.highlight ? '#fbbf24' : '#94a3b8'};">${b.val}</span>
-                <div class="bar-fill-track">
-                  <div class="bar-fill" style="height: ${b.heightPct}%; background: ${b.color};" title="${b.label}: ${b.val}"></div>
+          <!-- Cuadrícula visual de barras verticales con escala en eje Y (Solución #12 - v4) -->
+          <div class="gerente-chart">
+            <div class="bar-chart-yaxis" aria-hidden="true">
+              <span>100%</span>
+              <span>75%</span>
+              <span>50%</span>
+              <span>25%</span>
+              <span>0%</span>
+            </div>
+            <div class="bar-chart-bars">
+              ${bars.map(b => `
+                <div class="bar-col-item" style="flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative;">
+                  <span class="bar-val-badge" style="position: absolute; top: -24px; font-size: 0.65rem; font-family: monospace; font-weight: 800; color: ${b.highlight ? '#fbbf24' : '#94a3b8'};">${b.val}</span>
+                  <div class="bar-fill-track" style="width: 100%; max-width: 38px; height: 100%; background: rgba(255, 255, 255, 0.04); border-radius: 8px 8px 0 0; display: flex; align-items: flex-end; overflow: hidden;">
+                    <div class="bar-fill" style="width: 100%; height: ${b.heightPct}%; background: ${b.color}; border-radius: 8px 8px 0 0; transition: height 0.8s ease;" title="${b.label}: ${b.val}"></div>
+                  </div>
                 </div>
-                <span class="bar-label" style="font-weight: ${b.highlight ? '700' : '400'}; color: ${b.highlight ? '#fff' : '#94a3b8'};">${b.label}</span>
-              </div>
-            `).join('')}
+              `).join('')}
+            </div>
+            <div class="chart-x-labels">
+              ${bars.map(b => `
+                <span style="flex: 1; text-align: center; font-size: 0.72rem; color: ${b.highlight ? '#fff' : '#94a3b8'}; font-weight: ${b.highlight ? '700' : '400'};">${b.label}</span>
+              `).join('')}
+            </div>
           </div>
 
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; font-size: 0.75rem; color: #64748b;">
@@ -934,3 +980,13 @@ function setupGerenteEvents() {
 
 renderAdminApp();
 
+// Sincronización reactiva en tiempo real con reservas creadas en el portal público (Solución #11)
+window.addEventListener('storage', (e) => {
+  if (e.key === 'wimbledon_bookings') {
+    if (currentStaffSession) renderAdminApp();
+  }
+});
+
+window.addEventListener('wimbledon:booking-created', () => {
+  if (currentStaffSession) renderAdminApp();
+});
