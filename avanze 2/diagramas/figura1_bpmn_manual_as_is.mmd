@@ -1,0 +1,59 @@
+flowchart TD
+    subgraph Huesped["👤 Huésped / Pareja"]
+        H1([Llegada física al hotel]) --> H2[Acercarse a ventanilla de recepción]
+        H2 --> H3[Consultar habitaciones y tarifas disponibles]
+        H3 --> H4[Elegir tipo de habitación tras explicación]
+        H4 --> H5[Presentar documento de identidad]
+        H5 --> H6[Realizar pago en efectivo o POS físico]
+        H6 --> H7[Recibir llave física y boleta manual]
+        H7 --> H8[Ingresar a la habitación]
+        H8 --> H9[Cumplir estadía 6-7 horas]
+        H9 --> H10[Desocupar habitación y acudir a recepción]
+        H10 --> H11([Salida del establecimiento])
+    end
+
+    subgraph Recepcion["🛎️ Recepcionista (Front-Desk)"]
+        R1[Atender al cliente en mostrador]
+        R2[Revisar rack físico / cuaderno de notas]
+        R3[Explicar verbalmente catálogo y tarifas]
+        R4[Registrar manualmente datos en cuaderno o planilla]
+        R5[Cobrar y emitir boleta manual]
+        R6[Entregar llave física y marcar habitación ocupada]
+        R7[Llamar por citófono a limpieza para avisar ingreso]
+        R8[Monitorear tiempo en reloj de pared]
+        R9[Llamar por teléfono interno para avisar fin de bloque]
+        R10[Solicitar inspección de piso y frigobar]
+        R11[Cobrar consumos extras si hubiese]
+        R12[Recibir llave física]
+    end
+
+    subgraph Limpieza["🧹 Personal de Limpieza / Piso"]
+        L1[Alistar insumos de habitación]
+        L2[Realizar inspección de habitación y frigobar]
+        L3[Reportar por citófono a recepción habitación conforme]
+        L4[Iniciar limpieza manual profunda]
+        L5[Avisar a recepción habitación lista]
+    end
+
+    H2 --> R1
+    R1 --> R2
+    R2 --> R3
+    R3 --> H3
+    H4 --> R4
+    R4 --> H5
+    H6 --> R5
+    R5 --> R6
+    R6 --> H7
+    R6 --> R7
+    R7 --> L1
+    H8 --> R8
+    R8 --> R9
+    R9 --> H9
+    H10 --> R10
+    R10 --> L2
+    L2 --> L3
+    L3 --> R11
+    R11 --> R12
+    R12 --> L4
+    L4 --> L5
+    R12 --> H11

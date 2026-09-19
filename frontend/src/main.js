@@ -1,5 +1,6 @@
 import { initSmoothScroll, initHeroPinAnimation, initServicesHoverAnimation, initHorizontalSuitesScroll, refreshHorizontalSuitesScroll, initMagneticButton } from './smoothScroll.js';
 import { generateQRCodeSVG } from './qrGenerator.js';
+import { supabase } from './supabaseClient.js';
 
 let landingData = null;
 let roomsData = [];
@@ -1382,21 +1383,49 @@ function confirmAndSaveBooking(room, totalAmount) {
     return { ok: false, error: err };
   }
 
-  // Intentar sincronización con Backend si está activo
+  // Sincronización en la Nube con Supabase (Persistencia Real)
   try {
-    fetch('/api/reservas', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        habitacionId: room.id,
-        nombreCompleto: booking.clienteNombre,
-        telefono: booking.clienteTelefono,
-        duracion: booking.duracion,
-        horarioLlegada: booking.horarioLlegada,
-        monto: booking.monto
-      })
-    }).catch(() => {});
-  } catch (e) {}
+    const roomPhysMap = {
+      860: 401, 'suite-presidencial': 401, 1: 401, '1': 401,
+      528: 301, 'tropical-dreams': 301, 2: 301, '2': 301,
+      526: 405, 'riverside-dreams-presidencial': 405, 3: 405, '3': 405,
+      523: 409, 227: 413, 43: 101, 35: 111, 33: 211,
+      31: 121, 29: 309, 27: 221, 24: 417, 22: 321, 20: 231, 16: 329, 14: 421
+    };
+    const habFisicaId = roomPhysMap[room.id] || 101;
+    const dniVal = checkoutState.customerDni || Math.floor(10000000 + Math.random() * 80000000).toString();
+    const arrTime = checkoutState.arrivalTime 
+      ? (checkoutState.arrivalTime.length === 5 ? checkoutState.arrivalTime + ':00' : checkoutState.arrivalTime) 
+      : '20:00:00';
+
+    supabase.from('reservas').insert({
+      habitacion_fisica_id: habFisicaId,
+      tipo_documento: 'DNI',
+      numero_documento: dniVal,
+      nombre_huesped: booking.clienteNombre,
+      telefono: booking.clienteTelefono,
+      email: checkoutState.customerEmail || 'huesped@wimbledon.pe',
+      fecha: new Date().toISOString().split('T')[0],
+      hora_ingreso: arrTime,
+      hora_salida: '02:00:00',
+      duracion_horas: checkoutState.duration || 6,
+      monto_total: totalAmount,
+      adelanto: totalAmount,
+      metodo_pago: checkoutState.paymentMethod === 'yape' ? 'yape' : 'tarjeta',
+      estado: 'confirmada',
+      origen: 'online',
+      qr_token: booking.id,
+      metadata: { pin: booking.pin, extras: booking.extras }
+    }).then(({ data, error }) => {
+      if (error) {
+        console.warn('⚠️ Supabase Cloud:', error.message);
+      } else {
+        console.log('☁️ [Supabase Cloud] Reserva guardada con éxito en la nube:', booking.id);
+      }
+    });
+  } catch (e) {
+    console.warn('Error al enviar a Supabase:', e);
+  }
 
   const modalBody = document.getElementById('checkoutModalBody');
   if (!modalBody) return { ok: true, booking };

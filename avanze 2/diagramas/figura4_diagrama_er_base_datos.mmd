@@ -1,0 +1,70 @@
+erDiagram
+    ROLES ||--o{ USUARIOS : "asigna a"
+    USUARIOS ||--o{ RESERVAS : "registra como cliente"
+    USUARIOS ||--o{ TURNOS : "cumple"
+    USUARIOS ||--o{ INCIDENCIAS : "reporta"
+    HABITACIONES ||--o{ RESERVAS : "es reservada en"
+    HABITACIONES ||--o{ INCIDENCIAS : "presenta"
+
+    ROLES {
+        int id PK
+        varchar nombre UK
+    }
+
+    USUARIOS {
+        int id PK
+        varchar nombre
+        varchar email UK
+        varchar password_hash
+        int rol_id FK
+        boolean activo
+        datetime creado_en
+    }
+
+    HABITACIONES {
+        int id PK
+        varchar nombre
+        varchar tipo
+        text descripcion
+        decimal tarifa_base
+        int duracion_bloque_horas
+        enum estado
+        varchar imagen_url
+        datetime creado_en
+    }
+
+    RESERVAS {
+        int id PK
+        int habitacion_id FK
+        int cliente_id FK
+        varchar nombre_huesped
+        varchar telefono
+        varchar email
+        date fecha
+        time hora_ingreso
+        time hora_salida
+        varchar notas
+        enum estado
+        enum origen
+        varchar qr_token UK
+        boolean qr_usado
+        datetime creado_en
+    }
+
+    INCIDENCIAS {
+        int id PK
+        int habitacion_id FK
+        int reportado_por FK
+        varchar descripcion
+        enum prioridad
+        enum estado
+        datetime creado_en
+    }
+
+    TURNOS {
+        int id PK
+        int usuario_id FK
+        date fecha
+        time hora_inicio
+        time hora_fin
+    }
