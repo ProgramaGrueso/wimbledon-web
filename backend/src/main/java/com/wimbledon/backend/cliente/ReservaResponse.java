@@ -28,7 +28,8 @@ public record ReservaResponse(
         OrigenReserva origen,
         /** Token opaco del QR — sin datos personales en claro */
         String qrToken,
-        LocalDateTime creadoEn
+        LocalDateTime creadoEn,
+        LocalDateTime expiraEn
 ) {
     /** Información mínima de la habitación incluida en la respuesta de reserva. */
     public record HabitacionInfo(Integer id, String nombre, String tipo) {}
@@ -48,7 +49,8 @@ public record ReservaResponse(
                 r.getEstado(),
                 r.getOrigen(),
                 r.getQrToken(),
-                r.getCreadoEn()
+                r.getCreadoEn(),
+                r.getExpiraEn()
         );
     }
 }

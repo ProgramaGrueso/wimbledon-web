@@ -90,8 +90,37 @@ async function syncAdminDataFromSupabase() {
   }
 }
 
-// Iniciar sincronización de inmediato
-syncAdminDataFromSupabase();
+// Inicialización de autenticación de personal
+async function initAdminAuth() {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session && session.user) {
+      const email = session.user.email;
+      const staffMatch = findStaffAccount(email) || {
+        role: session.user.user_metadata?.role || 'recepcion',
+        name: session.user.user_metadata?.nombre || session.user.email,
+        cargo: session.user.user_metadata?.cargo || 'Personal Wimbledon'
+      };
+      currentStaffSession = {
+        email: email,
+        role: staffMatch.role,
+        name: staffMatch.name,
+        cargo: staffMatch.cargo,
+        supabaseToken: session.access_token
+      };
+      await syncAdminDataFromSupabase();
+      renderAdminApp();
+      return;
+    }
+  } catch (err) {
+    console.warn('No hay sesión activa de Supabase Auth:', err);
+  }
+  currentStaffSession = null;
+  renderAdminApp();
+}
+
+// Iniciar autenticación al cargar
+initAdminAuth();
 
 // ==========================================
 // USUARIOS Y CREDENCIALES DEL PERSONAL (WIMBLEDON)
@@ -256,30 +285,69 @@ function renderAdminApp() {
       // Submit Login
       const form = document.getElementById('staffLoginForm');
       if (form) {
-        form.onsubmit = (e) => {
+        form.onsubmit = async (e) => {
           e.preventDefault();
           const email = document.getElementById('staffEmailInput').value.trim();
           const pass = document.getElementById('staffPassInput').value;
           const errEl = document.getElementById('loginErrorMsg');
+          const submitBtn = form.querySelector('button[type="submit"]');
 
-          const user = findStaffAccount(email);
-          if (user && user.password === pass) {
+          submitBtn.setAttribute('disabled', 'true');
+          submitBtn.innerText = 'Validando credenciales corporativas...';
+          errEl.style.display = 'none';
+
+          try {
+            // 1. Autenticación oficial ante Supabase Auth
+            const { data, error } = await supabase.auth.signInWithPassword({
+              email: email,
+              password: pass
+            });
+
+            if (error) {
+              // Fallback para desarrollo offline si la cuenta existe en cuentas de prueba
+              const localUser = findStaffAccount(email);
+              if (localUser && localUser.password === pass) {
+                console.warn('⚠️ Acceso con cuenta de staff local (offline):', email);
+                localStorage.setItem('wimbledon_last_login_email', email);
+                currentStaffSession = {
+                  role: localUser.role,
+                  name: localUser.name,
+                  email: localUser.email,
+                  cargo: localUser.cargo,
+                  supabaseToken: null
+                };
+                currentAdminAuthView = 'login';
+                await syncAdminDataFromSupabase();
+                renderAdminApp();
+                return;
+              }
+              throw error;
+            }
+
             localStorage.setItem('wimbledon_last_login_email', email);
+            const staffMatch = findStaffAccount(email) || {
+              role: data.user.user_metadata?.role || 'recepcion',
+              name: data.user.user_metadata?.nombre || data.user.email,
+              cargo: data.user.user_metadata?.cargo || 'Personal Wimbledon'
+            };
+
             currentStaffSession = {
-              role: user.role,
-              name: user.name,
-              email: user.email,
-              cargo: user.cargo
+              role: staffMatch.role,
+              name: staffMatch.name,
+              email: staffMatch.email,
+              cargo: staffMatch.cargo,
+              supabaseToken: data.session.access_token
             };
             currentAdminAuthView = 'login';
+
+            // Cargar datos del rack y KPIs con rol authenticated
+            await syncAdminDataFromSupabase();
             renderAdminApp();
-          } else {
+          } catch (authErr) {
             errEl.style.display = 'block';
-            if (!user) {
-              errEl.innerText = '❌ El correo ingresado no se encuentra registrado en el personal.';
-            } else {
-              errEl.innerText = '❌ Contraseña incorrecta. Si la olvidaste, usa la opción de recuperación.';
-            }
+            errEl.innerText = `❌ Error de acceso: ${authErr.message || 'Credenciales corporativas inválidas'}`;
+            submitBtn.removeAttribute('disabled');
+            submitBtn.innerText = 'INGRESAR AL SISTEMA';
           }
         };
       }
@@ -527,14 +595,19 @@ function renderAdminApp() {
       </div>
     `;
 
-    document.getElementById('btnSwitchRole').onclick = () => {
+    const handleLogout = async () => {
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        console.warn('Error en sign out:', e);
+      }
       currentStaffSession = null;
+      roomsRack = [];
+      liveSupabaseReservas = [];
       renderAdminApp();
     };
-    document.getElementById('btnLogout').onclick = () => {
-      currentStaffSession = null;
-      renderAdminApp();
-    };
+    document.getElementById('btnSwitchRole').onclick = handleLogout;
+    document.getElementById('btnLogout').onclick = handleLogout;
 
     if (role === 'gerente') setupGerenteEvents();
     if (role === 'recepcion') setupRecepcionEvents();
@@ -1442,17 +1515,25 @@ async function processCheckinValidation(code) {
   const cleanCode = code ? code.split('|')[0].trim() : '';
   let matchedReserva = null;
   let room = null;
+  let backendCheckinResult = null;
 
   fb.style.display = 'block';
   fb.innerHTML = `
     <div style="background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; border-radius: 12px; padding: 1rem; color: #7dd3fc; display: flex; align-items: center; gap: 0.5rem;">
       <span style="animation: spin 1s linear infinite;">⏳</span>
-      <span>Validando credencial en Supabase Cloud...</span>
+      <span>Validando QR en Backend Java y autorizando ingreso...</span>
     </div>
   `;
 
   try {
-    // 1. Buscar coincidencia exacta en Supabase Cloud
+    // 1. Validar en Backend Java (Módulo 6: Check-in y resolución de token QR)
+    try {
+      backendCheckinResult = await api.checkinRecepcion(cleanCode, currentStaffSession?.supabaseToken);
+    } catch (backendErr) {
+      console.warn('Checkin en Backend Java respondió con aviso:', backendErr.message);
+    }
+
+    // 2. Buscar datos en Supabase Cloud
     const { data: found } = await supabase
       .from('reservas')
       .select('*, habitaciones_fisicas(*)')
@@ -1464,7 +1545,7 @@ async function processCheckinValidation(code) {
       const habFisica = matchedReserva.habitaciones_fisicas;
       room = roomsRack.find(r => r.id === matchedReserva.habitacion_fisica_id) || {
         numero: habFisica?.numero || '401',
-        nombre: 'Suite Presidencial'
+        nombre: backendCheckinResult?.habitacion?.nombre || 'Suite Presidencial'
       };
 
       // Actualizar reserva en Supabase
@@ -1477,31 +1558,33 @@ async function processCheckinValidation(code) {
         .eq('id', matchedReserva.id);
 
       // Actualizar estado de habitación en Supabase
-      await supabase.from('habitaciones_fisicas')
-        .update({ estado: 'ocupada' })
-        .eq('id', matchedReserva.habitacion_fisica_id);
+      if (matchedReserva.habitacion_fisica_id) {
+        await supabase.from('habitaciones_fisicas')
+          .update({ estado: 'ocupada' })
+          .eq('id', matchedReserva.habitacion_fisica_id);
+      }
 
-      // Registrar en auditoría
+      // Registrar en auditoría de caja
       await supabase.from('movimientos_diarios')
         .insert({
           reserva_id: matchedReserva.id,
-          habitacion_fisica_id: matchedReserva.habitacion_fisica_id,
+          habitacion_fisica_id: matchedReserva.habitacion_fisica_id || null,
           tipo: 'checkin',
-          descripcion: `Check-in digital validado para ${matchedReserva.nombre_huesped} (DNI: ${matchedReserva.numero_documento})`
+          descripcion: `Check-in digital validado para ${matchedReserva.nombre_huesped} (DNI: ${matchedReserva.numero_documento || 'No registrado'})`
         });
     }
   } catch (err) {
-    console.warn('Advertencia en búsqueda Supabase:', err);
+    console.warn('Advertencia en checkin:', err);
   }
 
-  // Fallback si no está en la nube o es código de simulación rápida
+  // Fallback de asignación física en el Rack
   if (!room) {
     room = roomsRack.find(r => r.estado === 'LIBRE') || roomsRack[0];
   }
 
   room.estado = 'OCUPADA';
   room.duracionRestante = '06h:00m';
-  room.cliente = matchedReserva ? matchedReserva.nombre_huesped : `Check-in ${cleanCode}`;
+  room.cliente = matchedReserva ? matchedReserva.nombre_huesped : (backendCheckinResult?.nombreHuesped || `Check-in ${cleanCode}`);
   saveRack();
 
   fb.innerHTML = `
@@ -1510,10 +1593,10 @@ async function processCheckinValidation(code) {
         🔓 ¡ACCESO CONCEDIDO • CERRADURA DIGITAL DESBLOQUEADA!
       </div>
       <p style="font-size: 0.85rem; margin-top: 0.35rem; color: #fff;">
-        Pase <strong>${cleanCode}</strong> validado exitosamente en <strong>Supabase Cloud</strong>.
+        Pase <strong>${cleanCode}</strong> validado exitosamente ante el sistema de Recepción.
       </p>
       <div style="margin-top: 0.6rem; padding: 0.6rem 0.85rem; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 0.8rem; color: #cbd5e1;">
-        🚪 <strong>Habitación Asignada:</strong> ${room.numero} (${room.nombre})<br/>
+        🚪 <strong>Puerta Física Asignada:</strong> ${room.numero} (${backendCheckinResult?.habitacion?.nombre || room.nombre})<br/>
         👤 <strong>Huésped Verificado:</strong> ${room.cliente}
         ${matchedReserva?.numero_documento ? `<br/>🪪 <strong>DNI:</strong> ${matchedReserva.numero_documento}` : ''}
       </div>

@@ -47,18 +47,36 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
     List<Reserva> findByFechaBetween(@Param("desde") LocalDate desde,
                                      @Param("hasta") LocalDate hasta);
 
-    /** Comprueba solapamiento de horario para una habitación y fecha. */
-    @Query("SELECT COUNT(r) > 0 FROM Reserva r " +
+    /**
+     * Cuenta el número de reservas activas (no CANCELADA ni FINALIZADA) que se solapan
+     * con el bloque horario solicitado para una habitación (tipo de suite).
+     * Si reservaIdExcluir no es null, se omite dicha reserva del conteo
+     * (crucial para reprogramaciones, evitando que la reserva se auto-bloquee con su horario anterior).
+     */
+    @Query("SELECT COUNT(r) FROM Reserva r " +
            "WHERE r.habitacion.id = :habitacionId " +
            "AND r.fecha = :fecha " +
            "AND r.estado NOT IN (com.wimbledon.backend.domain.enums.EstadoReserva.CANCELADA, " +
            "                     com.wimbledon.backend.domain.enums.EstadoReserva.FINALIZADA) " +
+           "AND (:reservaIdExcluir IS NULL OR r.id <> :reservaIdExcluir) " +
            "AND r.horaIngreso < :horaSalida " +
            "AND r.horaSalida > :horaIngreso")
-    boolean existeSolapamiento(@Param("habitacionId") Integer habitacionId,
-                               @Param("fecha") LocalDate fecha,
-                               @Param("horaIngreso") java.time.LocalTime horaIngreso,
-                               @Param("horaSalida") java.time.LocalTime horaSalida);
+    long contarReservasSolapadas(@Param("habitacionId") Integer habitacionId,
+                                @Param("fecha") LocalDate fecha,
+                                @Param("horaIngreso") java.time.LocalTime horaIngreso,
+                                @Param("horaSalida") java.time.LocalTime horaSalida,
+                                @Param("reservaIdExcluir") Integer reservaIdExcluir);
+
+    /** Busca reservas en estado PENDIENTE cuyo límite de confirmación expiraEn haya caducado. */
+    @Query("SELECT r FROM Reserva r WHERE r.estado = :estado AND r.expiraEn IS NOT NULL AND r.expiraEn <= :ahora")
+    List<Reserva> findExpiradas(@Param("estado") EstadoReserva estado,
+                                @Param("ahora") java.time.LocalDateTime ahora);
+
+    /** Control anti-abuso: conteo de reservas por email en un estado determinado. */
+    long countByEmailAndEstado(String email, EstadoReserva estado);
+
+    /** Control anti-abuso: conteo de reservas por teléfono en un estado determinado. */
+    long countByTelefonoAndEstado(String telefono, EstadoReserva estado);
 
     /** KPIs — total de reservas por origen en un período */
     long countByOrigenAndFechaBetween(

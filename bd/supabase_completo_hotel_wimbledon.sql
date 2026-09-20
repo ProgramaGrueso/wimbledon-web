@@ -444,6 +444,25 @@ FROM public.reservas;
 
 -- ── 5. POLÍTICAS DE SEGURIDAD (ROW LEVEL SECURITY - RLS) ────────────
 
+-- 5.0 Tabla de personal corporativo autorizado (blindaje contra signUp libre)
+CREATE TABLE IF NOT EXISTS public.staff (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT NOT NULL UNIQUE,
+    nombre TEXT NOT NULL,
+    rol TEXT NOT NULL CHECK (rol IN ('ADMINISTRADOR', 'RECEPCIONISTA', 'LIMPIEZA')),
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    creado_en TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.staff ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.staff FROM anon;
+REVOKE ALL ON public.staff FROM authenticated;
+CREATE POLICY "Staff consulta su propio registro" ON public.staff
+    FOR SELECT TO authenticated
+    USING (auth.uid() = id);
+GRANT SELECT ON public.staff TO authenticated;
+
+-- Habilitar RLS en todas las tablas
 ALTER TABLE public.perfiles             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tipos_habitacion     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.habitaciones_fisicas ENABLE ROW LEVEL SECURITY;
@@ -454,15 +473,81 @@ ALTER TABLE public.consumos_pedidos     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.incidencias           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.turnos                ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Acceso publico tipos_habitacion"     ON public.tipos_habitacion FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "Acceso publico habitaciones_fisicas" ON public.habitaciones_fisicas FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Gestion reservas"                    ON public.reservas FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Gestion movimientos"                 ON public.movimientos_diarios FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Gestion carta"                       ON public.carta_gastronomia FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Gestion consumos"                    ON public.consumos_pedidos FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Gestion incidencias"                 ON public.incidencias FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Gestion perfiles"                    ON public.perfiles FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Gestion turnos"                      ON public.turnos FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+-- 5.1 Catálogo público y Carta (Lectura pública para tipos y carta únicamente)
+CREATE POLICY "Lectura publica tipos_habitacion"  ON public.tipos_habitacion FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Lectura publica carta_gastronomia" ON public.carta_gastronomia FOR SELECT TO anon, authenticated USING (true);
+GRANT SELECT ON public.tipos_habitacion TO anon, authenticated;
+GRANT SELECT ON public.carta_gastronomia TO anon, authenticated;
+
+-- 5.2 Reservas: CERO PERMISOS A ANON.
+-- Inserción exclusiva por backend Java con lógica de negocio y bloqueo pesimista.
+REVOKE ALL ON public.reservas FROM anon;
+REVOKE ALL ON public.reservas FROM authenticated;
+
+CREATE POLICY "Solo staff activo lee reservas"
+  ON public.reservas FOR SELECT
+  TO authenticated
+  USING (auth.uid() IN (SELECT id FROM public.staff WHERE activo = true));
+
+CREATE POLICY "Solo staff activo actualiza checkin"
+  ON public.reservas FOR UPDATE
+  TO authenticated
+  USING (
+    auth.uid() IN (SELECT id FROM public.staff WHERE activo = true)
+    AND estado IN ('pendiente', 'confirmada', 'checkin')
+  )
+  WITH CHECK (estado IN ('checkin', 'cancelada'));
+
+GRANT SELECT ON public.reservas TO authenticated;
+GRANT UPDATE (estado, adelanto, metodo_pago, qr_usado, qr_usado_en) ON public.reservas TO authenticated;
+
+-- 5.3 Módulos Operativos (Exclusivos para staff autenticado validado en public.staff)
+REVOKE ALL ON public.habitaciones_fisicas FROM anon;
+REVOKE ALL ON public.habitaciones_fisicas FROM authenticated;
+
+CREATE POLICY "Solo staff activo lee habitaciones_fisicas"
+  ON public.habitaciones_fisicas FOR SELECT
+  TO authenticated
+  USING (auth.uid() IN (SELECT id FROM public.staff WHERE activo = true));
+
+CREATE POLICY "Solo staff activo actualiza estado habitacion"
+  ON public.habitaciones_fisicas FOR UPDATE
+  TO authenticated
+  USING (auth.uid() IN (SELECT id FROM public.staff WHERE activo = true))
+  WITH CHECK (true);
+
+GRANT SELECT ON public.habitaciones_fisicas TO authenticated;
+GRANT UPDATE (estado, updated_at) ON public.habitaciones_fisicas TO authenticated;
+
+REVOKE ALL ON public.movimientos_diarios FROM anon;
+REVOKE ALL ON public.movimientos_diarios FROM authenticated;
+
+CREATE POLICY "Solo staff activo lee movimientos"
+  ON public.movimientos_diarios FOR SELECT
+  TO authenticated
+  USING (auth.uid() IN (SELECT id FROM public.staff WHERE activo = true));
+
+CREATE POLICY "Solo staff activo inserta movimientos"
+  ON public.movimientos_diarios FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    auth.uid() IN (SELECT id FROM public.staff WHERE activo = true)
+    AND tipo IN ('cobro', 'checkin', 'adelanto', 'servicio_habitacion')
+  );
+
+GRANT SELECT, INSERT ON public.movimientos_diarios TO authenticated;
+
+CREATE POLICY "Gestion staff carta"       ON public.carta_gastronomia FOR ALL TO authenticated USING (auth.uid() IN (SELECT id FROM public.staff WHERE activo = true)) WITH CHECK (true);
+CREATE POLICY "Gestion staff consumos"    ON public.consumos_pedidos FOR ALL TO authenticated USING (auth.uid() IN (SELECT id FROM public.staff WHERE activo = true)) WITH CHECK (true);
+CREATE POLICY "Gestion staff incidencias" ON public.incidencias FOR ALL TO authenticated USING (auth.uid() IN (SELECT id FROM public.staff WHERE activo = true)) WITH CHECK (true);
+CREATE POLICY "Gestion staff perfiles"    ON public.perfiles FOR ALL TO authenticated USING (auth.uid() IN (SELECT id FROM public.staff WHERE activo = true)) WITH CHECK (true);
+CREATE POLICY "Gestion staff turnos"      ON public.turnos FOR ALL TO authenticated USING (auth.uid() IN (SELECT id FROM public.staff WHERE activo = true)) WITH CHECK (true);
+
+-- 5.4 Vistas sensibles protegidas
+REVOKE ALL ON public.v_rack_habitaciones_132 FROM anon;
+REVOKE ALL ON public.v_kpis_financieros FROM anon;
+GRANT SELECT ON public.v_rack_habitaciones_132 TO authenticated;
+GRANT SELECT ON public.v_kpis_financieros TO authenticated;
 
 -- ── 6. CARGA DE DATOS OFICIALES Y GENERACIÓN DE 132 HABITACIONES ────
 

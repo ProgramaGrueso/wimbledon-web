@@ -126,6 +126,14 @@ public class RecepcionService {
         return reservaService.crearReservaManual(request);
     }
 
+    /**
+     * Confirma una reserva pendiente desde el counter de Recepción (ej. tras pago presencial o verificación).
+     */
+    @Transactional
+    public ReservaResponse confirmarReserva(Integer reservaId) {
+        return reservaService.confirmarReserva(reservaId);
+    }
+
     // ── Estado de habitación ──────────────────────────────────────────────────
 
     /**

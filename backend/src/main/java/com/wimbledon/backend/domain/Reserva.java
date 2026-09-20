@@ -95,6 +95,19 @@ public class Reserva {
     @Builder.Default
     private Boolean qrUsado = false;
 
+    /**
+     * Fecha y hora límite en que la reserva en estado PENDIENTE expira y se cancela automáticamente.
+     */
+    @Column(name = "expira_en")
+    private LocalDateTime expiraEn;
+
+    @Column(name = "monto_total", precision = 8, scale = 2)
+    private java.math.BigDecimal montoTotal;
+
+    @Column(precision = 8, scale = 2)
+    @Builder.Default
+    private java.math.BigDecimal adelanto = java.math.BigDecimal.ZERO;
+
     @Column(name = "creado_en", updatable = false)
     private LocalDateTime creadoEn;
 

@@ -97,6 +97,14 @@ public class RecepcionController {
                 .body(recepcionService.crearReservaManual(request));
     }
 
+    /**
+     * Confirma una reserva pendiente tras cobro en efectivo o validación presencial en counter.
+     */
+    @PostMapping("/reservas/{id}/confirmar")
+    public ResponseEntity<ReservaResponse> confirmarReserva(@PathVariable Integer id) {
+        return ResponseEntity.ok(recepcionService.confirmarReserva(id));
+    }
+
     // ── Estado de habitación ──────────────────────────────────────────────────
 
     /**

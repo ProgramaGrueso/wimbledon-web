@@ -41,6 +41,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final com.wimbledon.backend.security.ReservaRateLimitingFilter rateLimitingFilter;
     private final AuthenticationProvider authenticationProvider;
 
     @Value("${wimbledon.cors.allowed-origins}")
@@ -64,8 +65,11 @@ public class SecurityConfig {
                 // Catálogo público de habitaciones (sin login)
                 .requestMatchers(HttpMethod.GET, "/api/publico/**").permitAll()
 
-                // Crear reserva — público (invitados sin cuenta también pueden reservar)
+                // Crear reserva online — público (huésped invitado o con cuenta)
                 .requestMatchers(HttpMethod.POST, "/api/reservas").permitAll()
+
+                // Cancelar reserva PENDIENTE por el propio invitado — público (protegido por qrToken en body)
+                .requestMatchers(HttpMethod.POST, "/api/reservas/{id}/cancelar-pendiente").permitAll()
 
                 // Todo lo demás requiere autenticación (el rol específico lo verifica @PreAuthorize)
                 .anyRequest().authenticated()
@@ -77,6 +81,9 @@ public class SecurityConfig {
 
             // ── Proveedor de autenticación (DaoAuthenticationProvider + BCrypt) ─
             .authenticationProvider(authenticationProvider)
+
+            // ── Filtro de rate limiting por IP antes del filtro de auth ─────────
+            .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
 
             // ── Filtro JWT antes del filtro de username/password estándar ───────
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

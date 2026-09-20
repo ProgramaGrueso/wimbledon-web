@@ -1,6 +1,6 @@
 import { initSmoothScroll, initHeroPinAnimation, initServicesHoverAnimation, initHorizontalSuitesScroll, refreshHorizontalSuitesScroll, initMagneticButton } from './smoothScroll.js';
 import { generateQRCodeSVG } from './qrGenerator.js';
-import { supabase } from './supabaseClient.js';
+import { api } from './services/api.js';
 
 let landingData = null;
 let roomsData = [];
@@ -1476,7 +1476,7 @@ function renderCheckoutModalContent() {
   }
 
   if (form) {
-    form.onsubmit = (e) => {
+    form.onsubmit = async (e) => {
       e.preventDefault();
       if (termsCheckbox && !termsCheckbox.checked) {
         if (termsAlert) termsAlert.style.display = 'block';
@@ -1487,8 +1487,36 @@ function renderCheckoutModalContent() {
       const currentRoom = roomsData.find(r => String(r.id) === String(checkoutState.roomId)) || roomsData[0];
       const basePriceCurrent = parseBasePrice(currentRoom.precio);
       const totalAmount = calculateTotalWithExtras(basePriceCurrent, checkoutState.duration, checkoutState.selectedExtras);
-      const res = confirmAndSaveBooking(currentRoom, totalAmount);
-      if (!res.ok) return; // Si falla la persistencia, no avanza a la keycard (Solución #11)
+
+      // Limpiar errores previos si existen
+      const errorBox = document.getElementById('checkoutInlineError');
+      if (errorBox) errorBox.style.display = 'none';
+
+      // Estado de carga en el botón
+      const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.setAttribute('disabled', 'true');
+        submitBtn.style.opacity = '0.7';
+        submitBtn.style.cursor = 'wait';
+        submitBtn.innerHTML = '<span>⏳ Verificando disponibilidad y registrando...</span>';
+      }
+
+      try {
+        const res = await confirmAndSaveBooking(currentRoom, totalAmount);
+        if (!res.ok && submitBtn) {
+          submitBtn.removeAttribute('disabled');
+          submitBtn.style.opacity = '1';
+          submitBtn.style.cursor = 'pointer';
+          submitBtn.innerHTML = originalBtnHtml;
+        }
+      } catch (err) {
+        if (submitBtn) {
+          submitBtn.removeAttribute('disabled');
+          submitBtn.style.opacity = '1';
+          submitBtn.style.cursor = 'pointer';
+          submitBtn.innerHTML = originalBtnHtml;
+        }
+      }
     };
   }
 }
@@ -1723,128 +1751,185 @@ function setupKeycardTilt() {
   });
 }
 
-function confirmAndSaveBooking(room, totalAmount) {
-  const randomId = Math.floor(1000 + Math.random() * 9000);
-  const bookingCode = `#WMB-${randomId}`;
-  const pin = Math.floor(100000 + Math.random() * 900000).toString();
+async function confirmAndSaveBooking(room, totalAmount) {
+  // Limpiar cualquier error previo
+  let errorBox = document.getElementById('checkoutInlineError');
+  if (errorBox) errorBox.style.display = 'none';
+
+  // Formatear horario de ingreso a formato HH:mm:ss aceptado por LocalTime en backend
+  let arrTime = checkoutState.arrivalTime || '20:00';
+  if (arrTime.includes('30 min') || arrTime.includes('Inmediato')) {
+    const d = new Date(Date.now() + 30 * 60000);
+    arrTime = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:00`;
+  } else if (arrTime.length === 5) {
+    arrTime = arrTime + ':00';
+  }
+
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  let backendReserva;
+  try {
+    // 1. Crear reserva en el backend Java Spring Boot (valida solapamiento, bloqueo pesimista y anti-abuso)
+    backendReserva = await api.crearReserva({
+      habitacionId: parseInt(room.id, 10),
+      fecha: todayStr,
+      horaIngreso: arrTime,
+      nombreCompleto: checkoutState.customerName || 'Huésped Wimbledon',
+      telefono: checkoutState.customerPhone || '990370681',
+      email: checkoutState.customerEmail || 'huesped@wimbledon.pe',
+      notas: `Duración: ${checkoutState.duration || '6 Horas'} | Extras: ${(checkoutState.selectedExtras || []).join(', ') || 'Ninguno'}`
+    });
+
+    // La reserva se mantiene en PENDIENTE hasta que Recepción la confirme formalmente
+  } catch (apiError) {
+    console.error('Error al registrar reserva en el backend Java:', apiError);
+    if (!errorBox) {
+      errorBox = document.createElement('div');
+      errorBox.id = 'checkoutInlineError';
+      errorBox.style.cssText = 'background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 10px; padding: 1rem; color: #fca5a5; font-size: 0.85rem; margin-bottom: 1.5rem; text-align: center; font-weight: 500;';
+      const form = document.getElementById('checkoutDynamicForm');
+      if (form) form.prepend(errorBox);
+    }
+    errorBox.style.display = 'block';
+    errorBox.textContent = `⚠️ No se pudo concretar la reserva: ${apiError.message || 'Error de comunicación con el servidor de reservas.'}`;
+    return { ok: false, error: apiError };
+  }
+
+  const bookingCode = `#WMB-${backendReserva.id || Math.floor(1000 + Math.random() * 9000)}`;
 
   const booking = {
     id: bookingCode,
-    pin: pin,
+    backendId: backendReserva.id,
     habitacionId: room.id,
     habitacionNombre: room.nombre,
     duracion: checkoutState.duration,
     horarioLlegada: checkoutState.arrivalTime,
     extras: [...checkoutState.selectedExtras],
     monto: totalAmount,
-    medioPago: 'Efectivo (En Recepción)',
+    medioPago: 'Pendiente en Recepción',
     clienteNombre: checkoutState.customerName || 'Huésped Wimbledon',
     clienteTelefono: checkoutState.customerPhone || '990370681',
-    estado: 'CONFIRMADA',
+    estado: backendReserva.estado || 'PENDIENTE',
+    qrToken: backendReserva.qrToken,
+    expiraEn: backendReserva.expiraEn,
     fechaReserva: new Date().toISOString()
   };
 
-  // Guardar en LocalStorage con control de QuotaExceededError (Solución #11)
+  // Guardar en LocalStorage con control de QuotaExceededError
   try {
     const existing = JSON.parse(localStorage.getItem('wimbledon_bookings') || '[]');
     existing.unshift(booking);
     localStorage.setItem('wimbledon_bookings', JSON.stringify(existing));
     localStorage.setItem('wimbledon_last_booking', JSON.stringify(booking));
 
-    // Emitir evento reactivo para actualización en tiempo real en pestañas / panel administrativo
     window.dispatchEvent(new CustomEvent('wimbledon:booking-created', { detail: booking }));
   } catch (err) {
-    console.error('Error al persistir la reserva:', err);
-    let errorBox = document.getElementById('checkoutInlineError');
-    if (!errorBox) {
-      errorBox = document.createElement('div');
-      errorBox.id = 'checkoutInlineError';
-      errorBox.style.cssText = 'background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 10px; padding: 1rem; color: #fca5a5; font-size: 0.85rem; margin-bottom: 1.5rem; text-align: center;';
-      const form = document.getElementById('checkoutDynamicForm');
-      if (form) form.prepend(errorBox);
-    }
-    errorBox.textContent = '⚠️ No se pudo registrar la reserva en este navegador (almacenamiento lleno o navegación privada estricta). Por favor intenta en una ventana normal.';
-    return { ok: false, error: err };
-  }
-
-  // Sincronización en la Nube con Supabase (Persistencia Real)
-  try {
-    const roomPhysMap = {
-      860: 401, 'suite-presidencial': 401, 1: 401, '1': 401,
-      528: 301, 'tropical-dreams': 301, 2: 301, '2': 301,
-      526: 405, 'riverside-dreams-presidencial': 405, 3: 405, '3': 405,
-      523: 409, 227: 413, 43: 101, 35: 111, 33: 211,
-      31: 121, 29: 309, 27: 221, 24: 417, 22: 321, 20: 231, 16: 329, 14: 421
-    };
-    const habFisicaId = roomPhysMap[room.id] || 101;
-    const dniVal = checkoutState.customerDni || Math.floor(10000000 + Math.random() * 80000000).toString();
-    const arrTime = checkoutState.arrivalTime 
-      ? (checkoutState.arrivalTime.length === 5 ? checkoutState.arrivalTime + ':00' : checkoutState.arrivalTime) 
-      : '20:00:00';
-
-    supabase.from('reservas').insert({
-      habitacion_fisica_id: habFisicaId,
-      tipo_documento: 'DNI',
-      numero_documento: dniVal,
-      nombre_huesped: booking.clienteNombre,
-      telefono: booking.clienteTelefono,
-      email: checkoutState.customerEmail || 'huesped@wimbledon.pe',
-      fecha: new Date().toISOString().split('T')[0],
-      hora_ingreso: arrTime,
-      hora_salida: '02:00:00',
-      duracion_horas: checkoutState.duration || 6,
-      monto_total: totalAmount,
-      adelanto: 0.00,
-      metodo_pago: 'efectivo',
-      estado: 'confirmada',
-      origen: 'online',
-      qr_token: booking.id,
-      metadata: { pin: booking.pin, extras: booking.extras, modalidad: 'pago_efectivo_recepcion' }
-    }).then(({ data, error }) => {
-      if (error) {
-        console.warn('⚠️ Supabase Cloud:', error.message);
-      } else {
-        console.log('☁️ [Supabase Cloud] Reserva guardada con éxito en la nube:', booking.id);
-      }
-    });
-  } catch (e) {
-    console.warn('Error al enviar a Supabase:', e);
+    console.warn('Error al persistir la reserva en localStorage:', err);
   }
 
   const modalBody = document.getElementById('checkoutModalBody');
   if (!modalBody) return { ok: true, booking };
 
+  const expiraTimestamp = backendReserva.expiraEn ? new Date(backendReserva.expiraEn).getTime() : Date.now() + 30 * 60000;
+
   modalBody.innerHTML = `
     <div style="text-align: center; margin-bottom: 1.5rem;">
-      <span style="color: #10b981; font-size: 0.8rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">
-        ✓ RESERVA CONFIRMADA & CHECK-IN EMITIDO
+      <span style="display: inline-block; background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.75rem;">
+        🟡 SOLICITUD REGISTRADA — PENDIENTE DE RECEPCIÓN
       </span>
-      <h2 style="font-family: var(--font-serif); font-size: 2rem; color: #fff; margin-top: 0.25rem;">
-        ¡Tu Pase Digital está Listo!
+      <h2 style="font-family: var(--font-serif); font-size: 1.85rem; color: #fff; margin: 0.25rem 0;">
+        Tu suite está temporalmente retenida
       </h2>
-      <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
-        Guarda tu tarjeta de acceso o presenta el código QR al llegar a tu suite.
+      <p style="color: #94a3b8; font-size: 0.85rem; margin: 0.25rem auto 1rem; max-width: 480px; line-height: 1.5;">
+        Para garantizar la total discreción y seguridad, la confirmación definitiva y entrega de llaves se efectúa en Recepción.
       </p>
     </div>
 
-    ${renderKeycardHTML(booking)}
+    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+        <span style="color: #94a3b8; font-size: 0.85rem;">Código de Solicitud:</span>
+        <strong style="color: #c5a880; font-family: monospace; font-size: 1.1rem;">${bookingCode}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+        <span style="color: #94a3b8; font-size: 0.85rem;">Suite:</span>
+        <strong style="color: #fff; font-size: 0.95rem;">${room.nombre}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+        <span style="color: #94a3b8; font-size: 0.85rem;">Horario Solicitado:</span>
+        <strong style="color: #fff; font-size: 0.95rem;">${todayStr} a las ${arrTime.slice(0, 5)}</strong>
+      </div>
+      <div style="text-align: center; margin-top: 1rem; padding: 0.75rem; background: rgba(245, 158, 11, 0.1); border: 1px dashed rgba(245, 158, 11, 0.3); border-radius: 12px;">
+        <span style="color: #f59e0b; font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 4px;">TIEMPO LÍMITE PARA PRESENTARTE EN RECEPCIÓN</span>
+        <div id="bookingCountdownTimer" style="font-family: monospace; font-size: 1.75rem; font-weight: bold; color: #fbbf24; letter-spacing: 2px;">
+          --:--
+        </div>
+        <small style="color: #94a3b8; font-size: 0.75rem;">Si no te presentas antes de que el reloj llegue a cero, la retención expirará.</small>
+      </div>
+    </div>
 
-    <div style="margin-top: 1.5rem; text-align: center;">
-      <button id="btnFinishCheckout" class="btn-editorial-light" style="width: 100%; padding: 1rem; font-weight: bold; background: #fff; color: #000; border: none; border-radius: 12px; cursor: pointer;">
-        FINALIZAR Y CERRAR
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+      <button id="btnFinishCheckout" class="btn-editorial-light" style="width: 100%; padding: 0.85rem; font-weight: bold; background: #fff; color: #000; border: none; border-radius: 12px; cursor: pointer;">
+        ENTENDIDO, GUARDAR CÓDIGO
+      </button>
+      <button id="btnCancelarSolicitudCheckout" style="width: 100%; padding: 0.75rem; font-size: 0.85rem; font-weight: 600; background: transparent; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 12px; cursor: pointer;">
+        Desistir y Cancelar Solicitud
       </button>
     </div>
   `;
 
-  setupKeycardTilt();
+  // Countdown timer dinámico
+  const timerEl = document.getElementById('bookingCountdownTimer');
+  const updateTimer = () => {
+    const diff = expiraTimestamp - Date.now();
+    if (diff <= 0) {
+      if (timerEl) {
+        timerEl.innerText = '00:00 (EXPIRADO)';
+        timerEl.style.color = '#ef4444';
+      }
+      return;
+    }
+    const mins = Math.floor(diff / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
+    if (timerEl) {
+      timerEl.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+  };
+  updateTimer();
+  const timerInterval = setInterval(updateTimer, 1000);
 
   const btnFinish = document.getElementById('btnFinishCheckout');
   if (btnFinish) {
     btnFinish.onclick = () => {
+      clearInterval(timerInterval);
       const modal = document.getElementById('checkoutModal');
       if (modal) {
         modal.classList.remove('open');
         modal.setAttribute('aria-hidden', 'true');
+      }
+    };
+  }
+
+  const btnCancel = document.getElementById('btnCancelarSolicitudCheckout');
+  if (btnCancel) {
+    btnCancel.onclick = async () => {
+      if (!confirm('¿Estás seguro de que deseas desistir y cancelar esta solicitud de reserva?')) return;
+      btnCancel.setAttribute('disabled', 'true');
+      btnCancel.innerText = 'Cancelando solicitud...';
+      try {
+        await api.cancelarReservaPendiente(backendReserva.id, backendReserva.qrToken);
+        clearInterval(timerInterval);
+        modalBody.innerHTML = `
+          <div style="text-align: center; padding: 2rem 1rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">✓</div>
+            <h3 style="color: #fff; font-size: 1.5rem; margin-bottom: 0.5rem;">Solicitud Cancelada</h3>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1.5rem;">La retención del bloque de habitación ha sido liberada exitosamente.</p>
+            <button onclick="document.getElementById('checkoutModal').classList.remove('open')" class="btn-editorial-light" style="padding: 0.75rem 2rem; border-radius: 12px;">CERRAR</button>
+          </div>
+        `;
+      } catch (err) {
+        alert('No se pudo cancelar la solicitud: ' + (err.message || 'Intente nuevamente'));
+        btnCancel.removeAttribute('disabled');
+        btnCancel.innerText = 'Desistir y Cancelar Solicitud';
       }
     };
   }

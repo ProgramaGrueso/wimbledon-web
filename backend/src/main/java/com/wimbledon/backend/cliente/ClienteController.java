@@ -49,6 +49,19 @@ public class ClienteController {
                 .body(reservaService.crearReserva(request, cliente));
     }
 
+    /**
+     * Permite al huésped (incluso sin cuenta) desistir de su solicitud en estado PENDIENTE,
+     * requiriendo su qrToken emitido al momento de la solicitud.
+     */
+    @PostMapping("/api/reservas/{id}/cancelar-pendiente")
+    public ResponseEntity<Void> cancelarPendiente(
+            @PathVariable Integer id,
+            @Valid @RequestBody CancelarPendienteRequest request
+    ) {
+        reservaService.cancelarReservaPendienteInvitado(id, request.qrToken());
+        return ResponseEntity.noContent().build();
+    }
+
     // ── Endpoints exclusivos del cliente autenticado ──────────────────────────
 
     /**

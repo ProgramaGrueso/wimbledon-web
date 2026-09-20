@@ -50,6 +50,14 @@ public class Habitacion {
     @Builder.Default
     private Integer duracionBloqueHoras = 6;
 
+    /**
+     * Cantidad de unidades físicas operativas de este tipo de suite en el hotel.
+     * Permite gestionar disponibilidad por inventario sobre las 132 puertas físicas.
+     */
+    @Column(name = "capacidad_unidades", nullable = false)
+    @Builder.Default
+    private Integer capacidadUnidades = 1;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 30)
     @Builder.Default
