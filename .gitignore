@@ -8,10 +8,42 @@ dist-ssr/
 .vite-temp/
 
 # ==========================================
-# Material de Exposición y Entregables
+# Material Académico, Avances y Entregables
 # ==========================================
+avanze*/
+avanze 2/
+avance*/
+**/avanze*/
+**/avance*/
 exposicion/
 **/exposicion/
+informe-*.md
+soluciones-*.md
+
+# ==========================================
+# Documentos Ofimáticos y Borradores (Word/Office)
+# ==========================================
+*.docx
+*.doc
+*.pptx
+*.ppt
+*.xlsx
+*.xls
+*.odt
+
+# ==========================================
+# Archivos Comprimidos y Respaldos Binarios
+# ==========================================
+*.rar
+*.zip
+*.7z
+*.tar
+*.tar.gz
+*.gz
+*.bz2
+*.bak
+*.backup
+*.dump
 
 # ==========================================
 # Backend (Java / Maven / Spring Boot)
@@ -31,6 +63,10 @@ target/
 .env
 .env.local
 .env.*.local
+credenciales_personal.md
+CREDENTIALS.md
+*credentials*.md
+*credenciales*.md
 src/main/resources/application-local.properties
 **/application-local.properties
 
@@ -76,3 +112,17 @@ lerna-debug.log*
 .Trashes
 Thumbs.db
 ehthumbs.db
+
+# ==========================================
+# Archivos Temporales y Scripts Scratch
+# ==========================================
+*.tmp
+*.temp
+.temp/
+**/.temp/
+scratch/
+**/scratch/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/

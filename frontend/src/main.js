@@ -54,7 +54,7 @@ let checkoutState = {
   duration: '6 Horas', 
   arrivalTime: 'En 30 min', 
   customTime: '',
-  paymentMethod: 'yape', 
+  paymentMethod: 'efectivo', 
   customerName: '',
   customerPhone: '',
   selectedExtras: []
@@ -260,7 +260,7 @@ function renderEditorialApp() {
               </div>
             </div>
             <div class="promo-actions-row">
-              <a href="#reserva" class="btn-hero-primary">RESERVAR PROMOCIÓN</a>
+              <button type="button" id="btnPromoReserve" class="btn-hero-primary" style="cursor: pointer; border: none;">RESERVAR PROMOCIÓN</button>
               <a href="#habitaciones" class="btn-hero-secondary">EXPLORAR SUITES</a>
             </div>
           </div>
@@ -350,81 +350,255 @@ function renderEditorialApp() {
         </div>
       </div>
     </section>
-    <!-- EXPERIENCIA & SERVICIOS INTERACTIVOS (FLOATING IMAGE HOVER CURSOR) -->
-    <section id="experiencia" class="section-editorial bg-black text-white">
-      <!-- Elemento Flotante Fijo para Vista Previa Dinámica -->
-      <div id="servicesHoverPreview" class="services-hover-preview" aria-hidden="true">
-        <img id="servicesHoverImg" src="" alt="Vista previa de servicio" />
-      </div>
+    <!-- EXPERIENCIA & SERVICIOS ACCESIBLES (DESPLEGABLE INTERACTIVO AL TACTO / CLICK) -->
+    <section id="experiencia" class="section-editorial bg-black text-white" aria-labelledby="experienciaTitle">
       <div class="editorial-container">
         <div class="editorial-header-block reveal">
           <span class="editorial-tag">INSTALACIONES & EXPERIENCIA</span>
-          <h2 class="editorial-headline" style="color: var(--color-white);">Servicios & Amenidades Exclusivas</h2>
+          <h2 id="experienciaTitle" class="editorial-headline" style="color: var(--color-white);">Servicios & Amenidades Exclusivas</h2>
+          <p style="color: #cbd5e1; margin-top: 0.75rem; font-size: 1.05rem; line-height: 1.6; max-width: 720px;">
+            Instalaciones privadas de alto confort: jacuzzis climatizados, sauna finlandés, cochera directa y servicio gourmet las 24 horas.
+          </p>
         </div>
-        <ul class="services-interactive-list">
-          <li class="service-item reveal" data-img="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=1000&auto=format&fit=crop">
-            <div class="service-left">
-              <span class="service-num">01</span>
-              <h3 class="service-title">Jacuzzi Privado & Spa</h3>
+
+        <!-- BOTÓN DE ACTIVACIÓN PRINCIPAL (DESPLIEGA EL PANEL DE LOS 6 SERVICIOS) -->
+        <div class="services-toggle-wrap reveal">
+          <button 
+            type="button" 
+            id="btnToggleServicesSection" 
+            class="services-section-toggle-btn"
+            aria-expanded="false" 
+            aria-controls="servicesMainPanel"
+          >
+            <div class="services-toggle-left">
+              <span class="services-toggle-icon" aria-hidden="true">✨</span>
+              <div class="services-toggle-text-block">
+                <span class="services-toggle-badge">TOQUE PARA ACTIVAR</span>
+                <span class="services-toggle-heading" id="servicesToggleLabel">Ver las 6 Amenidades & Servicios Exclusivos</span>
+              </div>
             </div>
-            <div class="service-right">
-              <span class="service-tagline">Hidromasaje en Suite</span>
-              <span class="service-arrow">→</span>
+            <div class="services-toggle-right">
+              <span class="services-toggle-status" id="servicesToggleStatus">Oculto</span>
+              <span class="services-toggle-arrow" aria-hidden="true">↓</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- PANEL DE LOS 6 SERVICIOS (OCULTO POR DEFECTO HASTA SU ACTIVACIÓN) -->
+        <div id="servicesMainPanel" class="services-main-panel" hidden>
+          <p class="services-a11y-hint" role="note">
+            <span class="a11y-hint-badge">Vista Adaptada</span>
+            <span>Toca o pulsa cualquier amenidad para desplegar la fotografía ampliada y detalles de confort.</span>
+          </p>
+          <ul class="services-interactive-list" role="list">
+          <!-- 01 JACUZZI PRIVADO & SPA -->
+          <li class="service-item reveal" data-service="jacuzzi">
+            <button type="button" class="service-trigger" aria-expanded="false" aria-controls="serviceDetail01" id="serviceTrigger01">
+              <div class="service-left">
+                <span class="service-num">01</span>
+                <h3 class="service-title">Jacuzzi Privado & Spa</h3>
+              </div>
+              <div class="service-right">
+                <span class="service-tagline">Hidromasaje en Suite</span>
+                <span class="service-arrow" aria-hidden="true">↓</span>
+              </div>
+            </button>
+            <div id="serviceDetail01" class="service-detail-drawer" role="region" aria-labelledby="serviceTrigger01" hidden>
+              <div class="service-detail-grid">
+                <div class="service-detail-media">
+                  <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=1200&auto=format&fit=crop" alt="Tina de hidromasaje y jacuzzi privado con iluminación ambiental en suite" loading="lazy" />
+                </div>
+                <div class="service-detail-content">
+                  <div class="service-detail-badge">Bienestar & Termoterapia</div>
+                  <h4 class="service-detail-title">Jacuzzi de Alta Presión con Hidromasaje</h4>
+                  <p class="service-detail-desc">
+                    Tina de hidromasaje climatizada de alta presión con boquillas regulables, sistema de recirculación continua a 38°C, sales minerales aromáticas y cromoterapia LED integrada. Máximo relax y confort ergonómico para dos personas.
+                  </p>
+                  <div class="service-detail-pills">
+                    <span class="service-pill">✓ Agua Climatizada 38°C</span>
+                    <span class="service-pill">✓ Cromoterapia LED</span>
+                    <span class="service-pill">✓ Sales Minerales Incluidas</span>
+                    <span class="service-pill">✓ Desinfección UV Grado Sanitario</span>
+                  </div>
+                  <a href="#habitaciones" class="service-cta-btn">Ver suites con jacuzzi →</a>
+                </div>
+              </div>
             </div>
           </li>
-          <li class="service-item reveal" data-img="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1000&auto=format&fit=crop">
-            <div class="service-left">
-              <span class="service-num">02</span>
-              <h3 class="service-title">Estacionamiento Privado Directo</h3>
-            </div>
-            <div class="service-right">
-              <span class="service-tagline">Discreción & Acceso 24/7</span>
-              <span class="service-arrow">→</span>
-            </div>
-          </li>
-          <li class="service-item reveal" data-img="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1000&auto=format&fit=crop">
-            <div class="service-left">
-              <span class="service-num">03</span>
-              <h3 class="service-title">Bar & Mixología de Autor</h3>
-            </div>
-            <div class="service-right">
-              <span class="service-tagline">Licores & Cócteles Gourmet</span>
-              <span class="service-arrow">→</span>
-            </div>
-          </li>
-          <li class="service-item reveal" data-img="https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1000&auto=format&fit=crop">
-            <div class="service-left">
-              <span class="service-num">04</span>
-              <h3 class="service-title">Cámara Seca & Sauna Privado</h3>
-            </div>
-            <div class="service-right">
-              <span class="service-tagline">Bienestar & Desconexión</span>
-              <span class="service-arrow">→</span>
-            </div>
-          </li>
-          <li class="service-item reveal" data-img="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1000&auto=format&fit=crop">
-            <div class="service-left">
-              <span class="service-num">05</span>
-              <h3 class="service-title">Room Service Gourmet 24/7</h3>
-            </div>
-            <div class="service-right">
-              <span class="service-tagline">Carta Directa a la Habitación</span>
-              <span class="service-arrow">→</span>
+          <!-- 02 ESTACIONAMIENTO PRIVADO DIRECTO -->
+          <li class="service-item reveal" data-service="estacionamiento">
+            <button type="button" class="service-trigger" aria-expanded="false" aria-controls="serviceDetail02" id="serviceTrigger02">
+              <div class="service-left">
+                <span class="service-num">02</span>
+                <h3 class="service-title">Estacionamiento Privado Directo</h3>
+              </div>
+              <div class="service-right">
+                <span class="service-tagline">Discreción & Acceso 24/7</span>
+                <span class="service-arrow" aria-hidden="true">↓</span>
+              </div>
+            </button>
+            <div id="serviceDetail02" class="service-detail-drawer" role="region" aria-labelledby="serviceTrigger02" hidden>
+              <div class="service-detail-grid">
+                <div class="service-detail-media">
+                  <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1200&auto=format&fit=crop" alt="Cochera individual privada y techada con acceso directo a habitación" loading="lazy" />
+                </div>
+                <div class="service-detail-content">
+                  <div class="service-detail-badge">Privacidad & Seguridad</div>
+                  <h4 class="service-detail-title">Cochera Techada con Entrada a la Suite</h4>
+                  <p class="service-detail-desc">
+                    Espacio individual de aparcamiento cerrado con portón automático de apertura inmediata. Permite ingresar y retirarse directamente a la suite sin transitar por zonas comunes ni interactuar físicamente en recepción.
+                  </p>
+                  <div class="service-detail-pills">
+                    <span class="service-pill">✓ Portón Automatizado</span>
+                    <span class="service-pill">✓ Acceso Directo Interno</span>
+                    <span class="service-pill">✓ Vigilancia Perimetral 24/7</span>
+                    <span class="service-pill">✓ 100% Cero Contacto</span>
+                  </div>
+                  <a href="#habitaciones" class="service-cta-btn">Ver suites con cochera →</a>
+                </div>
+              </div>
             </div>
           </li>
-          <li class="service-item reveal" data-img="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1000&auto=format&fit=crop">
-            <div class="service-left">
-              <span class="service-num">06</span>
-              <h3 class="service-title">Suites con Vista Panorámica</h3>
+          <!-- 03 BAR & MIXOLOGÍA DE AUTOR -->
+          <li class="service-item reveal" data-service="bar">
+            <button type="button" class="service-trigger" aria-expanded="false" aria-controls="serviceDetail03" id="serviceTrigger03">
+              <div class="service-left">
+                <span class="service-num">03</span>
+                <h3 class="service-title">Bar & Mixología de Autor</h3>
+              </div>
+              <div class="service-right">
+                <span class="service-tagline">Licores & Cócteles Gourmet</span>
+                <span class="service-arrow" aria-hidden="true">↓</span>
+              </div>
+            </button>
+            <div id="serviceDetail03" class="service-detail-drawer" role="region" aria-labelledby="serviceTrigger03" hidden>
+              <div class="service-detail-grid">
+                <div class="service-detail-media">
+                  <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1200&auto=format&fit=crop" alt="Coctelería de autor y cristalería premium en el bar" loading="lazy" />
+                </div>
+                <div class="service-detail-content">
+                  <div class="service-detail-badge">Coctelería de Alta Gama</div>
+                  <h4 class="service-detail-title">Carta Exclusiva de Licores y Vinos</h4>
+                  <p class="service-detail-desc">
+                    Más de 70 referencias en whiskies importados, vodkas, tequilas, champagnes franceses y vinos de reserva. Elaboración en minutos con hielo cristalino y cristalería premium, servido directamente a la puerta de su suite.
+                  </p>
+                  <div class="service-detail-pills">
+                    <span class="service-pill">✓ 70+ Etiquetas Premium</span>
+                    <span class="service-pill">✓ Coctelería de Autor</span>
+                    <span class="service-pill">✓ Champagnes y Espumantes</span>
+                    <span class="service-pill">✓ Servicio Continuo 24 Horas</span>
+                  </div>
+                  <a href="#gastronomia" class="service-cta-btn">Explorar carta del bar →</a>
+                </div>
+              </div>
             </div>
-            <div class="service-right">
-              <span class="service-tagline">Frente al Océano Pacífico</span>
-              <span class="service-arrow">→</span>
+          </li>
+          <!-- 04 CÁMARA SECA & SAUNA PRIVADO -->
+          <li class="service-item reveal" data-service="sauna">
+            <button type="button" class="service-trigger" aria-expanded="false" aria-controls="serviceDetail04" id="serviceTrigger04">
+              <div class="service-left">
+                <span class="service-num">04</span>
+                <h3 class="service-title">Cámara Seca & Sauna Privado</h3>
+              </div>
+              <div class="service-right">
+                <span class="service-tagline">Bienestar & Desconexión</span>
+                <span class="service-arrow" aria-hidden="true">↓</span>
+              </div>
+            </button>
+            <div id="serviceDetail04" class="service-detail-drawer" role="region" aria-labelledby="serviceTrigger04" hidden>
+              <div class="service-detail-grid">
+                <div class="service-detail-media">
+                  <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop" alt="Cámara seca revestida en madera de cedro con piedras volcánicas" loading="lazy" />
+                </div>
+                <div class="service-detail-content">
+                  <div class="service-detail-badge">Relajación & Desintoxicación</div>
+                  <h4 class="service-detail-title">Sauna Finlandés en Madera de Cedro</h4>
+                  <p class="service-detail-desc">
+                    Espacio térmico individual revestido en cedro aromático selecto, dotado de panel digital para regular la temperatura, piedras volcánicas, esencias puras de eucalipto y ducha española contigua de alto caudal.
+                  </p>
+                  <div class="service-detail-pills">
+                    <span class="service-pill">✓ Cedro Aromático Natural</span>
+                    <span class="service-pill">✓ Termostato Digital</span>
+                    <span class="service-pill">✓ Ducha Española Contigua</span>
+                    <span class="service-pill">✓ Aromaterapia Eucalipto</span>
+                  </div>
+                  <a href="#habitaciones" class="service-cta-btn">Ver suites con sauna →</a>
+                </div>
+              </div>
+            </div>
+          </li>
+          <!-- 05 ROOM SERVICE GOURMET 24/7 -->
+          <li class="service-item reveal" data-service="room-service">
+            <button type="button" class="service-trigger" aria-expanded="false" aria-controls="serviceDetail05" id="serviceTrigger05">
+              <div class="service-left">
+                <span class="service-num">05</span>
+                <h3 class="service-title">Room Service Gourmet 24/7</h3>
+              </div>
+              <div class="service-right">
+                <span class="service-tagline">Carta Directa a la Habitación</span>
+                <span class="service-arrow" aria-hidden="true">↓</span>
+              </div>
+            </button>
+            <div id="serviceDetail05" class="service-detail-drawer" role="region" aria-labelledby="serviceTrigger05" hidden>
+              <div class="service-detail-grid">
+                <div class="service-detail-media">
+                  <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1200&auto=format&fit=crop" alt="Platos gourmet de alta cocina servidos a la habitación" loading="lazy" />
+                </div>
+                <div class="service-detail-content">
+                  <div class="service-detail-badge">Gastronomía Exclusiva</div>
+                  <h4 class="service-detail-title">Cocina Central Activa las 24 Horas</h4>
+                  <p class="service-detail-desc">
+                    Carta completa de 21 platos elaborados al instante: lomo saltado al wok, pastas artesanales, piqueos calientes y postres gourmet. Entrega reservada a través de compartimento de doble esclusa para total intimidad.
+                  </p>
+                  <div class="service-detail-pills">
+                    <span class="service-pill">✓ 21 Platos a la Carta</span>
+                    <span class="service-pill">✓ Ventanilla Hermética Privada</span>
+                    <span class="service-pill">✓ Preparación Inmediata</span>
+                    <span class="service-pill">✓ Cocina Activa 24/7</span>
+                  </div>
+                  <a href="#gastronomia" class="service-cta-btn">Ver carta de comidas →</a>
+                </div>
+              </div>
+            </div>
+          </li>
+          <!-- 06 SUITES CON VISTA PANORÁMICA -->
+          <li class="service-item reveal" data-service="vista-mar">
+            <button type="button" class="service-trigger" aria-expanded="false" aria-controls="serviceDetail06" id="serviceTrigger06">
+              <div class="service-left">
+                <span class="service-num">06</span>
+                <h3 class="service-title">Suites con Vista Panorámica</h3>
+              </div>
+              <div class="service-right">
+                <span class="service-tagline">Frente al Océano Pacífico</span>
+                <span class="service-arrow" aria-hidden="true">↓</span>
+              </div>
+            </button>
+            <div id="serviceDetail06" class="service-detail-drawer" role="region" aria-labelledby="serviceTrigger06" hidden>
+              <div class="service-detail-grid">
+                <div class="service-detail-media">
+                  <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1200&auto=format&fit=crop" alt="Vista panorámica al mar frente al océano pacífico desde la suite" loading="lazy" />
+                </div>
+                <div class="service-detail-content">
+                  <div class="service-detail-badge">Paisaje Costero</div>
+                  <h4 class="service-detail-title">Ventanales Panorámicos a la Costa Verde</h4>
+                  <p class="service-detail-desc">
+                    Cristales de piso a techo con vistas directas al mar de San Miguel. Equipados con tratamiento térmico, cristales acústicos de doble cámara y polarizado de alta privacidad que impide cualquier visibilidad desde el exterior.
+                  </p>
+                  <div class="service-detail-pills">
+                    <span class="service-pill">✓ Vista Directa al Océano</span>
+                    <span class="service-pill">✓ Vidrio Acústico Insonorizado</span>
+                    <span class="service-pill">✓ Polarizado Unilateral 100%</span>
+                    <span class="service-pill">✓ Atardeceres Panorámicos</span>
+                  </div>
+                  <a href="#habitaciones" class="service-cta-btn">Ver suites frente al mar →</a>
+                </div>
+              </div>
             </div>
           </li>
         </ul>
       </div>
-    </section>
+    </div>
+  </section>
     <!-- GASTRONOMÍA EDITORIAL DE LUJO (4 CATEGORÍAS EN VIVO) -->
     <section id="gastronomia" class="section-editorial" style="background: #060911; border-top: 1px solid rgba(255,255,255,0.08); padding: 6rem 0;">
       <div class="editorial-container">
@@ -449,83 +623,83 @@ function renderEditorialApp() {
         </div>
       </div>
     </section>
-    <!-- RESERVA & UBICACIÓN EDITORIAL -->
-    <section id="reserva" class="section-editorial bg-black">
+    <!-- UBICACIÓN & ACCESO PRIVADO (MAPA & REFERENCIAS DIRECTAS) -->
+    <section id="ubicacion" class="section-editorial bg-black" aria-labelledby="ubicacionHeading">
+      <span id="reserva" style="display:block; position:relative; top:-80px; visibility:hidden;" aria-hidden="true"></span>
       <div class="editorial-container">
         <div class="editorial-header-block reveal" style="text-align: center; max-width: 800px; margin-left: auto; margin-right: auto;">
-          <span class="editorial-tag">DISPONIBILIDAD INMEDIATA</span>
-          <h2 class="editorial-headline" style="color: var(--color-white);">Reservar una Suite & Ubicación</h2>
-          <p style="color: #999999; margin-top: 1rem;">
-            Selecciona la suite de tu preferencia para iniciar el proceso de checkout digital 100% privado y confirmar tu reserva de forma inmediata.
+          <span class="editorial-tag">LOCALIZACIÓN PRIVADA & ACCESO DIRECTO</span>
+          <h2 id="ubicacionHeading" class="editorial-headline" style="color: var(--color-white);">Nuestra Ubicación & Cómo Llegar</h2>
+          <p style="color: #cbd5e1; margin-top: 1rem; font-size: 1.05rem; line-height: 1.6;">
+            Ubicados estratégicamente frente al mar en la Costa Verde de San Miguel. Discreción total con ingreso vehicular individual y estacionamiento privado directo a la habitación las 24 horas.
           </p>
         </div>
-        <div class="reserva-grid-wrap reveal">
-          <!-- Columna Izquierda: Formulario de Reserva (55%) -->
-          <div class="reserva-form-col">
-            <form id="editorialForm">
-              <div class="editorial-form-grid">
-                <div class="editorial-field">
-                  <label class="editorial-label">Nombre Completo</label>
-                  <input type="text" id="edName" class="editorial-input" placeholder="Tu nombre" required />
-                </div>
-                <div class="editorial-field">
-                  <label class="editorial-label">Teléfono de Contacto</label>
-                  <input type="tel" id="edPhone" class="editorial-input" placeholder="Ej. 990370681" required />
-                </div>
-                <div class="editorial-field">
-                  <label class="editorial-label">Suite Seleccionada</label>
-                  <select id="edRoom" class="editorial-select" required>
-                    ${roomsData.map(r => `<option value="${r.id}">${r.nombre}</option>`).join('')}
-                  </select>
-                </div>
-                <div class="editorial-field">
-                  <label class="editorial-label">Tiempo de Estadía</label>
-                  <select id="edDuration" class="editorial-select">
-                    <option value="3 Horas">Estadía por 3 Horas</option>
-                    <option value="6 Horas" selected>Estadía por 6 Horas</option>
-                    <option value="Toda la Noche">Toda la Noche</option>
-                  </select>
-                </div>
-                <div class="editorial-field full">
-                  <label class="editorial-label">Hora Estimada de Llegada</label>
-                  <select id="edArrivalTime" class="editorial-select">
-                    <option value="En 30 min">En 30 minutos</option>
-                    <option value="20:00">20:00 hrs</option>
-                    <option value="21:00">21:00 hrs</option>
-                    <option value="22:00">22:00 hrs</option>
-                    <option value="00:00">00:00 hrs</option>
-                  </select>
-                </div>
-                <div class="editorial-field full" style="margin-top: 2rem; text-align: center;">
-                  <button type="submit" class="btn-editorial-light" style="width: 100%; cursor: pointer;">
-                    INICIAR RESERVA DIGITAL
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-          <!-- Columna Derecha: Mapa Oscuro Sticky (45%) -->
-          <div class="reserva-map-col">
-            <div class="reserva-map-sticky">
-              <div class="reserva-map-header">
-                <span class="editorial-tag text-gold">NUESTRA UBICACIÓN</span>
-                <h3 class="reserva-map-title">Av. Costanera 2098</h3>
-                <p class="reserva-map-sub">San Miguel, Lima • Estacionamiento Privado Directo las 24 Horas</p>
-              </div>
-              <div class="map-container">
-                <iframe 
-                  title="Ubicación Hotel Wimbledon"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.37340638531!2d-77.0945!3d-12.0864!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c963625f2ed9%3A0x88981f4a9bb540c4!2sAv.%20Costanera%202098%2C%20San%20Miguel%2015087!5e0!3m2!1ses!2spe!4v1700000000000!5m2!1ses!2spe" 
-                  width="100%" 
-                  height="450" 
-                  style="border:0;" 
-                  allowfullscreen="" 
-                  loading="lazy" 
-                  referrerpolicy="no-referrer-when-downgrade"
-                  class="google-map-iframe"
-                ></iframe>
+        <div class="ubicacion-grid-wrap reveal">
+          <!-- Columna Izquierda: Información de Contacto y Accesos (40%) -->
+          <div class="ubicacion-info-card">
+            <div class="ubicacion-info-item">
+              <span class="ubicacion-icon" aria-hidden="true">📍</span>
+              <div>
+                <h4 class="ubicacion-item-title">Dirección Exacta</h4>
+                <p class="ubicacion-item-desc">Av. Costanera 2098, San Miguel (Cdra. 20 Av. La Paz) — Lima, Perú</p>
               </div>
             </div>
+            <div class="ubicacion-info-item">
+              <span class="ubicacion-icon" aria-hidden="true">🚗</span>
+              <div>
+                <h4 class="ubicacion-item-title">Estacionamiento Privado</h4>
+                <p class="ubicacion-item-desc">Cochera techada individual con portón automatizado directo a la suite, sin pasar por recepción física.</p>
+              </div>
+            </div>
+            <div class="ubicacion-info-item">
+              <span class="ubicacion-icon" aria-hidden="true">🕒</span>
+              <div>
+                <h4 class="ubicacion-item-title">Horario de Atención</h4>
+                <p class="ubicacion-item-desc">Atención continua e ininterrumpida las 24 horas del día, los 365 días del año.</p>
+              </div>
+            </div>
+            <div class="ubicacion-info-item">
+              <span class="ubicacion-icon" aria-hidden="true">📞</span>
+              <div>
+                <h4 class="ubicacion-item-title">Central Telefónica</h4>
+                <p class="ubicacion-item-desc">(01) 578-6000 • +51 990 370 681</p>
+              </div>
+            </div>
+
+            <!-- Botones de Acción de Ubicación -->
+            <div class="ubicacion-actions">
+              <a 
+                href="https://maps.google.com/?q=Av.+Costanera+2098,+San+Miguel,+Lima" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="btn-ubicacion-maps"
+              >
+                🗺️ Abrir en Google Maps / Waze
+              </a>
+              <a 
+                href="https://wa.me/51990370681?text=Hola%20Hotel%20Wimbledon,%20deseo%20consultar%20disponibilidad%20y%20cómo%20llegar." 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="btn-ubicacion-wsp"
+              >
+                💬 Consultar por WhatsApp
+              </a>
+            </div>
+          </div>
+
+          <!-- Columna Derecha: Mapa Google Maps (60%) -->
+          <div class="ubicacion-map-frame">
+            <iframe 
+              title="Mapa de ubicación Hotel Wimbledon"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.37340638531!2d-77.0945!3d-12.0864!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c963625f2ed9%3A0x88981f4a9bb540c4!2sAv.%20Costanera%202098%2C%20San%20Miguel%2015087!5e0!3m2!1ses!2spe!4v1700000000000!5m2!1ses!2spe" 
+              width="100%" 
+              height="480" 
+              style="border:0;" 
+              allowfullscreen="" 
+              loading="lazy" 
+              referrerpolicy="no-referrer-when-downgrade"
+              class="google-map-iframe"
+            ></iframe>
           </div>
         </div>
       </div>
@@ -550,7 +724,7 @@ function renderEditorialApp() {
           <a href="#promocion">PROMOCIÓN</a>
           <a href="#habitaciones">HABITACIONES</a>
           <a href="#experiencia">SERVICIOS</a>
-          <a href="#reserva">CONTACTANOS</a>
+          <a href="#ubicacion">UBICACIÓN</a>
           <a href="https://wimbledon-hotel.com/politicas-y-restricciones/" target="_blank">POLÍTICAS Y RESTRICCIONES</a>
           <a href="https://wimbledon-hotel.com/codigo-etico/" target="_blank">CÓDIGO ÉTICO</a>
         </nav>
@@ -571,10 +745,34 @@ function renderEditorialApp() {
         </div>
       </div>
     </footer>
+
+    <!-- BOTÓN FLOTANTE WHATSAPP (ATENCIÓN & CLIENTES HABITUALES) -->
+    <div class="floating-whatsapp-container" id="floatingWhatsappWrap">
+      <a 
+        href="https://wa.me/51990370681?text=Hola%20Hotel%20Wimbledon,%20deseo%20consultar%20y%20reservar%20una%20suite." 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        class="floating-whatsapp-btn"
+        id="btnFloatingWhatsapp"
+        aria-label="Escribir por WhatsApp a recepción (Atención 24/7)"
+      >
+        <div class="whatsapp-tooltip-pill">
+          <span class="whatsapp-pill-badge">
+            <span class="whatsapp-status-dot"></span>
+            EN LÍNEA 24/7
+          </span>
+          <span class="whatsapp-pill-text">Escríbenos al WhatsApp</span>
+        </div>
+        <div class="whatsapp-icon-circle">
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="#ffffff" aria-hidden="true">
+            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.699c.971.53 1.771.815 2.796.815 3.182 0 5.767-2.587 5.768-5.766.001-3.181-2.585-5.767-5.768-5.767zm0 10.455c-.943 0-1.745-.27-2.502-.721l-.179-.107-1.862.488.497-1.816-.118-.188a4.67 4.67 0 0 1-.724-2.545c.001-2.587 2.106-4.692 4.693-4.692 2.586 0 4.691 2.105 4.691 4.692 0 2.586-2.105 4.689-4.496 4.689zm7.969-4.689c-.002-4.398-3.579-7.974-7.978-7.974-4.397 0-7.975 3.576-7.976 7.974 0 1.405.367 2.775 1.063 3.98l-1.129 4.125 4.221-1.107c1.168.636 2.487.972 3.821.972 4.398 0 7.977-3.576 7.978-7.97zm2 0c0 5.514-4.486 10-10 10-1.724 0-3.344-.442-4.764-1.218l-5.236 1.372 1.396-5.105c-.86-1.468-1.396-3.176-1.396-5.049 0-5.514 4.486-10 10-10s10 4.486 10 10z"/>
+          </svg>
+        </div>
+      </a>
+    </div>
   `;
   renderSuitesList('all');
   renderGastronomiaList();
-  setupFormHandler();
   setupPromoVideo();
 }
 const EDITORIAL_ROOM_COPY = {
@@ -845,12 +1043,14 @@ function setupDrawerModalStaticListeners() {
 function setupCheckoutModalListeners() {
   const headerBtn = document.getElementById('btnHeaderReserve');
   const heroReserveBtn = document.getElementById('btnHeroReserve');
+  const promoReserveBtn = document.getElementById('btnPromoReserve');
   const openDefaultCheckout = () => {
     const defaultRoomId = roomsData.length > 0 ? roomsData[0].id : 860;
     openCheckoutModal(defaultRoomId);
   };
   if (headerBtn) headerBtn.onclick = openDefaultCheckout;
   if (heroReserveBtn) heroReserveBtn.onclick = openDefaultCheckout;
+  if (promoReserveBtn) promoReserveBtn.onclick = openDefaultCheckout;
   const closeBtn = document.getElementById('checkoutCloseBtn');
   const modal = document.getElementById('checkoutModal');
   if (closeBtn && modal) {
@@ -911,11 +1111,13 @@ function bindCheckoutModalDelegationOnce() {
     }
   });
 
-  // Delegación de cambio en selector de suite (Solución #1)
+  // Delegación de cambio en selector de suite y horario
   modalBody.addEventListener('change', (e) => {
     if (e.target.id === 'roomSwitcher') {
       checkoutState.roomId = String(e.target.value);
       updateRoomSummaryOnly(); // No destruye los inputs del formulario
+    } else if (e.target.id === 'checkoutArrivalTime') {
+      checkoutState.arrivalTime = e.target.value;
     }
   });
 
@@ -939,15 +1141,6 @@ function selectChip(group, value) {
     chip.setAttribute('aria-checked', String(isSelected));
   });
   checkoutState[group] = value;
-
-  if (group === 'paymentMethod') {
-    const yapeBox = document.getElementById('yapePaymentDetails');
-    const cardBox = document.getElementById('cardPaymentDetails');
-    if (yapeBox && cardBox) {
-      yapeBox.style.display = value === 'yape' ? 'block' : 'none';
-      cardBox.style.display = value === 'card' ? 'flex' : 'none';
-    }
-  }
 
   updateSummaryTotal();
 }
@@ -981,7 +1174,7 @@ function updateRoomSummaryOnly() {
 
   const metaEl = document.getElementById('checkoutRoomMeta');
   if (metaEl) {
-    metaEl.textContent = `${room.categoria_nombre || 'Suite de Lujo'} • Tarifa Base: ${room.precio || 'S/ 150'} • Estacionamiento Privado Incluido`;
+    metaEl.textContent = `${room.categoria_nombre || 'Suite de Lujo'} • Tarifa Base: ${room.precio || 'S/ 150'} • Cochera Privada Directa`;
   }
 
   // Actualizar subtítulos dinámicos de duración según la tarifa base de la nueva suite
@@ -1006,11 +1199,11 @@ function updateSummaryTotal() {
   if (totalEl) totalEl.textContent = `S/ ${totalPrice}.00`;
 
   const btnSubmit = document.getElementById('btnSubmitBooking');
-  if (btnSubmit) btnSubmit.textContent = `CONFIRMAR Y EMITIR PASE DIGITAL (S/ ${totalPrice}.00)`;
+  if (btnSubmit) btnSubmit.textContent = `CONFIRMAR RESERVA Y EMITIR PASE (S/ ${totalPrice}.00 en Recepción)`;
 
   const summaryDesc = document.getElementById('summaryDetailsDesc');
   if (summaryDesc) {
-    summaryDesc.textContent = `${checkoutState.duration} ${checkoutState.selectedExtras.length > 0 ? `+ ${checkoutState.selectedExtras.length} Extras` : ''} • Impuestos incluidos`;
+    summaryDesc.textContent = `${checkoutState.duration} ${checkoutState.selectedExtras.length > 0 ? `+ ${checkoutState.selectedExtras.length} Extras` : ''} • Sin cobros en línea`;
   }
 }
 
@@ -1025,7 +1218,7 @@ function openCheckoutModal(roomId, initialOptions = {}) {
     duration: initialOptions.duration || '6 Horas',
     arrivalTime: initialOptions.arrivalTime || 'En 30 min',
     customTime: '',
-    paymentMethod: 'yape',
+    paymentMethod: 'efectivo',
     customerName: initialOptions.customerName || '',
     customerPhone: initialOptions.customerPhone || '',
     selectedExtras: []
@@ -1050,42 +1243,65 @@ function renderCheckoutModalContent() {
 
   modalBody.innerHTML = `
     <div style="text-align: center; margin-bottom: 1.25rem;">
-      <span style="color: #fbbf24; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">FLUJO DE CHECKOUT DIGITAL & DISCRETO</span>
+      <span style="color: #fbbf24; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">RESERVA DISCRETA • HOTEL DE PASO</span>
       <h2 id="checkoutRoomTitle" style="font-family: var(--font-serif); font-size: 1.85rem; color: #fff; margin-top: 0.25rem;">
         Reservar ${room.nombre}
       </h2>
       <p id="checkoutRoomMeta" style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.2rem;">
-        ${room.categoria_nombre || 'Suite de Lujo'} • Tarifa Base: ${room.precio || 'S/ 150'} • Estacionamiento Privado Incluido
+        ${room.categoria_nombre || 'Suite de Lujo'} • Tarifa Base: ${room.precio || 'S/ 150'} • Cochera Privada Directa
       </p>
     </div>
 
-    <!-- SELECTOR RÁPIDO DE HABITACIÓN (SOLUCIÓN #1) -->
-    <div style="margin-bottom: 1.25rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(251, 191, 36, 0.25); border-radius: 12px; padding: 0.75rem 1rem;">
-      <label for="roomSwitcher" style="display: block; font-size: 0.72rem; color: #fbbf24; font-weight: bold; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em;">
-        HABITACIÓN SELECCIONADA (CAMBIAR SUITE)
+    <!-- COMBO BOX: HABITACIONES DISPONIBLES -->
+    <div style="margin-bottom: 1.25rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 12px; padding: 0.85rem 1rem;">
+      <label for="roomSwitcher" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #fbbf24; font-weight: bold; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em;">
+        <span>HABITACIÓN / SUITE (COMBO BOX)</span>
+        <span style="color: #34d399; font-size: 0.7rem; font-weight: 600;">● SELECCIONA TU SUITE</span>
       </label>
-      <select id="roomSwitcher" class="room-switcher" style="width: 100%; padding: 0.65rem 0.85rem; background: #0b0f19; border: 1px solid #334155; border-radius: 8px; color: #fff; font-family: var(--font-sans); font-size: 0.92rem; cursor: pointer;">
+      <select id="roomSwitcher" class="room-switcher" style="width: 100%; padding: 0.75rem 0.9rem; background: #0b0f19; border: 1px solid #334155; border-radius: 8px; color: #fff; font-family: var(--font-sans); font-size: 0.95rem; cursor: pointer; outline: none;">
         ${roomsData.map(r => `
           <option value="${String(r.id)}" ${String(r.id) === String(checkoutState.roomId) ? 'selected' : ''}>
-            ${r.nombre} — ${r.precio || 'S/ 150'} (${r.categoria_nombre || 'Suite'})
+            🟢 ${r.nombre} — ${r.precio || 'S/ 150'} (${r.categoria_nombre || 'Suite'}) • DISPONIBLE
           </option>
         `).join('')}
       </select>
     </div>
 
-    <!-- ÍNDICE HONESTO DE SECCIONES (SOLUCIÓN #6) -->
+    <!-- COMBO BOX: HORARIO ESTIMADO DE LLEGADA (DISPONIBLE) -->
+    <div style="margin-bottom: 1.25rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 0.85rem 1rem;">
+      <label for="checkoutArrivalTime" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #38bdf8; font-weight: bold; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em;">
+        <span>HORA DE LLEGADA (COMBO BOX DISPONIBILIDAD)</span>
+        <span style="color: #38bdf8; font-size: 0.7rem; font-weight: 600;">⏱️ HORARIO DISPONIBLE</span>
+      </label>
+      <select id="checkoutArrivalTime" class="room-switcher" style="width: 100%; padding: 0.75rem 0.9rem; background: #0b0f19; border: 1px solid #334155; border-radius: 8px; color: #fff; font-family: var(--font-sans); font-size: 0.95rem; cursor: pointer; outline: none;">
+        <option value="En 30 min" ${checkoutState.arrivalTime === 'En 30 min' ? 'selected' : ''}>🟢 Inmediato (Llegada en 30 min) — Suite Disponible Inmediata</option>
+        <option value="20:00" ${checkoutState.arrivalTime === '20:00' ? 'selected' : ''}>🟢 20:00 hrs (Turno Noche) — Suite Disponible</option>
+        <option value="21:00" ${checkoutState.arrivalTime === '21:00' ? 'selected' : ''}>🟢 21:00 hrs (Turno Noche) — Suite Disponible</option>
+        <option value="22:00" ${checkoutState.arrivalTime === '22:00' ? 'selected' : ''}>🟢 22:00 hrs (Noche Plena) — Suite Disponible</option>
+        <option value="23:00" ${checkoutState.arrivalTime === '23:00' ? 'selected' : ''}>🟢 23:00 hrs (Noche Plena) — Suite Disponible</option>
+        <option value="00:00" ${checkoutState.arrivalTime === '00:00' ? 'selected' : ''}>🟢 00:00 hrs (Madrugada) — Suite Disponible</option>
+        <option value="01:00" ${checkoutState.arrivalTime === '01:00' ? 'selected' : ''}>🟢 01:00 hrs (Madrugada) — Suite Disponible</option>
+        <option value="02:00" ${checkoutState.arrivalTime === '02:00' ? 'selected' : ''}>🟢 02:00 hrs (Madrugada) — Suite Disponible</option>
+        <option value="04:00" ${checkoutState.arrivalTime === '04:00' ? 'selected' : ''}>🟢 04:00 hrs (Madrugada) — Suite Disponible</option>
+        <option value="08:00" ${checkoutState.arrivalTime === '08:00' ? 'selected' : ''}>🟢 08:00 hrs (Turno Mañana) — Suite Disponible</option>
+        <option value="12:00" ${checkoutState.arrivalTime === '12:00' ? 'selected' : ''}>🟢 12:00 hrs (Turno Mediodía) — Suite Disponible</option>
+        <option value="16:00" ${checkoutState.arrivalTime === '16:00' ? 'selected' : ''}>🟢 16:00 hrs (Turno Tarde) — Suite Disponible</option>
+      </select>
+    </div>
+
+    <!-- ÍNDICE DE SECCIONES -->
     <div class="checkout-sections-index">
       <span>1. Duración</span>
       <span class="step-sep">•</span>
-      <span>2. Horario</span>
+      <span>2. Extras</span>
       <span class="step-sep">•</span>
-      <span>3. Extras</span>
+      <span>3. Pago en Recepción</span>
       <span class="step-sep">•</span>
-      <span>4. Pago</span>
+      <span>4. Emitir Pase</span>
     </div>
 
     <form id="checkoutDynamicForm">
-      <!-- PASO A: DURACIÓN DE ESTADÍA (SOLUCIÓN #5 y #6: radiogroup y role=radio con aria-checked) -->
+      <!-- PASO 1: DURACIÓN DE ESTADÍA -->
       <div style="margin-bottom: 1.5rem;">
         <label style="display: block; font-size: 0.8rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">
           PASO 1 — SELECCIONA LA DURACIÓN
@@ -1106,35 +1322,10 @@ function renderCheckoutModalContent() {
         </div>
       </div>
 
-      <!-- PASO B: HORARIO ESTIMADO DE LLEGADA (radiogroup) -->
-      <div style="margin-bottom: 1.5rem;">
-        <label style="display: block; font-size: 0.8rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">
-          PASO 2 — HORA DE LLEGADA ESTIMADA
-        </label>
-        <div class="chip-group" role="radiogroup" aria-label="Hora de llegada estimada" data-group="arrivalTime">
-          <button type="button" class="chip-option ${checkoutState.arrivalTime === 'En 30 min' ? 'active' : ''}" role="radio" data-group="arrivalTime" data-value="En 30 min" aria-checked="${checkoutState.arrivalTime === 'En 30 min'}">
-            <span class="chip-title">En 30 min</span>
-            <span class="chip-sub">Inmediato</span>
-          </button>
-          <button type="button" class="chip-option ${checkoutState.arrivalTime === '20:00' ? 'active' : ''}" role="radio" data-group="arrivalTime" data-value="20:00" aria-checked="${checkoutState.arrivalTime === '20:00'}">
-            <span class="chip-title">20:00 hrs</span>
-            <span class="chip-sub">Turno Noche</span>
-          </button>
-          <button type="button" class="chip-option ${checkoutState.arrivalTime === '22:00' ? 'active' : ''}" role="radio" data-group="arrivalTime" data-value="22:00" aria-checked="${checkoutState.arrivalTime === '22:00'}">
-            <span class="chip-title">22:00 hrs</span>
-            <span class="chip-sub">Noche Plena</span>
-          </button>
-          <button type="button" class="chip-option ${checkoutState.arrivalTime === '00:00' ? 'active' : ''}" role="radio" data-group="arrivalTime" data-value="00:00" aria-checked="${checkoutState.arrivalTime === '00:00'}">
-            <span class="chip-title">00:00 hrs</span>
-            <span class="chip-sub">Madrugada</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- PASO C: EXTRAS Y EXPERIENCIAS (role=button con aria-pressed) -->
+      <!-- PASO 2: EXTRAS Y EXPERIENCIAS (OPCIONAL) -->
       <div style="margin-bottom: 1.5rem;">
         <label style="display: block; font-size: 0.8rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em;">
-          PASO 3 — PERSONALIZA TU ESTADÍA (OPCIONAL)
+          PASO 2 — PERSONALIZA TU ESTADÍA (OPCIONAL)
         </label>
         <span style="font-size: 0.72rem; color: #94a3b8; display: block; margin-bottom: 0.6rem;">Encuentra tu suite decorada y preparada con total discreción al ingresar.</span>
         
@@ -1159,56 +1350,37 @@ function renderCheckoutModalContent() {
         </div>
       </div>
 
-      <!-- PASO D: MEDIO DE PAGO (radiogroup) -->
+      <!-- PASO 3: POLÍTICA DE PAGO EN EFECTIVO (CERO HUELLA BANCARIA) -->
       <div style="margin-bottom: 1.5rem;">
         <label style="display: block; font-size: 0.8rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">
-          PASO 4 — MEDIO DE PAGO
+          PASO 3 — MODALIDAD DE PAGO (HOTEL DE PASO)
         </label>
-        <div class="payment-group" role="radiogroup" aria-label="Medio de pago" data-group="paymentMethod">
-          <button type="button" class="payment-card ${checkoutState.paymentMethod === 'yape' ? 'active' : ''}" role="radio" data-group="paymentMethod" data-value="yape" aria-checked="${checkoutState.paymentMethod === 'yape'}" style="text-align: left; cursor: pointer;">
-            <span class="payment-icon">📱</span>
-            <div>
-              <div class="payment-title">Yape / Plin</div>
-              <div class="payment-desc">Transferencia instantánea</div>
+        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 14px; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 1.4rem;">💵</span>
+              <div>
+                <div style="color: #34d399; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                  Sin Pago Online • Abono en Efectivo en Recepción
+                </div>
+                <div style="font-size: 0.72rem; color: #94a3b8;">La reserva solo asegura la habitación y horario</div>
+              </div>
             </div>
-          </button>
-          <button type="button" class="payment-card ${checkoutState.paymentMethod === 'card' ? 'active' : ''}" role="radio" data-group="paymentMethod" data-value="card" aria-checked="${checkoutState.paymentMethod === 'card'}" style="text-align: left; cursor: pointer;">
-            <span class="payment-icon">💳</span>
-            <div>
-              <div class="payment-title">Tarjeta Crédito / Débito</div>
-              <div class="payment-desc">Visa, Mastercard, Amex</div>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      <!-- DETALLES CONDICIONALES DE PAGO -->
-      <div id="yapePaymentDetails" style="display: ${checkoutState.paymentMethod === 'yape' ? 'block' : 'none'}; background: rgba(217, 119, 6, 0.1); border: 1px solid rgba(217, 119, 6, 0.3); border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; font-size: 0.82rem; color: #fef08a;">
-        📱 <strong>Pago Digital Rápido:</strong> Yapear al número <code>990 370 681</code> (Hotel Wimbledon S.A.C.). Tu Pase Digital y PIN de habitación se emitirán al confirmar.
-      </div>
-
-      <div id="cardPaymentDetails" style="background: #0f172a; border: 1px solid #334155; border-radius: 14px; padding: 1.25rem; margin-bottom: 1.5rem; display: ${checkoutState.paymentMethod === 'card' ? 'flex' : 'none'}; flex-direction: column; gap: 0.85rem;">
-        <div>
-          <label for="checkoutCardNum" style="display: block; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 0.25rem; font-weight: 600;">NÚMERO DE TARJETA</label>
-          <input type="text" id="checkoutCardNum" name="cardNumber" autocomplete="cc-number" placeholder="4557 •••• •••• 8821" style="width: 100%; padding: 0.75rem; background: #0b0f19; border: 1px solid #334155; border-radius: 8px; color: #fff; font-size: 0.9rem; font-family: monospace;" />
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-          <div>
-            <label for="checkoutCardExp" style="display: block; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 0.25rem; font-weight: 600;">VENCIMIENTO</label>
-            <input type="text" id="checkoutCardExp" name="cardExpiry" autocomplete="cc-exp" placeholder="MM/AA" style="width: 100%; padding: 0.75rem; background: #0b0f19; border: 1px solid #334155; border-radius: 8px; color: #fff; font-size: 0.9rem;" />
+            <span style="font-size: 0.72rem; background: rgba(16, 185, 129, 0.2); color: #6ee7b7; padding: 0.3rem 0.65rem; border-radius: 6px; font-weight: bold; letter-spacing: 0.5px;">
+              🛡️ CERO HUELLA DIGITAL
+            </span>
           </div>
-          <div>
-            <label for="checkoutCardCvv" style="display: block; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 0.25rem; font-weight: 600;">CVC / CVV</label>
-            <input type="password" id="checkoutCardCvv" name="cardCVV" autocomplete="cc-csc" placeholder="•••" maxlength="4" style="width: 100%; padding: 0.75rem; background: #0b0f19; border: 1px solid #334155; border-radius: 8px; color: #fff; font-size: 0.9rem;" />
-          </div>
+          <p style="font-size: 0.82rem; color: #cbd5e1; line-height: 1.5; margin: 0; margin-top: 0.4rem;">
+            Al ser un hotel de paso de máxima privacidad, <strong>no se cobra por reservar ni se solicitan tarjetas de crédito/débito</strong> para evitar cualquier registro o vulnerabilidad bancaria. El monto de la estadía se cancela presencialmente en <strong>EFECTIVO</strong> al momento del ingreso.
+          </p>
         </div>
       </div>
 
-      <!-- DATOS DE REGISTRO CLIENTE (SOLUCIÓN #10: label for) -->
+      <!-- DATOS DE REGISTRO CLIENTE (ALIAS DISCRETO) -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
           <label for="checkoutName" style="display: block; font-size: 0.75rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.35rem;">NOMBRE / ALIAS DISCRETO</label>
-          <input type="text" id="checkoutName" name="customerName" value="${checkoutState.customerName}" placeholder="Nombre o iniciales" style="width: 100%; padding: 0.85rem; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: #fff; font-size: 0.9rem;" required />
+          <input type="text" id="checkoutName" name="customerName" value="${checkoutState.customerName}" placeholder="Nombre o alias" style="width: 100%; padding: 0.85rem; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: #fff; font-size: 0.9rem;" required />
         </div>
         <div>
           <label for="checkoutPhone" style="display: block; font-size: 0.75rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.35rem;">TELÉFONO CELULAR (PARA EL PASE)</label>
@@ -1216,19 +1388,56 @@ function renderCheckoutModalContent() {
         </div>
       </div>
 
-      <!-- RESUMEN DEL PRECIO FINAL (SOLUCIÓN #13: contraste WCAG) -->
+      <!-- RESUMEN DEL PRECIO (MONTO A ABONAR EN RECEPCIÓN) -->
       <div class="price-summary-box">
         <div>
-          <span class="summary-total-label">Monto Total a Pagar</span>
+          <span class="summary-total-label">Monto a Cancelar en Recepción (Efectivo)</span>
           <div id="summaryDetailsDesc" style="font-size: 0.75rem; color: #94a3b8;">
-            ${checkoutState.duration} ${checkoutState.selectedExtras.length > 0 ? `+ ${checkoutState.selectedExtras.length} Extras` : ''} • Impuestos incluidos
+            ${checkoutState.duration} ${checkoutState.selectedExtras.length > 0 ? `+ ${checkoutState.selectedExtras.length} Extras` : ''} • Sin cobros en línea
           </div>
         </div>
         <span class="summary-total-val" id="summaryTotalVal">S/ ${totalPrice}.00</span>
       </div>
 
-      <button type="submit" id="btnSubmitBooking" class="btn-editorial-light" style="width: 100%; text-align: center; justify-content: center; padding: 1.1rem; font-weight: bold; font-size: 1rem; cursor: pointer; background: linear-gradient(135deg, #d97706, #fbbf24); color: #000; border: none; border-radius: 12px; box-shadow: 0 10px 25px rgba(217, 119, 6, 0.35);">
-        CONFIRMAR Y EMITIR PASE DIGITAL (S/ ${totalPrice}.00)
+      <!-- CASILLA OBLIGATORIA: TÉRMINOS, CONDICIONES Y REGLAMENTO DEL HOTEL -->
+      <div class="checkout-terms-block">
+        <label for="checkoutTermsAgree" class="checkout-terms-label">
+          <input 
+            type="checkbox" 
+            id="checkoutTermsAgree" 
+            name="termsAgree" 
+            class="checkout-terms-checkbox" 
+            required 
+          />
+          <span class="checkout-terms-copy">
+            He leído y acepto el 
+            <button 
+              type="button" 
+              id="btnOpenTermsModal" 
+              class="checkout-terms-link"
+              title="Haga clic para leer el Acta de entrega de llave y Reglamento Interno en pantalla"
+              style="background: none; border: none; padding: 0; margin: 0; color: #fbbf24; text-decoration: underline; font-weight: bold; cursor: pointer; font-size: inherit; font-family: inherit;"
+            >
+              Acta de entrega de llave, Términos y Reglamento del Hotel
+            </button>
+            <a 
+              href="/reglamento_hotel_wimbledon.pdf" 
+              download="reglamento_hotel_wimbledon.pdf" 
+              id="linkDownloadReglamento" 
+              class="terms-badge-dl"
+              title="Descargar el documento oficial en PDF"
+            >
+              📄 Descargar PDF
+            </a>
+          </span>
+        </label>
+        <div id="termsErrorAlert" class="checkout-terms-alert" role="alert" style="display: none;">
+          ⚠️ Debe marcar la casilla para aceptar los términos y leer el reglamento del hotel antes de emitir su pase.
+        </div>
+      </div>
+
+      <button type="submit" id="btnSubmitBooking" class="btn-editorial-light" style="width: 100%; text-align: center; justify-content: center; padding: 1.1rem; font-weight: bold; font-size: 1rem; cursor: not-allowed; background: linear-gradient(135deg, #d97706, #fbbf24); color: #000; border: none; border-radius: 12px; box-shadow: 0 10px 25px rgba(217, 119, 6, 0.35); opacity: 0.5;" disabled>
+        CONFIRMAR RESERVA Y EMITIR PASE (S/ ${totalPrice}.00 en Recepción)
       </button>
     </form>
   `;
@@ -1239,15 +1448,186 @@ function renderCheckoutModalContent() {
   }
 
   const form = document.getElementById('checkoutDynamicForm');
+  const termsCheckbox = document.getElementById('checkoutTermsAgree');
+  const termsAlert = document.getElementById('termsErrorAlert');
+  const submitBtn = document.getElementById('btnSubmitBooking');
+  const btnTermsModal = document.getElementById('btnOpenTermsModal');
+
+  if (btnTermsModal) {
+    btnTermsModal.onclick = (e) => {
+      e.preventDefault();
+      openFullTermsModal();
+    };
+  }
+
+  if (termsCheckbox && submitBtn) {
+    termsCheckbox.addEventListener('change', () => {
+      if (termsCheckbox.checked) {
+        if (termsAlert) termsAlert.style.display = 'none';
+        submitBtn.removeAttribute('disabled');
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+      } else {
+        submitBtn.setAttribute('disabled', 'true');
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.cursor = 'not-allowed';
+      }
+    });
+  }
+
   if (form) {
     form.onsubmit = (e) => {
       e.preventDefault();
+      if (termsCheckbox && !termsCheckbox.checked) {
+        if (termsAlert) termsAlert.style.display = 'block';
+        termsCheckbox.focus();
+        return;
+      }
       syncFormFields();
       const currentRoom = roomsData.find(r => String(r.id) === String(checkoutState.roomId)) || roomsData[0];
       const basePriceCurrent = parseBasePrice(currentRoom.precio);
       const totalAmount = calculateTotalWithExtras(basePriceCurrent, checkoutState.duration, checkoutState.selectedExtras);
       const res = confirmAndSaveBooking(currentRoom, totalAmount);
       if (!res.ok) return; // Si falla la persistencia, no avanza a la keycard (Solución #11)
+    };
+  }
+}
+
+// ==========================================================================
+// MODAL OFICIAL: ACTA DE ENTREGA DE LLAVE Y REGLAMENTO INTERNO
+// ==========================================================================
+function openFullTermsModal() {
+  let modal = document.getElementById('fullTermsModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'fullTermsModal';
+    modal.className = 'admin-modal-overlay';
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = `
+    <div class="admin-modal-panel" style="max-width: 780px; max-height: 88vh; overflow-y: auto;">
+      <button class="admin-modal-close" id="btnCloseFullTerms" title="Cerrar">&times;</button>
+      
+      <div style="text-align: center; margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
+        <span style="color: #fbbf24; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">
+          DOCUMENTO OFICIAL • HOTEL WIMBLEDON S.A.C.
+        </span>
+        <h2 style="font-family: var(--font-serif); font-size: 1.55rem; color: #fff; margin-top: 0.35rem;">
+          Acta de Entrega de Llave y Reglamento Interno
+        </h2>
+        <p style="color: #94a3b8; font-size: 0.8rem; margin-top: 0.25rem;">
+          RUC: 20508934121 • Av. Costanera 2008, San Miguel, Lima • Tel: (01) 560-0388
+        </p>
+      </div>
+
+      <div style="font-size: 0.82rem; line-height: 1.6; color: #cbd5e1; display: flex; flex-direction: column; gap: 1rem;">
+        <!-- ACTA DE ENTREGA DE LLAVE -->
+        <div style="background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.35); border-radius: 12px; padding: 1.15rem;">
+          <h3 style="color: #fbbf24; font-size: 1rem; margin-top: 0; margin-bottom: 0.5rem; font-family: var(--font-serif); text-transform: uppercase; letter-spacing: 0.5px;">
+            Acta de entrega de llave
+          </h3>
+          <p style="margin: 0 0 0.6rem 0;">
+            El usuario cliente acepta por este documento que, se le hace entrega de la llave de la habitación N° ________________________ Debiendo tener la diligencia necesaria en su cuidado y devolverla al final de su estadía.
+          </p>
+          <p style="margin: 0 0 0.6rem 0;">
+            El usuario por el presente recibe también el reglamento del hotel Wimbledon.
+          </p>
+          <p style="margin: 0; font-style: italic; color: #e2e8f0;">
+            Todas las personas que se hospeden en el hotel, durante su estadía, estarán sujetas a este reglamento, el que se considera un contrato que se debe cumplir. Caso contrario, la administración se reserva el derecho de admisión y permanencia.
+          </p>
+        </div>
+
+        <!-- REGLAMENTO INTERNO DE HOSPEDAJE -->
+        <div>
+          <h4 style="color: #fff; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem; border-left: 3px solid #fbbf24; padding-left: 0.5rem;">
+            Reglamento Interno de Hospedaje
+          </h4>
+          <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+            <p><strong>Art. 1°.-</strong> Toda persona que se hospede en este establecimiento declara que los datos consignados al momento de registrarse son verdaderos. Su registro tiene calidad de declaración jurada. En caso de resultar falsa la información que proporcionó, declara haber incurrido en el delito contra la fe pública previsto en el Título XIX del Código Penal.</p>
+            <p><strong>Art. 2°.-</strong> El servicio de hospedaje deberá pagarse por adelantado. La administración expedirá comprobantes de pago o factura detallada de los servicios prestados y el importe cubierto por los mismos cuando el huésped lo solicite. El hotel no asume responsabilidad por servicios externos contratados como taxis, tintorería o médicos.</p>
+            <p><strong>Art. 3°.-</strong> Cuando un huésped haga uso del estacionamiento del hotel, debe colocar su automóvil en un lugar adecuado, el establecimiento no se hace responsable de daños parciales o robo total del vehículo ni de objetos dejados en su interior. El huésped debe registrar su vehículo.</p>
+            <p><strong>Art. 4°.-</strong> Ningún usuario tiene derecho a dar alojamiento a ninguna persona sin haberlo comunicado. Si algún usuario ingresa a una persona a escondidas y no comunica su estancia se considera dicho acto como uno temerario y doloso; el hotel cancelará todo tipo de servicio al usuario sin derecho a reembolso y debiendo retirarse de forma inmediata de lo contrario se reserva el derecho de llamar a la autoridad competente.</p>
+            <p><strong>Art. 5°.-</strong> El establecimiento exhibe claramente en el área de recepción y en todas las habitaciones, este Reglamento, exigiendo a nuestros huéspedes a su debido cumplimiento; el usuario a su ingreso ha aceptado conocer y estar de acuerdo con todo el contenido de este reglamento, así como sus efectos; el usuario de forma libre y expresa suscribe la tarjeta de registro la misma que expresa la aceptación de este reglamento.</p>
+            <p><strong>Art. 6°.-</strong> El hotel no se hace responsable por las pérdidas que el huésped pudiera sufrir en dinero y valores. Los objetos o valores olvidados por algún huésped en la habitación, quedarán en custodia de la administración del hotel por un término de 30 días, concluido este periodo y al no haber reclamación alguna, serán desechados. El usuario registrado expresa y acepta que es de su entera responsabilidad, única y exclusiva, el cuidado de los bienes muebles encontrados en la habitación y las instalaciones del hotel; además, es el único responsable del cuidado de la integridad física de sus invitados; el usuario libera y exime, desde ya, de cualquier responsabilidad administrativa, civil o penal, por todo tipo de daño o lesión que el usuario pueda ocasionar a terceros.</p>
+            <p><strong>Art. 7°.-</strong> No se permite a los clientes tener ningún tipo de animales en la habitación, salvo aquellos que auxilien a discapacitados.</p>
+            <p><strong>Art. 8°.-</strong> El usuario es el único y exclusivo responsable de la integridad física de los que lo visitan y/o su (s) acompañante (s) y declara que todos son ciudadanos mayores de edad.</p>
+            <p><strong>Art. 9°.-</strong> El uso que deberá hacerse de los muebles, ropa y otros objetos de servicio, será racional y moderado, cuidando de ellos debidamente. En el supuesto de que el huésped dañe dichos objetos, intencional o accidentalmente, deberá reportarlo a la administración. En caso de sustraerlos del hotel se realizará el cargo correspondiente al bien en comento y cuyo precio será el establecido por el mercado al momento del incidente.</p>
+            <p><strong>Art. 10°.-</strong> Queda estrictamente prohibido el consumo de alimentos y bebidas fuera de la habitación o en instalaciones que no están condicionadas para esta actividad.</p>
+            <p><strong>Art. 11°.-</strong> En cumplimiento con las disposiciones oficiales en materia de protección civil, el hotel ha tomado medidas de seguridad instalando un mero suficiente de extintores y detectores de humo para ser utilizados en un eventual siniestro, en tales circunstancias los huéspedes deberán dar aviso a la administración.</p>
+            <p><strong>Art. 12°.-</strong> En la prestación de los servicios por parte de este hotel no habrá discriminación alguna por razones de sexo, credo político, religión, nacionalidad ó condición social. El establecimiento podrá negar sus servicios cuando el huésped se presente al mismo en estado de ebriedad o bajo el influjo de drogas o estupefacientes o cuando se pretenda dar uso distinto al del servicio de hospedaje. Este establecimiento cuenta con protocolos para prevenir la trata de personas, específicamente de niñas, niños y adolescentes en el sector turístico. Si detecta alguna señal de trata, notifique inmediatamente a la administración.</p>
+            <p><strong>Art. 13°.-</strong> Quedan a salvo los derechos del establecimiento como de los huéspedes para denunciar ante las autoridades competentes los hechos que constituyan algún ilícito o que dieran lugar a responsabilidad por alguna de las partes en sus personas y bienes, siempre y cuando ocurran dentro de las instalaciones del hotel.</p>
+            <p><strong>Art. 14°.-</strong> El incumplimiento de este Reglamento Interno de Hospedaje por parte del huésped será causal de rescisión del contrato de hospedaje, sin ningún tipo de responsabilidad penal, civil administrativa para la empresa.</p>
+            <p><strong>Art. 15°.-</strong> El huésped registrado es el único y exclusivo responsable de todos los actos que puedan constituir una infracción y/o delito, eximiendo por el presente de cualquier tipo de responsabilidad al hotel Wimbledon.</p>
+          </div>
+        </div>
+
+        <!-- POLÍTICAS Y RESTRICCIONES -->
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 1rem;">
+          <h4 style="color: #fbbf24; font-size: 0.9rem; text-transform: uppercase; margin-top: 0; margin-bottom: 0.5rem;">
+            Políticas y Restricciones
+          </h4>
+          <ul style="margin: 0; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem;">
+            <li>No realizar ningún tipo de escándalos.</li>
+            <li>No se aceptan cambios, ni devoluciones. La tarifa es únicamente para 2 personas (mayores de 18 años), las cuales deben mostrar sus documentos de identidad y firmar debidamente todos los formatos de ingreso. Si hubiera una tercera persona, se debe realizar el pago de un monto adicional.</li>
+            <li>Cualquier daño dentro de la habitación (alfombra mojada, manchas en la sabana, vasos y/o copas rotas, toallas manchadas etc.) el cliente se hará responsable y asumirá una penalidad de pago al finalizar su estadía.</li>
+            <li>La habitación cuenta con un frigobar con diferentes productos (gaseosas, cervezas, chocolates, etc.) el cliente debe asumir el pago por cualquier tipo de consumo al momento de retirarse.</li>
+            <li>Se permite el ingreso de bebidas alcohólicas con previo pago desde S/ 25.00.</li>
+            <li><strong>Acta de entrega de llave:</strong> El huésped se hace responsable de la pérdida o cualquier daño que pueda ser ocasionado en la llave de la habitación asignada. Siendo este sancionado con un monto de S/ 60.00.</li>
+            <li>En nuestras tarifas está incluido el 18% del IGV + 5% de recargo al consumo que se encuentra reflejado en su boleta o factura.</li>
+            <li>Nuestros turnos son de 6 y 7 horas según la habitación que el huésped reserve.</li>
+          </ul>
+        </div>
+
+        <!-- POLÍTICAS DE RESERVAS -->
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 1rem;">
+          <h4 style="color: #38bdf8; font-size: 0.9rem; text-transform: uppercase; margin-top: 0; margin-bottom: 0.5rem;">
+            Políticas de reservas
+          </h4>
+          <ul style="margin: 0; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem;">
+            <li>Enviar imagen del voucher o constancia de la transferencia, donde se muestre el monto y número de operación, el depósito tiene que ser el total que se le indica, no se devuelve dinero, no se da vuelto en caso deposite demás.</li>
+            <li>Las reservas inician su tiempo, a la hora indicada por el cliente en el procedimiento de reserva.</li>
+            <li>No se aceptan cambios, devoluciones, y reembolsos ni lugar a reclamo.</li>
+            <li>En caso de pagos por transferencia, debe de realizarse de manera inmediata, de lo contrario no se le podrá confirmar la reserva, hasta que no se vea reflejado en nuestras cuentas.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- BOTONES DE ACCIÓN -->
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; flex-wrap: wrap;">
+        <a 
+          href="/reglamento_hotel_wimbledon.pdf" 
+          download="reglamento_hotel_wimbledon.pdf" 
+          class="btn-editorial-outline" 
+          style="padding: 0.75rem 1.25rem; font-size: 0.85rem; text-decoration: none; border-color: #fbbf24; color: #fbbf24; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.4rem;"
+        >
+          📄 Descargar PDF Oficial
+        </a>
+        <button 
+          id="btnAcceptTermsFromModal" 
+          class="btn-editorial-light" 
+          style="padding: 0.75rem 1.35rem; font-size: 0.85rem; font-weight: bold; background: linear-gradient(135deg, #d97706, #fbbf24); color: #000; border: none; border-radius: 8px; cursor: pointer;"
+        >
+          ✓ He leído y Acepto los Términos
+        </button>
+      </div>
+    </div>
+  `;
+
+  modal.classList.add('open');
+
+  const btnClose = modal.querySelector('#btnCloseFullTerms');
+  if (btnClose) btnClose.onclick = () => modal.classList.remove('open');
+
+  const btnAccept = modal.querySelector('#btnAcceptTermsFromModal');
+  if (btnAccept) {
+    btnAccept.onclick = () => {
+      const chk = document.getElementById('checkoutTermsAgree');
+      if (chk) {
+        chk.checked = true;
+        chk.dispatchEvent(new Event('change'));
+      }
+      modal.classList.remove('open');
     };
   }
 }
@@ -1296,8 +1676,12 @@ function renderKeycardHTML(booking) {
               <span class="keycard-pin-label">PIN DE ACCESO DIGITAL (HABITACIÓN / COCHERA)</span>
               <span class="keycard-pin-code">${booking.pin}</span>
             </div>
+            <div style="margin: 0.6rem 0; padding: 0.5rem 0.75rem; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; font-size: 0.75rem; color: #a7f3d0; line-height: 1.4;">
+              💵 <strong>Abono en Efectivo:</strong> S/ ${booking.monto}.00 a cancelar en recepción al ingresar.<br/>
+              🛡️ <strong>Sin huella bancaria:</strong> Máxima privacidad y discreción garantizada.
+            </div>
             <span style="font-size: 0.72rem; color: #94a3b8; display: block; line-height: 1.4;">
-              Ingresa directamente sin recepción mostrando este código o ingresando el PIN en el sensor de puerta.
+              Muestra este Pase Digital o ingresa el PIN en el sensor de puerta al llegar al hotel.
             </span>
           </div>
 
@@ -1316,7 +1700,7 @@ function renderKeycardHTML(booking) {
           <button class="btn-keycard-action btn-keycard-save" onclick="window.print()">
             📄 Guardar Pase
           </button>
-          <a href="https://wa.me/51990370681?text=${encodeURIComponent('Hola Hotel Wimbledon, tengo mi Pase Digital ' + booking.id + ' para ' + booking.habitacionNombre + ' (PIN: ' + booking.pin + ').')}" target="_blank" class="btn-keycard-action btn-keycard-whatsapp">
+          <a href="https://wa.me/51990370681?text=${encodeURIComponent('Hola Hotel Wimbledon, tengo mi Pase Digital ' + booking.id + ' para ' + booking.habitacionNombre + ' (PIN: ' + booking.pin + '). Pago S/ ' + booking.monto + ' en efectivo en recepción.')}" target="_blank" class="btn-keycard-action btn-keycard-whatsapp">
             💬 Enviar a WhatsApp
           </a>
         </div>
@@ -1353,7 +1737,7 @@ function confirmAndSaveBooking(room, totalAmount) {
     horarioLlegada: checkoutState.arrivalTime,
     extras: [...checkoutState.selectedExtras],
     monto: totalAmount,
-    medioPago: checkoutState.paymentMethod === 'yape' ? 'Yape / Plin' : 'Tarjeta de Crédito / Débito',
+    medioPago: 'Efectivo (En Recepción)',
     clienteNombre: checkoutState.customerName || 'Huésped Wimbledon',
     clienteTelefono: checkoutState.customerPhone || '990370681',
     estado: 'CONFIRMADA',
@@ -1410,12 +1794,12 @@ function confirmAndSaveBooking(room, totalAmount) {
       hora_salida: '02:00:00',
       duracion_horas: checkoutState.duration || 6,
       monto_total: totalAmount,
-      adelanto: totalAmount,
-      metodo_pago: checkoutState.paymentMethod === 'yape' ? 'yape' : 'tarjeta',
+      adelanto: 0.00,
+      metodo_pago: 'efectivo',
       estado: 'confirmada',
       origen: 'online',
       qr_token: booking.id,
-      metadata: { pin: booking.pin, extras: booking.extras }
+      metadata: { pin: booking.pin, extras: booking.extras, modalidad: 'pago_efectivo_recepcion' }
     }).then(({ data, error }) => {
       if (error) {
         console.warn('⚠️ Supabase Cloud:', error.message);
@@ -1879,25 +2263,7 @@ function setupMobileNav() {
     });
   }
 }
-function setupFormHandler() {
-  const form = document.getElementById('editorialForm');
-  if (form) {
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const name = document.getElementById('edName').value;
-      const phone = document.getElementById('edPhone').value;
-      const roomId = document.getElementById('edRoom').value;
-      const duration = document.getElementById('edDuration').value;
-      const arrivalTime = document.getElementById('edArrivalTime').value;
-      openCheckoutModal(roomId, {
-        customerName: name,
-        customerPhone: phone,
-        duration: duration,
-        arrivalTime: arrivalTime
-      });
-    });
-  }
-}
+
 function setupPromoVideo() {
   const video = document.getElementById('promoVideo');
   const audioBtn = document.getElementById('promoAudioToggle');

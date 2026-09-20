@@ -91,55 +91,89 @@ export function initHeroPinAnimation() {
   });
   return mm;
 }
-export function initServicesHoverAnimation() {
-  const preview = document.getElementById('servicesHoverPreview');
-  const img = document.getElementById('servicesHoverImg');
-  const items = document.querySelectorAll('.service-item');
-  if (!preview || !img || items.length === 0) return;
-  const xTo = gsap.quickTo(preview, 'x', { duration: 0.4, ease: 'power3.out' });
-  const yTo = gsap.quickTo(preview, 'y', { duration: 0.4, ease: 'power3.out' });
-  window.addEventListener('mousemove', (e) => {
-    xTo(e.clientX);
-    yTo(e.clientY);
-  });
-  items.forEach((item) => {
-    const title = item.querySelector('.service-title');
-    const imgSrc = item.getAttribute('data-img');
-    item.addEventListener('mouseenter', () => {
-      if (imgSrc) img.src = imgSrc;
-      if (title) {
-        gsap.to(title, {
-          x: 16,
-          color: '#c5a880',
-          duration: 0.35,
-          ease: 'power2.out',
-        });
+export function initServicesAccordion() {
+  const sectionToggle = document.getElementById('btnToggleServicesSection');
+  const mainPanel = document.getElementById('servicesMainPanel');
+  const toggleStatus = document.getElementById('servicesToggleStatus');
+  const toggleLabel = document.getElementById('servicesToggleLabel');
+
+  if (sectionToggle && mainPanel) {
+    sectionToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      const isExpanded = sectionToggle.getAttribute('aria-expanded') === 'true';
+
+      if (isExpanded) {
+        sectionToggle.setAttribute('aria-expanded', 'false');
+        sectionToggle.classList.remove('is-open');
+        mainPanel.hidden = true;
+        if (toggleStatus) toggleStatus.textContent = 'Oculto';
+        if (toggleLabel) toggleLabel.textContent = 'Ver las 6 Amenidades & Servicios Exclusivos';
+      } else {
+        sectionToggle.setAttribute('aria-expanded', 'true');
+        sectionToggle.classList.add('is-open');
+        mainPanel.hidden = false;
+        if (toggleStatus) toggleStatus.textContent = 'Activo';
+        if (toggleLabel) toggleLabel.textContent = 'Ocultar Amenidades & Servicios Exclusivos';
+
+        gsap.fromTo(
+          mainPanel,
+          { opacity: 0, y: -16 },
+          { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
+        );
       }
-      gsap.to(preview, {
-        opacity: 1,
-        scale: 1,
-        duration: 0.35,
-        ease: 'power2.out',
-      });
+
+      ScrollTrigger.refresh();
     });
-    item.addEventListener('mouseleave', () => {
-      if (title) {
-        gsap.to(title, {
-          x: 0,
-          color: '#ffffff',
-          duration: 0.35,
-          ease: 'power2.out',
-        });
-      }
-      gsap.to(preview, {
-        opacity: 0,
-        scale: 0.8,
-        duration: 0.35,
-        ease: 'power2.out',
+  }
+
+  const items = document.querySelectorAll('.service-item');
+  if (!items.length) return;
+
+  items.forEach((item) => {
+    const trigger = item.querySelector('.service-trigger');
+    const drawer = item.querySelector('.service-detail-drawer');
+    if (!trigger || !drawer) return;
+
+    trigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+
+      // Cerrar otros acordeones para mantener foco visual y no dispersar a usuarios de baja visión
+      items.forEach((otherItem) => {
+        if (otherItem !== item) {
+          const otherTrigger = otherItem.querySelector('.service-trigger');
+          const otherDrawer = otherItem.querySelector('.service-detail-drawer');
+          if (otherTrigger && otherDrawer) {
+            otherTrigger.setAttribute('aria-expanded', 'false');
+            otherItem.classList.remove('is-active');
+            otherDrawer.hidden = true;
+          }
+        }
       });
+
+      if (isExpanded) {
+        trigger.setAttribute('aria-expanded', 'false');
+        item.classList.remove('is-active');
+        drawer.hidden = true;
+      } else {
+        trigger.setAttribute('aria-expanded', 'true');
+        item.classList.add('is-active');
+        drawer.hidden = false;
+
+        gsap.fromTo(
+          drawer,
+          { opacity: 0, y: -10 },
+          { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out' }
+        );
+      }
+
+      ScrollTrigger.refresh();
     });
   });
 }
+
+// Alias para preservar compatibilidad con imports existentes
+export const initServicesHoverAnimation = initServicesAccordion;
 let horizontalSuitesTL = null;
 
 export function refreshHorizontalSuitesScroll() {

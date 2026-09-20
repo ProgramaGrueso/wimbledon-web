@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npm run dev --prefix frontend",
-    "build": "npm run build --prefix frontend && cp -r frontend/dist ./dist",
+    "build": "npm run build --prefix frontend && cp -r frontend/dist/. ./dist/",
     "preview": "npm run preview --prefix frontend"
   }
 }
