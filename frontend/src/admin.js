@@ -1521,19 +1521,12 @@ async function processCheckinValidation(code) {
   fb.innerHTML = `
     <div style="background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; border-radius: 12px; padding: 1rem; color: #7dd3fc; display: flex; align-items: center; gap: 0.5rem;">
       <span style="animation: spin 1s linear infinite;">⏳</span>
-      <span>Validando QR en Backend Java y autorizando ingreso...</span>
+      <span>Validando QR en Supabase Cloud y autorizando ingreso...</span>
     </div>
   `;
 
   try {
-    // 1. Validar en Backend Java (Módulo 6: Check-in y resolución de token QR)
-    try {
-      backendCheckinResult = await api.checkinRecepcion(cleanCode, currentStaffSession?.supabaseToken);
-    } catch (backendErr) {
-      console.warn('Checkin en Backend Java respondió con aviso:', backendErr.message);
-    }
-
-    // 2. Buscar datos en Supabase Cloud
+    // 1. Buscar datos en Supabase Cloud
     const { data: found } = await supabase
       .from('reservas')
       .select('*, habitaciones_fisicas(*)')
