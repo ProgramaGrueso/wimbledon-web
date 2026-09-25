@@ -71,8 +71,27 @@ public class SecurityConfig {
                 // Cancelar reserva PENDIENTE por el propio invitado — público (protegido por qrToken en body)
                 .requestMatchers(HttpMethod.POST, "/api/reservas/{id}/cancelar-pendiente").permitAll()
 
+                // Ruta interna de errores de Spring
+                .requestMatchers("/error").permitAll()
+
                 // Todo lo demás requiere autenticación (el rol específico lo verifica @PreAuthorize)
                 .anyRequest().authenticated()
+            )
+
+            // ── Manejo estandarizado de excepciones de seguridad (401 y 403 en JSON) ──
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType(org.springframework.http.MediaType.APPLICATION_JSON_VALUE);
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write("{\"mensaje\":\"Se requiere autenticación para acceder a este recurso.\",\"codigo\":\"NO_AUTENTICADO\"}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType(org.springframework.http.MediaType.APPLICATION_JSON_VALUE);
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write("{\"mensaje\":\"No tienes permisos para realizar esta acción.\",\"codigo\":\"ACCESO_DENEGADO\"}");
+                })
             )
 
             // ── Stateless: sin sesiones, sin cookies de sesión ─────────────────

@@ -78,8 +78,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex) {
+        String codigo = (ex.getMessage() != null && ex.getMessage().toLowerCase().contains("código"))
+                ? ErrorResponse.QR_YA_UTILIZADO
+                : "ESTADO_CONFLICTO";
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ErrorResponse(ex.getMessage(), ErrorResponse.QR_YA_UTILIZADO));
+                .body(new ErrorResponse(ex.getMessage(), codigo));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -99,8 +102,13 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(mensaje, ErrorResponse.VALIDACION_FALLIDA));
     }
 
-    // ── Fallback ──────────────────────────────────────────────────────────────
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse("El recurso solicitado no fue encontrado.", ErrorResponse.RECURSO_NO_ENCONTRADO));
+    }
 
+    // ── Fallback ──────────────────────────────────────────────────────────────
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
         // No exponemos el stacktrace al cliente

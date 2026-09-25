@@ -4,6 +4,7 @@
  *  - Valida solapamiento en el servidor.
  *  - Despacha reservas al backend Java como única fuente de verdad.
  *  - Maneja errores de negocio y códigos HTTP 4xx / 5xx.
+ *  - Sincroniza Rack Operativo, Recepción y Housekeeping directamente con MySQL.
  */
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
@@ -34,7 +35,7 @@ async function request(endpoint, options = {}) {
   if (!response.ok) {
     let errorMsg = 'Error en el servidor al procesar la solicitud.';
     if (typeof data === 'object' && data !== null) {
-      errorMsg = data.message || data.error || JSON.stringify(data);
+      errorMsg = data.mensaje || data.message || data.error || JSON.stringify(data);
     } else if (typeof data === 'string' && data.length > 0) {
       errorMsg = data;
     }
@@ -48,10 +49,15 @@ async function request(endpoint, options = {}) {
 }
 
 export const api = {
-  /**
-   * Crea una nueva reserva en estado PENDIENTE con validación de solapamiento en el servidor.
-   * @param {Object} payload { habitacionId, fecha, horaIngreso, nombreCompleto, telefono, email, notas }
-   */
+  // ── Autenticación ─────────────────────────────────────────────────────────
+  async login(email, password) {
+    return request('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+  },
+
+  // ── Portal Huésped / Catálogo Público ─────────────────────────────────────
   async crearReserva(payload) {
     return request('/api/reservas', {
       method: 'POST',
@@ -59,11 +65,6 @@ export const api = {
     });
   },
 
-  /**
-   * Permite al huésped desistir de su solicitud PENDIENTE enviando su qrToken.
-   * @param {number|string} id ID numérico de la reserva
-   * @param {string} qrToken Token único emitido al solicitar la reserva
-   */
   async cancelarReservaPendiente(id, qrToken) {
     return request(`/api/reservas/${id}/cancelar-pendiente`, {
       method: 'POST',
@@ -71,26 +72,6 @@ export const api = {
     });
   },
 
-  /**
-   * Realiza el check-in oficial desde mostrador validando el qrToken ante el backend.
-   * @param {string} qrToken Token escaneado del huésped
-   * @param {string} jwtToken Token JWT de la sesión de staff en el backend
-   */
-  async checkinRecepcion(qrToken, jwtToken) {
-    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
-    return request('/api/recepcion/checkin', {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ qrToken }),
-    });
-  },
-
-  /**
-   * Consulta el catálogo público con disponibilidad real evaluada según horario.
-   * @param {string} fecha YYYY-MM-DD
-   * @param {string} horaIngreso HH:mm
-   * @param {number} duracionHoras
-   */
   async obtenerHabitaciones(fecha, horaIngreso, duracionHoras) {
     const params = new URLSearchParams();
     if (fecha) params.append('fecha', fecha);
@@ -100,6 +81,90 @@ export const api = {
     const query = params.toString();
     return request(`/api/publico/habitaciones${query ? `?${query}` : ''}`, {
       method: 'GET',
+    });
+  },
+
+  // ── Recepción & Check-in ──────────────────────────────────────────────────
+  async checkinRecepcion(qrToken, jwtToken) {
+    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
+    return request('/api/recepcion/checkin', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ token: qrToken }),
+    });
+  },
+
+  async obtenerAgendaHoy(jwtToken) {
+    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
+    return request('/api/recepcion/agenda-hoy', {
+      method: 'GET',
+      headers,
+    });
+  },
+
+  async actualizarEstadoHabitacionRecepcion(id, estado, jwtToken) {
+    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
+    return request(`/api/recepcion/habitaciones/${id}/estado`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ estado }),
+    });
+  },
+
+  async crearReservaManual(payload, jwtToken) {
+    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
+    return request('/api/recepcion/reserva-manual', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+  },
+
+  // ── Housekeeping / Limpieza ───────────────────────────────────────────────
+  async obtenerHabitacionesLimpieza(jwtToken) {
+    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
+    return request('/api/limpieza/habitaciones', {
+      method: 'GET',
+      headers,
+    });
+  },
+
+  async actualizarEstadoHabitacionLimpieza(id, estado, jwtToken) {
+    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
+    return request(`/api/limpieza/habitaciones/${id}/estado`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ estado }),
+    });
+  },
+
+  async reportarIncidenciaLimpieza(payload, jwtToken) {
+    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
+    return request('/api/limpieza/incidencias', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+  },
+
+  // ── Gerencia / Administración ─────────────────────────────────────────────
+  async obtenerHabitacionesAdmin(jwtToken) {
+    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
+    return request('/api/admin/habitaciones', {
+      method: 'GET',
+      headers,
+    });
+  },
+
+  async obtenerKpisAdmin(jwtToken, anio, mes) {
+    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
+    const params = new URLSearchParams();
+    if (anio) params.append('anio', anio);
+    if (mes) params.append('mes', mes);
+    const q = params.toString();
+    return request(`/api/admin/kpis${q ? `?${q}` : ''}`, {
+      method: 'GET',
+      headers,
     });
   },
 };

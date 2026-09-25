@@ -93,7 +93,36 @@ public class DataInitializer {
                         .rol(Rol.CLIENTE)
                         .build());
 
-                log.info("  ✓ 5 usuarios de prueba creados");
+                // Cuentas corporativas con dominio .pe
+                usuarioRepo.save(Usuario.builder()
+                        .nombre("Carlos Mendoza (Recepcionista)")
+                        .email("recepcion@wimbledon.pe")
+                        .passwordHash(hash)
+                        .rol(Rol.RECEPCIONISTA)
+                        .build());
+
+                usuarioRepo.save(Usuario.builder()
+                        .nombre("Lic. Vania Cerrón (Gerencia)")
+                        .email("gerencia@wimbledon.pe")
+                        .passwordHash(hash)
+                        .rol(Rol.ADMINISTRADOR)
+                        .build());
+
+                usuarioRepo.save(Usuario.builder()
+                        .nombre("Rosa Quispe (Housekeeping)")
+                        .email("limpieza@wimbledon.pe")
+                        .passwordHash(hash)
+                        .rol(Rol.LIMPIEZA)
+                        .build());
+
+                usuarioRepo.save(Usuario.builder()
+                        .nombre("Juan Francisco Ganoza (Super Admin)")
+                        .email("superadmin@wimbledon.pe")
+                        .passwordHash(hash)
+                        .rol(Rol.SUPER_ADMIN)
+                        .build());
+
+                log.info("  ✓ Usuarios de prueba y corporativos creados");
             } else {
                 log.info("DataInitializer — Usuarios ya existentes, omitiendo seed.");
             }

@@ -157,6 +157,14 @@ public class RecepcionService {
         Habitacion habitacion = habitacionRepository.findById(habitacionId)
                 .orElseThrow(() -> new EntityNotFoundException("Habitación no encontrada."));
 
+        EstadoHabitacion actual = habitacion.getEstado();
+        if (actual == EstadoHabitacion.MANTENIMIENTO && nuevoEstado != EstadoHabitacion.MANTENIMIENTO) {
+            throw new IllegalStateException("La habitación está en mantenimiento y no puede ser alterada desde Recepción.");
+        }
+        if ((actual == EstadoHabitacion.LIMPIEZA_PENDIENTE || actual == EstadoHabitacion.EN_PROCESO) && nuevoEstado == EstadoHabitacion.OCUPADA) {
+            throw new IllegalStateException("La habitación requiere aseo o desinfección antes de ser ocupada.");
+        }
+
         habitacion.setEstado(nuevoEstado);
         habitacionRepository.save(habitacion);
     }
