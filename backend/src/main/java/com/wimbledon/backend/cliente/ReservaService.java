@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -404,13 +406,23 @@ public class ReservaService {
     /**
      * Permite cancelar una reserva online en estado PENDIENTE a un cliente invitado sin cuenta,
      * requiriendo demostrar posesión del qrToken generado al momento de la solicitud.
+     *
+     * COMPARACIÓN EN TIEMPO CONSTANTE. Esta es la única ruta donde la comparación del secreto es
+     * realmente una comparación y no una búsqueda: el endpoint está declarado {@code permitAll},
+     * de modo que el atacante controla el contenido y la longitud de la cadena presentada y el
+     * secreto almacenado se enfrenta a ella sin credenciales. Un {@code String.equals} devuelve en
+     * cuanto encuentra la primera diferencia, lo que filtra información por tiempo.
+     *
+     * La resolución por token del check-in NO recibe el mismo tratamiento a propósito:
+     * {@code findByQrToken} es un acierto de índice B-tree sobre una columna con índice único, no
+     * una comparación de secreto, y forzarla traería la fila a memoria para nada.
      */
     @Transactional
     public void cancelarReservaPendienteInvitado(Integer reservaId, String qrToken) {
         Reserva reserva = reservaRepository.findById(reservaId)
                 .orElseThrow(() -> new EntityNotFoundException("No encontramos esa reserva."));
 
-        if (qrToken == null || !qrToken.equals(reserva.getQrToken())) {
+        if (!coincideElToken(qrToken, reserva.getQrToken())) {
             throw new IllegalArgumentException("El token de seguridad proporcionado no es válido para esta reserva.");
         }
 
@@ -420,6 +432,23 @@ public class ReservaService {
 
         reserva.setEstado(EstadoReserva.CANCELADA);
         reservaRepository.save(reserva);
+    }
+
+    /**
+     * Compara la credencial presentada con la almacenada en tiempo constante.
+     *
+     * La semántica funcional es la de siempre: un qrToken correcto cancela y uno incorrecto
+     * rechaza. Lo único que cambia es que la comparación no filtra por tiempo.
+     */
+    private static boolean coincideElToken(String presentado, String almacenado) {
+        if (presentado == null) {
+            return false;
+        }
+        byte[] bytesPresentados = presentado.getBytes(StandardCharsets.UTF_8);
+        byte[] bytesAlmacenados = almacenado == null
+                ? new byte[0]
+                : almacenado.getBytes(StandardCharsets.UTF_8);
+        return MessageDigest.isEqual(bytesPresentados, bytesAlmacenados);
     }
 
     // ── Helpers privados ──────────────────────────────────────────────────────

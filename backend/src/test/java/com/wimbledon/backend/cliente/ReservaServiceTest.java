@@ -18,9 +18,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
+import com.wimbledon.backend.repository.ReservaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.RecordComponent;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -217,5 +226,167 @@ class ReservaServiceTest {
         assertTrue(resultado.get(0).disponible(), "H1 debe estar disponible");
         assertFalse(resultado.get(1).disponible(), "H2 debe estar no disponible por MANTENIMIENTO");
         assertFalse(resultado.get(2).disponible(), "H3 debe estar no disponible por cupo lleno");
+    }
+
+    // ── T11: comparación en tiempo constante del secreto de cancelación ───────
+
+    @Test
+    @DisplayName("La cancelación compara el qrToken en tiempo constante, no con String.equals")
+    void testLaComparacionNoEsStringEquals() throws NoSuchMethodException, java.io.IOException {
+        Method coincide = ReservaService.class.getDeclaredMethod("coincideElToken", String.class, String.class);
+
+        // Verificación sobre el código fuente: la comparación real no debe usar
+        // equals de cadena sobre el secreto.
+        Path fuente = Path.of("src/main/java/com/wimbledon/backend/cliente/ReservaService.java");
+        String codigo = Files.readString(fuente);
+        int inicio = codigo.indexOf("private static boolean coincideElToken");
+        assertTrue(inicio > 0, "El helper de comparación en tiempo constante debe existir");
+        String cuerpo = codigo.substring(inicio, codigo.indexOf("\n    }", inicio));
+
+        assertFalse(cuerpo.contains(".equals("),
+                "La comparación del secreto no puede usar String.equals: devuelve al primer carácter distinto");
+        assertTrue(cuerpo.contains("MessageDigest.isEqual"),
+                "La comparación debe resolverse con MessageDigest.isEqual sobre bytes UTF-8");
+        assertTrue(Modifier.isPrivate(coincide.getModifiers()),
+                "El helper es privado: no forma parte de la superficie del servicio");
+    }
+
+    @Test
+    @DisplayName("El qrToken correcto cancela y el incorrecto rechaza, con el mismo código y semántica")
+    void testCancelarConservaLaSemantica() {
+        Reserva reservaPendiente = Reserva.builder()
+                .id(88)
+                .estado(EstadoReserva.PENDIENTE)
+                .qrToken("uuid-secreto-888")
+                .build();
+        when(reservaRepository.findById(88)).thenReturn(Optional.of(reservaPendiente));
+
+        // Incorrecto: rechaza con IllegalArgumentException y NO escribe.
+        IllegalArgumentException rechazo = assertThrows(IllegalArgumentException.class, () ->
+                reservaService.cancelarReservaPendienteInvitado(88, "token-que-no-es"));
+        assertTrue(rechazo.getMessage().contains("no es válido para esta reserva"),
+                "El mensaje de rechazo se conserva exactamente");
+        assertEquals(EstadoReserva.PENDIENTE, reservaPendiente.getEstado());
+        verify(reservaRepository, never()).save(any());
+
+        // Correcto: cancela.
+        reservaService.cancelarReservaPendienteInvitado(88, "uuid-secreto-888");
+        assertEquals(EstadoReserva.CANCELADA, reservaPendiente.getEstado());
+        verify(reservaRepository, times(1)).save(reservaPendiente);
+    }
+
+    @Test
+    @DisplayName("Un qrToken nulo se rechaza sin lanzar NullPointerException")
+    void testQrTokenNuloSeRechaza() {
+        Reserva reservaPendiente = Reserva.builder()
+                .id(89)
+                .estado(EstadoReserva.PENDIENTE)
+                .qrToken("uuid-secreto-889")
+                .build();
+        when(reservaRepository.findById(89)).thenReturn(Optional.of(reservaPendiente));
+
+        assertThrows(IllegalArgumentException.class, () ->
+                reservaService.cancelarReservaPendienteInvitado(89, null));
+        verify(reservaRepository, never()).save(any());
+    }
+
+    // ── S-2: la hora de salida la calcula el servidor ────────────────────────
+
+    @Test
+    @DisplayName("horaSalida con duracionBloqueHoras=6: desde 20:00 da 02:00 y desde 22:00 da 04:00")
+    void testHoraSalidaLaCalculaElServidor() {
+        when(habitacionRepository.findByIdWithLock(860)).thenReturn(Optional.of(habitacionSuite));
+
+        CrearReservaRequest desde20 = new CrearReservaRequest(
+                860, LocalDate.now().plusDays(1), LocalTime.of(20, 0),
+                "Carlos Huésped", "990370681", "carlos@example.test", null);
+        assertEquals(LocalTime.of(2, 0), crearYCapturarReserva(desde20).getHoraSalida(),
+                "20:00 más 6 horas cruza la medianoche y la hora de salida es 02:00");
+
+        CrearReservaRequest desde22 = new CrearReservaRequest(
+                860, LocalDate.now().plusDays(1), LocalTime.of(22, 0),
+                "Carlos Huésped", "990370681", "carlos@example.test", null);
+        assertEquals(LocalTime.of(4, 0), crearYCapturarReserva(desde22).getHoraSalida(),
+                "22:00 más 6 horas da 04:00");
+    }
+
+    /** Ejecuta la creación y devuelve la entidad persistida, para inspeccionar su hora de salida. */
+    private Reserva crearYCapturarReserva(CrearReservaRequest request) {
+        when(reservaRepository.countByEmailAndEstado(request.email(), EstadoReserva.PENDIENTE)).thenReturn(0L);
+        when(reservaRepository.countByTelefonoAndEstado(request.telefono(), EstadoReserva.PENDIENTE)).thenReturn(0L);
+
+        Reserva[] capturada = new Reserva[1];
+        when(reservaRepository.save(any(Reserva.class))).thenAnswer(invocation -> {
+            capturada[0] = invocation.getArgument(0);
+            return capturada[0];
+        });
+
+        reservaService.crearReserva(request, null);
+        return capturada[0];
+    }
+
+    @Test
+    @DisplayName("CrearReservaRequest no admite campo de duración ni de horaSalida")
+    void testElClienteNoFijaLaHoraDeSalida() {
+        // El record tiene exactamente siete componentes y ninguno es duración u
+        // hora de salida: el servidor es la única fuente de verdad del horario.
+        assertEquals(7, CrearReservaRequest.class.getRecordComponents().length,
+                "El contrato de creación no crece con este cambio");
+
+        List<String> nombres = Arrays.stream(CrearReservaRequest.class.getRecordComponents())
+                .map(RecordComponent::getName)
+                .toList();
+
+        assertFalse(nombres.contains("duracionHoras"),
+                "El cliente no puede enviar duración: horaSalida se deriva de duracionBloqueHoras");
+        assertFalse(nombres.contains("horaSalida"),
+                "El cliente no puede enviar hora de salida: la calcula el servidor");
+        assertTrue(nombres.contains("habitacionId"),
+                "El identificador de habitación sigue siendo el del catálogo de habitaciones");
+    }
+
+    /**
+     * DEFECTO PREEXISTENTE, NO CORREGIDO EN ESTE CAMBIO.
+     *
+     * ReservaRepository.contarReservasSolapadas evalúa
+     * {@code r.horaIngreso < :horaSalida AND r.horaSalida > :horaIngreso}, una condición que
+     * nunca es verdadera cuando {@code horaSalida <= horaIngreso} porque ambas son LocalTime del
+     * mismo día. Todo bloque nocturno, la forma 20:00-02:00 que el propio proyecto documenta como
+     * normal, es invisible para el control de capacidad, de modo que hoy es posible la doble
+     * reserva en bloques que cruzan la medianoche.
+     *
+     * Esta prueba lo DOCUMENTA. No lo arregla: es un defecto distinto del que motiva este cambio
+     * y su corrección altera la lógica de disponibilidad. Queda registrado con file:line para un
+     * hito propio.
+     */
+    @Test
+    @DisplayName("Defecto preexistente registrado: contarReservasSolapadas no detecta bloques nocturnos")
+    void testDefectoPreexistenteDeSolapamientoNoCorregido() throws NoSuchMethodException {
+        Method contar = ReservaRepository.class.getMethod("contarReservasSolapadas",
+                Integer.class, LocalDate.class, LocalTime.class, LocalTime.class, Integer.class);
+
+        String consulta = String.valueOf(contar.getAnnotation(Query.class).value());
+
+        assertTrue(consulta.contains("r.horaIngreso < :horaSalida"),
+                "La condición vigente compara horas del mismo día");
+        assertTrue(consulta.contains("r.horaSalida > :horaIngreso"),
+                "La condición vigente no resuelve el cruce de medianoche");
+
+        // Para un bloque 20:00 -> 02:00, ningún instante de fin cumple a la vez
+        // entrada < fin y fin > salida, de modo que el conteo es siempre cero.
+        LocalTime ingreso = LocalTime.of(20, 0);
+        LocalTime salida = LocalTime.of(2, 0);
+        boolean existeFinQueCumpla = false;
+        for (int h = 0; h < 24; h++) {
+            for (int m = 0; m < 60; m++) {
+                LocalTime candidato = LocalTime.of(h, m);
+                if (ingreso.isBefore(candidato) && salida.isAfter(candidato)) {
+                    existeFinQueCumpla = true;
+                }
+            }
+        }
+        assertFalse(existeFinQueCumpla,
+                "Con horaSalida <= horaIngreso la condición de solapamiento nunca es verdadera. "
+                        + "Documentado, NO corregido: es un defecto preexistente de un hito propio.");
     }
 }
