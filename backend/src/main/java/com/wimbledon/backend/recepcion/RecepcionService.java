@@ -6,7 +6,6 @@ import com.wimbledon.backend.cliente.ReservaService;
 import com.wimbledon.backend.domain.Habitacion;
 import com.wimbledon.backend.domain.Reserva;
 import com.wimbledon.backend.domain.enums.EstadoHabitacion;
-import com.wimbledon.backend.domain.enums.EstadoReserva;
 import com.wimbledon.backend.repository.HabitacionRepository;
 import com.wimbledon.backend.repository.ReservaRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,6 +30,7 @@ public class RecepcionService {
     private final ReservaRepository reservaRepository;
     private final HabitacionRepository habitacionRepository;
     private final ReservaService reservaService;
+    private final OperacionConsumoCheckin operacionConsumoCheckin;
 
     /**
      * Estados que Recepción puede asignar a una habitación.
@@ -69,41 +69,25 @@ public class RecepcionService {
     /**
      * Valida el token QR escaneado y realiza el check-in.
      *
-     * Validaciones:
-     *  - El token debe existir en la BD
-     *  - El QR no debe haber sido usado antes
-     *  - La reserva no debe estar cancelada ni finalizada
+     * El consumo se delega en {@link OperacionConsumoCheckin}, que es la
+     * unidad transaccional unica: mantiene el bloqueo de fila de la reserva
+     * desde la resolucion hasta el commit, de modo que como maximo una
+     * invocacion concurrente por credencial alcanza el estado CHECKIN.
      *
-     * Efecto secundario: marca la habitación como OCUPADA automáticamente.
+     * Validaciones, en el orden en que las aplica la operacion:
+     *  - El token debe existir en la BD
+     *  - La reserva no debe estar cancelada ni finalizada
+     *  - El QR no debe haber sido usado antes
+     *  - El instante actual debe caer dentro de la ventana de la estadia
+     *  - La habitacion no debe requerir aseo previo
+     *
+     * Efecto secundario: marca la habitacion como OCUPADA automaticamente.
      */
     @Transactional
     public CheckinResponse realizarCheckin(String token) {
-        Reserva reserva = reservaRepository.findByQrToken(token)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Código QR no reconocido. Verifica el código e inténtalo de nuevo."));
-
-        if (reserva.getQrUsado()) {
-            throw new IllegalStateException(
-                    "Este código ya fue utilizado para un check-in previo.");
-        }
-
-        if (reserva.getEstado() == EstadoReserva.CANCELADA) {
-            throw new IllegalStateException("Esta reserva fue cancelada.");
-        }
-
-        if (reserva.getEstado() == EstadoReserva.FINALIZADA) {
-            throw new IllegalStateException("Esta reserva ya fue finalizada.");
-        }
-
-        // Actualizar estado de la reserva
-        reserva.setEstado(EstadoReserva.CHECKIN);
-        reserva.setQrUsado(true);
-        reservaRepository.save(reserva);
-
-        // Marcar la habitación como ocupada automáticamente
-        Habitacion habitacion = reserva.getHabitacion();
-        habitacion.setEstado(EstadoHabitacion.OCUPADA);
-        habitacionRepository.save(habitacion);
+        OperacionConsumoCheckin.ResultadoCheckin resultado = operacionConsumoCheckin.consumir(token);
+        Reserva reserva = resultado.reserva();
+        Habitacion habitacion = resultado.habitacion();
 
         return new CheckinResponse(
                 reserva.getNombreHuesped(),
@@ -161,8 +145,8 @@ public class RecepcionService {
         if (actual == EstadoHabitacion.MANTENIMIENTO && nuevoEstado != EstadoHabitacion.MANTENIMIENTO) {
             throw new IllegalStateException("La habitación está en mantenimiento y no puede ser alterada desde Recepción.");
         }
-        if ((actual == EstadoHabitacion.LIMPIEZA_PENDIENTE || actual == EstadoHabitacion.EN_PROCESO) && nuevoEstado == EstadoHabitacion.OCUPADA) {
-            throw new IllegalStateException("La habitación requiere aseo o desinfección antes de ser ocupada.");
+        if (nuevoEstado == EstadoHabitacion.OCUPADA) {
+            exigirAseoPrevio(actual);
         }
 
         habitacion.setEstado(nuevoEstado);
@@ -170,6 +154,22 @@ public class RecepcionService {
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /**
+     * Invariante de aseo previo: nunca se escribe OCUPADA sobre una habitacion
+     * que requiere limpieza o desinfeccion.
+     *
+     * Se extrajo como metodo para que {@link OperacionConsumoCheckin} comparta
+     * exactamente la misma regla, en vez de duplicarla. Su semantica en
+     * {@code actualizarEstadoHabitacion} no cambia: el mensaje de rechazo es el
+     * mismo texto libre de siempre, que alli sigue produciendose por el
+     * manejador generico de IllegalStateException con CONFLITO_ESTADO.
+     */
+    static void exigirAseoPrevio(EstadoHabitacion actual) {
+        if (actual == EstadoHabitacion.LIMPIEZA_PENDIENTE || actual == EstadoHabitacion.EN_PROCESO) {
+            throw new IllegalStateException("La habitación requiere aseo o desinfección antes de ser ocupada.");
+        }
+    }
 
     private AgendaItemResponse toAgendaItem(Reserva r) {
         return new AgendaItemResponse(

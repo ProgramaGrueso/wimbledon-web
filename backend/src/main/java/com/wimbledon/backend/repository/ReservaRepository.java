@@ -3,7 +3,9 @@ package com.wimbledon.backend.repository;
 import com.wimbledon.backend.domain.Reserva;
 import com.wimbledon.backend.domain.Usuario;
 import com.wimbledon.backend.domain.enums.EstadoReserva;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -13,8 +15,32 @@ import java.util.Optional;
 
 public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
 
-    /** Módulo 6 — resolución del token QR en check-in. */
+    /** Módulo 6 — resolución del token QR en check-in. Solo lectura, SIN bloqueo. */
     Optional<Reserva> findByQrToken(String qrToken);
+
+    /**
+     * Resolución del token QR con bloqueo pesimista (SELECT ... FOR UPDATE),
+     * para el consumo de un solo uso de la credencial.
+     *
+     * El bloqueo serializa a los escritores de la fila hasta el commit. Bajo
+     * InnoDB una lectura de bloqueo relee siempre la última versión
+     * confirmada, no la instantánea de REPEATABLE READ, de modo que la
+     * perdedora de la carrera observa `qr_usado = true` recién confirmado en
+     * lugar de su propia lectura. La escritura posterior ocurre en la misma
+     * transacción que aún tiene el bloqueo, sobre entidad gestionada: la
+     * condición evaluada y la condición escrita son el mismo hecho.
+     *
+     * `JOIN FETCH r.habitacion` deja la habitación en el contexto de
+     * persistencia para poder escribir `OCUPADA` en la misma transacción, y
+     * eso solo se consigue con lectura bloqueante.
+     *
+     * REQUISITO DE ESQUEMA: `reservas.qr_token` debe conservar su índice
+     * único. Sin él esta lectura degenera a barrido con bloqueos de
+     * siguiente clave sobre la tabla.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT r FROM Reserva r JOIN FETCH r.habitacion WHERE r.qrToken = :qrToken")
+    Optional<Reserva> findByQrTokenConLock(@Param("qrToken") String qrToken);
 
     /**
      * Módulo 2 — Agenda del día para Recepción.
