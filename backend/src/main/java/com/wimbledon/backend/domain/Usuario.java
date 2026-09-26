@@ -1,6 +1,8 @@
 package com.wimbledon.backend.domain;
 
+import com.wimbledon.backend.domain.enums.EstadoCuenta;
 import com.wimbledon.backend.domain.enums.Rol;
+import com.wimbledon.backend.domain.enums.RolSolicitable;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -48,6 +50,15 @@ public class Usuario implements UserDetails {
     @Column(nullable = false, length = 30)
     private Rol rol;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rol_solicitado", length = 30)
+    private RolSolicitable rolSolicitado;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", nullable = false, length = 30)
+    @Builder.Default
+    private EstadoCuenta estado = EstadoCuenta.ACTIVO;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean activo = true;
@@ -93,5 +104,7 @@ public class Usuario implements UserDetails {
     public boolean isCredentialsNonExpired() { return true; }
 
     @Override
-    public boolean isEnabled() { return Boolean.TRUE.equals(this.activo); }
+    public boolean isEnabled() {
+        return this.estado == EstadoCuenta.ACTIVO && Boolean.TRUE.equals(this.activo);
+    }
 }

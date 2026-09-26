@@ -43,8 +43,9 @@ public class AdminController {
     @GetMapping("/kpis")
     public ResponseEntity<KpisResponse> obtenerKpis(
             @RequestParam(required = false) Integer anio,
-            @RequestParam(required = false) Integer mes) {
-        return ResponseEntity.ok(adminService.obtenerKpis(anio, mes));
+            @RequestParam(required = false) Integer mes,
+            @RequestParam(required = false) String periodo) {
+        return ResponseEntity.ok(adminService.obtenerKpis(anio, mes, periodo));
     }
 
     // ── 2. Reportes de Ocupación ─────────────────────────────────────────────

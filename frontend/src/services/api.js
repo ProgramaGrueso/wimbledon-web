@@ -1,14 +1,17 @@
 /**
- * Cliente API REST para comunicación con el backend Spring Boot de Hotel Wimbledon.
- * Resuelve Hallazgos #1, #3, #5, #7 y #8:
- *  - Valida solapamiento en el servidor.
- *  - Despacha reservas al backend Java como única fuente de verdad.
- *  - Maneja errores de negocio y códigos HTTP 4xx / 5xx.
- *  - Sincroniza Rack Operativo, Recepción y Housekeeping directamente con MySQL.
+ * Cliente de integración con la API REST de Spring Boot.
+ *
+ * Base URL configurable por variable de entorno VITE_API_URL.
+ * En desarrollo local apunta a http://localhost:8080 (o al proxy de Vite).
+ * En producción (Vercel) apunta al backend desplegado.
  */
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
+/**
+ * Función base para peticiones HTTP a la API REST.
+ * Maneja serialización de JSON, headers comunes y formato de error estándar.
+ */
 async function request(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
   const defaultHeaders = {
@@ -16,22 +19,31 @@ async function request(endpoint, options = {}) {
     'Accept': 'application/json',
   };
 
-  const response = await fetch(url, {
+  const config = {
     ...options,
     headers: {
       ...defaultHeaders,
       ...options.headers,
     },
-  });
+  };
 
-  let data;
-  const contentType = response.headers.get('content-type');
-  if (contentType && contentType.includes('application/json')) {
+  const response = await fetch(url, config);
+
+  // 204 No Content no contiene cuerpo
+  if (response.status === 204) {
+    return null;
+  }
+
+  // Parsear JSON o texto según content-type
+  const contentType = response.headers.get('content-type') || '';
+  let data = null;
+  if (contentType.includes('application/json')) {
     data = await response.json();
   } else {
     data = await response.text();
   }
 
+  // Si la respuesta no es 2xx, lanzar error estructurado
   if (!response.ok) {
     let errorMsg = 'Error en el servidor al procesar la solicitud.';
     if (typeof data === 'object' && data !== null) {
@@ -54,6 +66,13 @@ export const api = {
     return request('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
+    });
+  },
+
+  async registrarPersonal(payload) {
+    return request('/api/auth/registro', {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
   },
 
@@ -102,6 +121,14 @@ export const api = {
     });
   },
 
+  async obtenerHabitacionesRecepcion(jwtToken) {
+    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
+    return request('/api/recepcion/habitaciones', {
+      method: 'GET',
+      headers,
+    });
+  },
+
   async actualizarEstadoHabitacionRecepcion(id, estado, jwtToken) {
     const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
     return request(`/api/recepcion/habitaciones/${id}/estado`, {
@@ -117,6 +144,22 @@ export const api = {
       method: 'POST',
       headers,
       body: JSON.stringify(payload),
+    });
+  },
+
+  async confirmarReservaRecepcion(id, jwtToken) {
+    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
+    return request(`/api/recepcion/reservas/${id}/confirmar`, {
+      method: 'POST',
+      headers,
+    });
+  },
+
+  async consultarReniec(jwtToken, dni) {
+    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
+    return request(`/api/recepcion/reniec/${dni}`, {
+      method: 'GET',
+      headers,
     });
   },
 
@@ -156,14 +199,42 @@ export const api = {
     });
   },
 
-  async obtenerKpisAdmin(jwtToken, anio, mes) {
+  async obtenerKpisAdmin(jwtToken, periodoOrAnio, mes) {
     const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
     const params = new URLSearchParams();
-    if (anio) params.append('anio', anio);
-    if (mes) params.append('mes', mes);
+    if (typeof periodoOrAnio === 'string') {
+      params.append('periodo', periodoOrAnio);
+    } else {
+      if (periodoOrAnio) params.append('anio', periodoOrAnio);
+      if (mes) params.append('mes', mes);
+    }
     const q = params.toString();
     return request(`/api/admin/kpis${q ? `?${q}` : ''}`, {
       method: 'GET',
+      headers,
+    });
+  },
+
+  async listarUsuariosPendientes(jwtToken) {
+    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
+    return request('/api/admin/usuarios/pendientes', {
+      method: 'GET',
+      headers,
+    });
+  },
+
+  async aprobarUsuario(id, jwtToken) {
+    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
+    return request(`/api/admin/usuarios/${id}/aprobar`, {
+      method: 'PATCH',
+      headers,
+    });
+  },
+
+  async rechazarUsuario(id, jwtToken) {
+    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
+    return request(`/api/admin/usuarios/${id}/rechazar`, {
+      method: 'PATCH',
       headers,
     });
   },

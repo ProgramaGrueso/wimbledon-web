@@ -61,6 +61,7 @@ public class SecurityConfig {
                 // Endpoints de autenticación — completamente públicos
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/registro-cliente").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/registro").permitAll()
 
                 // Catálogo público de habitaciones (sin login)
                 .requestMatchers(HttpMethod.GET, "/api/publico/**").permitAll()

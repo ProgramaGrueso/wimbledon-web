@@ -62,7 +62,9 @@ mvn test            # Ejecuta la suite de pruebas
 mvn spring-boot:run # Levanta el servidor backend en http://localhost:8080
 ```
 
-### 3. Base de Datos (MySQL)
+### 3. Base de Datos — MySQL (Única Fuente de Verdad)
+
+La arquitectura de persistencia utiliza exclusivamente **MySQL** (desplegado en Aiven / local) como la única fuente transaccional de verdad para reservas, inventario de suites y cuentas de usuarios. No existen bases de datos paralelas ni persistencias desacopladas.
 
 El script con el esquema y la información de prueba académica se encuentra en:
 - `backend/bdd/hotel_wimbledon_test_db.sql`

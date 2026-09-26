@@ -58,6 +58,14 @@ public class RecepcionController {
         return ResponseEntity.ok(recepcionService.agendaDeFecha(fecha));
     }
 
+    /**
+     * Lista todas las habitaciones con estado operativo para el Rack de Recepción.
+     */
+    @GetMapping("/habitaciones")
+    public ResponseEntity<List<HabitacionRackDTO>> listarRackOperativo() {
+        return ResponseEntity.ok(recepcionService.obtenerRackOperativo());
+    }
+
     // ── Check-in ──────────────────────────────────────────────────────────────
 
     /**
@@ -86,7 +94,7 @@ public class RecepcionController {
             Authentication authentication
     ) {
         OperadorOperacion operador = OperadorOperacion.desde(authentication);
-        return ResponseEntity.ok(checkinService.consumir(request.token(), operador));
+        return ResponseEntity.ok(checkinService.consumir(request.tokenNormalizado(), operador));
     }
 
     // ── Reserva manual ────────────────────────────────────────────────────────

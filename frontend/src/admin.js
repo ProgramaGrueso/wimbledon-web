@@ -1,4 +1,3 @@
-import { supabase } from './supabaseClient.js';
 import { api } from './services/api.js';
 
 /**
@@ -27,7 +26,6 @@ try {
   roomsRack = DEFAULT_ROOMS_RACK;
 }
 
-let liveSupabaseKpis = null;
 let liveSupabaseReservas = [];
 
 function saveRack() {
@@ -46,7 +44,14 @@ async function syncAdminDataFromBackend() {
       try {
         rackData = await api.obtenerHabitacionesLimpieza(token);
       } catch (err) {
-        console.warn('Fallback carga habitaciones:', err);
+        console.warn('Fallback carga habitaciones limpieza:', err);
+        rackData = await api.obtenerHabitaciones();
+      }
+    } else if (currentStaffSession?.role === 'recepcion') {
+      try {
+        rackData = await api.obtenerHabitacionesRecepcion(token);
+      } catch (err) {
+        console.warn('Fallback carga habitaciones recepción:', err);
         rackData = await api.obtenerHabitaciones();
       }
     } else if (token) {
@@ -60,18 +65,28 @@ async function syncAdminDataFromBackend() {
     }
 
     if (rackData && rackData.length > 0) {
-      roomsRack = rackData.map((r, idx) => ({
-        id: r.id,
-        numero: String(r.id),
-        nombre: r.nombre,
-        piso: ((idx % 4) + 1),
-        tipo: r.tipo,
-        estado: r.estado === 'DISPONIBLE' ? 'LIBRE' : (r.estado === 'OCUPADA' ? 'OCUPADA' : (r.estado === 'LIMPIEZA_PENDIENTE' ? 'LIMPIEZA' : (r.estado === 'EN_PROCESO' ? 'EN_PROCESO' : (r.estado === 'LISTA' ? 'LISTA' : 'MANTENIMIENTO')))),
-        duracionRestante: r.estado === 'OCUPADA' ? 'En ocupación' : (r.estado === 'LIMPIEZA_PENDIENTE' ? 'Aseo Pendiente' : (r.estado === 'EN_PROCESO' ? 'Desinfección' : (r.estado === 'LISTA' ? 'Lista p/ Check-in' : '-'))),
-        cliente: null,
-        tarifa: r.tarifaBase || 150,
-        cochera: (r.tipo || '').toLowerCase().includes('cochera')
-      }));
+      roomsRack = rackData.map((r, idx) => {
+        const estadoRaw = (r.estadoOcupacion || r.estado || '').toUpperCase();
+        let estadoUI = 'LIBRE';
+        if (estadoRaw === 'OCUPADA') estadoUI = 'OCUPADA';
+        else if (estadoRaw === 'LIMPIEZA_PENDIENTE' || r.estadoLimpieza === 'SUCIA') estadoUI = 'LIMPIEZA';
+        else if (estadoRaw === 'EN_PROCESO' || r.estadoLimpieza === 'EN_LIMPIEZA') estadoUI = 'EN_PROCESO';
+        else if (estadoRaw === 'LISTA' || r.estadoLimpieza === 'LIMPIA') estadoUI = 'LIBRE';
+        else if (estadoRaw === 'MANTENIMIENTO') estadoUI = 'MANTENIMIENTO';
+
+        return {
+          id: r.id || (idx + 1),
+          numero: String(r.numero || r.id),
+          nombre: r.nombre || `Habitación ${r.numero || r.id}`,
+          piso: r.piso || ((idx % 4) + 1),
+          tipo: r.tipo || 'Estándar',
+          estado: estadoUI,
+          duracionRestante: estadoUI === 'OCUPADA' ? 'En ocupación' : (estadoUI === 'LIMPIEZA' ? 'Aseo Pendiente' : (estadoUI === 'EN_PROCESO' ? 'Desinfección' : '-')),
+          cliente: null,
+          tarifa: r.tarifaBase || 150,
+          cochera: r.cochera !== undefined ? r.cochera : (r.tipo || '').toLowerCase().includes('cochera')
+        };
+      });
       saveRack();
     }
 
@@ -96,6 +111,16 @@ async function syncAdminDataFromBackend() {
       }
     }
 
+    // Cargar KPIs de negocio y solicitudes pendientes si es Gerencia
+    if (currentStaffSession?.role === 'gerente') {
+      try {
+        await cargarGerenteKpis(currentGerentePeriod);
+        await cargarUsuariosPendientes();
+      } catch (e) {
+        console.warn('Error al precargar métricas de gerencia:', e);
+      }
+    }
+
     if (currentStaffSession) {
       renderAdminApp();
     }
@@ -103,6 +128,18 @@ async function syncAdminDataFromBackend() {
     console.warn('ℹ️ Error al sincronizar con backend Spring Boot:', err);
   }
 }
+
+// ==========================================
+// ESTADO GLOBAL DE SESIÓN Y VISTAS
+// ==========================================
+let currentStaffSession = null;
+let activeFloorFilter = 'all';
+let currentAdminAuthView = 'login'; // 'login' | 'register'
+let currentGerenteSubView = 'dashboard'; // 'dashboard' | 'solicitudes'
+let usuariosPendientesCache = [];
+let liveGerenteKpis = null;
+let loadingGerenteKpis = false;
+let gerenteKpisError = null;
 
 // Inicialización de autenticación de personal
 async function initAdminAuth() {
@@ -124,103 +161,41 @@ async function initAdminAuth() {
 // Iniciar autenticación al cargar
 initAdminAuth();
 
-// ==========================================
-// USUARIOS Y CREDENCIALES DEL PERSONAL (WIMBLEDON)
-// ==========================================
-const DEFAULT_STAFF_ACCOUNTS = [
-  {
-    email: 'recepcion@wimbledon.pe',
-    aliases: ['recepcion1@wimbledon.pe', 'recepcionista@wimbledon.pe'],
-    password: 'recepcion123',
-    role: 'recepcion',
-    name: 'Carlos Mendoza (Recepcionista)',
-    cargo: 'Recepcionista de Turno',
-    dni: '71239845'
-  },
-  {
-    email: 'gerencia@wimbledon.pe',
-    aliases: ['gerente@wimbledon.pe', 'admin@wimbledon.pe'],
-    password: 'gerencia123',
-    role: 'gerente',
-    name: 'Lic. Vania Cerrón (Gerencia General)',
-    cargo: 'Gerente General',
-    dni: '45891234'
-  },
-  {
-    email: 'limpieza@wimbledon.pe',
-    aliases: ['limpieza1@wimbledon.pe', 'housekeeping@wimbledon.pe'],
-    password: 'limpieza123',
-    role: 'limpieza',
-    name: 'Rosa Quispe (Housekeeping)',
-    cargo: 'Personal de Aseo y Desinfección',
-    dni: '40982314'
-  },
-  {
-    email: 'superadmin@wimbledon.pe',
-    aliases: ['root@wimbledon.pe'],
-    password: 'superadmin123',
-    role: 'gerente',
-    name: 'Juan Francisco Ganoza (Super Admin)',
-    cargo: 'Super Administrador de Sistemas',
-    dni: '10234567'
-  }
-];
-
-function getStaffAccounts() {
-  try {
-    const raw = localStorage.getItem('wimbledon_staff_accounts');
-    if (raw) return JSON.parse(raw);
-  } catch (e) {}
-  saveStaffAccounts(DEFAULT_STAFF_ACCOUNTS);
-  return DEFAULT_STAFF_ACCOUNTS;
-}
-
-function saveStaffAccounts(accounts) {
-  try {
-    localStorage.setItem('wimbledon_staff_accounts', JSON.stringify(accounts));
-  } catch (e) {}
-}
-
-function findStaffAccount(email) {
-  const accounts = getStaffAccounts();
-  const clean = (email || '').trim().toLowerCase();
-  return accounts.find(a => a.email.toLowerCase() === clean || (a.aliases && a.aliases.some(alias => alias.toLowerCase() === clean)));
-}
-
-function updateStaffAccountPassword(email, newPass) {
-  const accounts = getStaffAccounts();
-  const clean = (email || '').trim().toLowerCase();
-  const acc = accounts.find(a => a.email.toLowerCase() === clean || (a.aliases && a.aliases.some(alias => alias.toLowerCase() === clean)));
-  if (acc) {
-    acc.password = newPass;
-    saveStaffAccounts(accounts);
-    return true;
-  }
-  return false;
-}
-
-let currentStaffSession = null;
-let activeFloorFilter = 'all';
-let currentAdminAuthView = 'login'; // 'login' | 'recovery' | 'reset'
-let recoveryPendingAccount = null;
-
 function renderAdminApp() {
   const container = document.getElementById('adminApp');
   if (!container) return;
 
   if (!currentStaffSession) {
     // -------------------------------------------------------------
-    // VISTA 1: LOGIN CON EMAIL Y CONTRASEÑA
+    // VISTA 1: LOGIN OFICIAL CON CREDENCIALES SPRING BOOT
     // -------------------------------------------------------------
     if (currentAdminAuthView === 'login') {
-      const savedEmail = localStorage.getItem('wimbledon_last_login_email') || 'recepcion@wimbledon.pe';
+      const savedEmail = localStorage.getItem('wimbledon_last_login_email') || 'admin@wimbledon.pe';
 
       container.innerHTML = `
         <div style="max-width: 480px; margin: 2rem auto; background: #0b0f19; border: 2px solid rgba(217, 119, 6, 0.4); border-radius: 24px; padding: 2.5rem; color: #fff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);">
-          <div style="text-align: center; margin-bottom: 2rem;">
+          <!-- PESTAÑAS DE NAVEGACIÓN AUTH -->
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem; background: #0f172a; padding: 0.35rem; border-radius: 14px; border: 1px solid #334155;">
+            <button 
+              type="button" 
+              id="tabAuthLogin" 
+              style="flex: 1; padding: 0.65rem 0.5rem; background: linear-gradient(135deg, #d97706, #fbbf24); color: #000; font-weight: 700; font-size: 0.82rem; border: none; border-radius: 10px; cursor: pointer;"
+            >
+              Iniciar Sesión
+            </button>
+            <button 
+              type="button" 
+              id="tabAuthRegister" 
+              style="flex: 1; padding: 0.65rem 0.5rem; background: transparent; color: #94a3b8; font-weight: 600; font-size: 0.82rem; border: none; border-radius: 10px; cursor: pointer;"
+            >
+              Solicitar Alta
+            </button>
+          </div>
+
+          <div style="text-align: center; margin-bottom: 1.75rem;">
             <span style="color: #fbbf24; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">ACCESO RESTRINGIDO</span>
             <h1 style="font-family: var(--font-serif); font-size: 2.1rem; margin-top: 0.4rem; color: #fff;">Control Interno</h1>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.35rem;">Ingresa con tu correo corporativo y contraseña asignada.</p>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.35rem;">Ingresa con tus credenciales asignadas o aprobadas.</p>
           </div>
 
           <form id="staffLoginForm" style="display: flex; flex-direction: column; gap: 1.25rem;">
@@ -239,31 +214,21 @@ function renderAdminApp() {
             </div>
 
             <div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
-                <label for="staffPassInput" style="font-size: 0.78rem; color: #cbd5e1; font-weight: 700; letter-spacing: 0.5px;">
-                  CONTRASEÑA
-                </label>
-                <button 
-                  type="button" 
-                  id="btnGoToRecovery" 
-                  style="background: none; border: none; padding: 0; color: #fbbf24; font-size: 0.78rem; font-weight: 600; cursor: pointer; text-decoration: underline;"
-                >
-                  ¿Olvidaste tu contraseña?
-                </button>
-              </div>
+              <label for="staffPassInput" style="display: block; font-size: 0.78rem; color: #cbd5e1; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
+                CONTRASEÑA
+              </label>
               <input 
                 type="password" 
                 id="staffPassInput" 
                 placeholder="••••••••" 
-                value="recepcion123"
+                value="Admin2024!" 
                 style="width: 100%; padding: 0.85rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;" 
                 required 
               />
             </div>
 
             <div style="background: rgba(217, 119, 6, 0.08); border: 1px solid rgba(217, 119, 6, 0.25); border-radius: 12px; padding: 0.85rem 1rem; font-size: 0.78rem; color: #fef08a; line-height: 1.4;">
-              💡 <strong>Cuentas configuradas:</strong> <code>recepcion@wimbledon.pe</code>, <code>gerencia@wimbledon.pe</code>, <code>limpieza@wimbledon.pe</code>.<br/>
-              <span style="color: #94a3b8; font-size: 0.72rem;">Credenciales completas en <code>credenciales_personal.md</code> (ignorado por Git).</span>
+              💡 <strong>Acceso del personal:</strong> Las cuentas nuevas requieren aprobación de Gerencia/Admin tras solicitar el alta en la pestaña superior.
             </div>
 
             <div id="loginErrorMsg" style="display: none; color: #f43f5e; font-size: 0.85rem; text-align: center; font-weight: bold; background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.3); border-radius: 8px; padding: 0.6rem;"></div>
@@ -271,18 +236,25 @@ function renderAdminApp() {
             <button type="submit" class="btn-editorial-light" style="width: 100%; text-align: center; justify-content: center; padding: 1.1rem; font-weight: bold; font-size: 1rem; cursor: pointer; background: linear-gradient(135deg, #d97706, #fbbf24); color: #000; border: none; border-radius: 12px; box-shadow: 0 10px 25px rgba(217, 119, 6, 0.3);">
               INGRESAR AL SISTEMA
             </button>
+
+            <div style="text-align: center; margin-top: 0.25rem;">
+              <button 
+                type="button" 
+                id="btnSwitchToRegisterLink" 
+                style="background: none; border: none; padding: 0; color: #38bdf8; font-size: 0.82rem; font-weight: 600; cursor: pointer; text-decoration: underline;"
+              >
+                ¿Eres nuevo personal? Solicita tu cuenta aquí
+              </button>
+            </div>
           </form>
         </div>
       `;
 
-      // Enlace "¿Olvidaste tu contraseña?"
-      const btnForgot = document.getElementById('btnGoToRecovery');
-      if (btnForgot) {
-        btnForgot.onclick = () => {
-          currentAdminAuthView = 'recovery';
-          renderAdminApp();
-        };
-      }
+      // Eventos de cambio a registro
+      const tabReg = document.getElementById('tabAuthRegister');
+      if (tabReg) tabReg.onclick = () => { currentAdminAuthView = 'register'; renderAdminApp(); };
+      const linkReg = document.getElementById('btnSwitchToRegisterLink');
+      if (linkReg) linkReg.onclick = () => { currentAdminAuthView = 'register'; renderAdminApp(); };
 
       // Submit Login
       const form = document.getElementById('staffLoginForm');
@@ -299,13 +271,13 @@ function renderAdminApp() {
           errEl.style.display = 'none';
 
           try {
-            // 1. Autenticación oficial ante Spring Boot API
+            // Autenticación estricta ante Spring Boot API (sin fallback offline ni tokens nulos)
             const authResp = await api.login(email, pass);
             const token = authResp.token;
             const backendRole = (authResp.rol || '').toUpperCase();
 
             let clientRole = 'recepcion';
-            if (backendRole.includes('ADMIN') || backendRole.includes('SUPER')) {
+            if (backendRole.includes('ADMIN') || backendRole.includes('SUPER') || backendRole.includes('GERENTE')) {
               clientRole = 'gerente';
             } else if (backendRole.includes('LIMPIEZA')) {
               clientRole = 'limpieza';
@@ -328,24 +300,6 @@ function renderAdminApp() {
             await syncAdminDataFromBackend();
             renderAdminApp();
           } catch (authErr) {
-            // Fallback a cuenta local si estamos offline
-            const localUser = findStaffAccount(email);
-            if (localUser && (localUser.password === pass || pass === 'Wimbledon2024!')) {
-              console.warn('⚠️ Acceso en modo offline con credenciales locales:', email);
-              localStorage.setItem('wimbledon_last_login_email', email);
-              currentStaffSession = {
-                role: localUser.role,
-                name: localUser.name,
-                email: localUser.email,
-                cargo: localUser.cargo,
-                jwtToken: null
-              };
-              localStorage.setItem('wimbledon_staff_session', JSON.stringify(currentStaffSession));
-              currentAdminAuthView = 'login';
-              await syncAdminDataFromBackend();
-              renderAdminApp();
-              return;
-            }
             errEl.style.display = 'block';
             errEl.innerText = `❌ Error de acceso: ${authErr.message || 'Credenciales corporativas inválidas'}`;
             submitBtn.removeAttribute('disabled');
@@ -355,210 +309,177 @@ function renderAdminApp() {
       }
     } 
     // -------------------------------------------------------------
-    // VISTA 2: RECUPERACIÓN - PASO 1 (SOLICITAR CÓDIGO)
+    // VISTA 2: ALTA DE PERSONAL CON APROBACIÓN
     // -------------------------------------------------------------
-    else if (currentAdminAuthView === 'recovery') {
+    else if (currentAdminAuthView === 'register') {
       container.innerHTML = `
-        <div style="max-width: 480px; margin: 2rem auto; background: #0b0f19; border: 2px solid rgba(217, 119, 6, 0.4); border-radius: 24px; padding: 2.5rem; color: #fff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);">
-          <div style="text-align: center; margin-bottom: 2rem;">
-            <span style="color: #38bdf8; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">SEGURIDAD & CREDENCIALES</span>
-            <h1 style="font-family: var(--font-serif); font-size: 2rem; margin-top: 0.4rem; color: #fff;">Recuperar Contraseña</h1>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.35rem;">Ingresa tu correo corporativo para recibir el código de verificación y restablecer tu clave.</p>
+        <div style="max-width: 480px; margin: 2rem auto; background: #0b0f19; border: 2px solid rgba(56, 189, 248, 0.4); border-radius: 24px; padding: 2.5rem; color: #fff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);">
+          <!-- PESTAÑAS DE NAVEGACIÓN AUTH -->
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem; background: #0f172a; padding: 0.35rem; border-radius: 14px; border: 1px solid #334155;">
+            <button 
+              type="button" 
+              id="tabAuthLoginFromReg" 
+              style="flex: 1; padding: 0.65rem 0.5rem; background: transparent; color: #94a3b8; font-weight: 600; font-size: 0.82rem; border: none; border-radius: 10px; cursor: pointer;"
+            >
+              Iniciar Sesión
+            </button>
+            <button 
+              type="button" 
+              id="tabAuthRegisterActive" 
+              style="flex: 1; padding: 0.65rem 0.5rem; background: linear-gradient(135deg, #0284c7, #38bdf8); color: #fff; font-weight: 700; font-size: 0.82rem; border: none; border-radius: 10px; cursor: pointer;"
+            >
+              Solicitar Alta
+            </button>
           </div>
 
-          <form id="staffRecoveryForm" style="display: flex; flex-direction: column; gap: 1.25rem;">
+          <div style="text-align: center; margin-bottom: 1.75rem;">
+            <span style="color: #38bdf8; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">ALTA DE COLABORADOR</span>
+            <h1 style="font-family: var(--font-serif); font-size: 2rem; margin-top: 0.4rem; color: #fff;">Crear Cuenta Staff</h1>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.35rem;">Tu solicitud quedará pendiente de aprobación por el Administrador.</p>
+          </div>
+
+          <div id="registerSuccessMsg" style="display: none; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 1.25rem; color: #6ee7b7; font-size: 0.9rem; line-height: 1.5; margin-bottom: 1rem; text-align: center;">
+            <strong style="display: block; font-size: 1rem; margin-bottom: 0.4rem;">🎉 Solicitud registrada con éxito</strong>
+            Tu cuenta ha sido creada con estado <em>PENDIENTE DE APROBACIÓN</em>. Una vez que un Administrador o Super Admin autorice tu rol, podrás iniciar sesión normalmente.
+            <div style="margin-top: 1rem;">
+              <button 
+                type="button" 
+                id="btnBackToLoginAfterReg" 
+                class="btn-editorial-light" 
+                style="padding: 0.6rem 1.25rem; font-size: 0.85rem; background: #10b981; color: #000; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;"
+              >
+                Volver a Iniciar Sesión
+              </button>
+            </div>
+          </div>
+
+          <form id="staffRegisterForm" style="display: flex; flex-direction: column; gap: 1.15rem;">
             <div>
-              <label for="recoveryEmailInput" style="display: block; font-size: 0.78rem; color: #cbd5e1; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
+              <label for="regEmailInput" style="display: block; font-size: 0.78rem; color: #cbd5e1; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
                 CORREO ELECTRÓNICO CORPORATIVO
               </label>
               <input 
                 type="email" 
-                id="recoveryEmailInput" 
-                placeholder="ej: recepcion@wimbledon.pe" 
+                id="regEmailInput" 
+                placeholder="ej: nuevo.recepcionista@wimbledon.pe" 
                 style="width: 100%; padding: 0.85rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;" 
                 required 
               />
             </div>
 
-            <div id="recoveryErrorMsg" style="display: none; color: #f43f5e; font-size: 0.85rem; text-align: center; font-weight: bold; background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.3); border-radius: 8px; padding: 0.6rem;"></div>
+            <div>
+              <label for="regRolSelect" style="display: block; font-size: 0.78rem; color: #cbd5e1; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
+                ROL OPERATIVO SOLICITADO
+              </label>
+              <select 
+                id="regRolSelect" 
+                required 
+                style="width: 100%; padding: 0.85rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;"
+              >
+                <option value="RECEPCIONISTA">🛎️ Recepcionista</option>
+                <option value="GERENTE">📊 Gerencia / Administración</option>
+                <option value="LIMPIEZA">🧹 Housekeeping / Limpieza</option>
+              </select>
+            </div>
 
-            <button type="submit" class="btn-editorial-light" style="width: 100%; text-align: center; justify-content: center; padding: 1rem; font-weight: bold; font-size: 0.95rem; cursor: pointer; background: linear-gradient(135deg, #0284c7, #38bdf8); color: #fff; border: none; border-radius: 12px; box-shadow: 0 10px 25px rgba(2, 132, 199, 0.3);">
-              EMITIR CÓDIGO DE VERIFICACIÓN
+            <div>
+              <label for="regPassInput" style="display: block; font-size: 0.78rem; color: #cbd5e1; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
+                CONTRASEÑA (MÍNIMO 8 CARACTERES)
+              </label>
+              <input 
+                type="password" 
+                id="regPassInput" 
+                placeholder="Mínimo 8 caracteres" 
+                minlength="8" 
+                style="width: 100%; padding: 0.85rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;" 
+                required 
+              />
+            </div>
+
+            <div>
+              <label for="regPassConfirmInput" style="display: block; font-size: 0.78rem; color: #cbd5e1; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
+                CONFIRMAR CONTRASEÑA
+              </label>
+              <input 
+                type="password" 
+                id="regPassConfirmInput" 
+                placeholder="Repite la contraseña" 
+                minlength="8" 
+                style="width: 100%; padding: 0.85rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;" 
+                required 
+              />
+            </div>
+
+            <div id="registerErrorMsg" style="display: none; color: #f43f5e; font-size: 0.85rem; text-align: center; font-weight: bold; background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.3); border-radius: 8px; padding: 0.6rem;"></div>
+
+            <button type="submit" class="btn-editorial-light" style="width: 100%; text-align: center; justify-content: center; padding: 1.1rem; font-weight: bold; font-size: 1rem; cursor: pointer; background: linear-gradient(135deg, #0284c7, #38bdf8); color: #fff; border: none; border-radius: 12px; box-shadow: 0 10px 25px rgba(2, 132, 199, 0.35);">
+              ENVIAR SOLICITUD DE ALTA
             </button>
 
-            <div style="text-align: center; margin-top: 0.5rem;">
+            <div style="text-align: center; margin-top: 0.25rem;">
               <button 
                 type="button" 
-                id="btnBackToLogin1" 
-                style="background: none; border: none; color: #94a3b8; font-size: 0.82rem; cursor: pointer; text-decoration: underline;"
+                id="btnBackToLoginFromReg" 
+                style="background: none; border: none; padding: 0; color: #94a3b8; font-size: 0.82rem; cursor: pointer; text-decoration: underline;"
               >
-                ← Volver al inicio de sesión
+                ← Ya tengo cuenta, ir a Iniciar Sesión
               </button>
             </div>
           </form>
         </div>
       `;
 
-      const btnBack = document.getElementById('btnBackToLogin1');
-      if (btnBack) {
-        btnBack.onclick = () => {
-          currentAdminAuthView = 'login';
-          renderAdminApp();
-        };
-      }
+      const btnGoLogin = document.getElementById('tabAuthLoginFromReg');
+      if (btnGoLogin) btnGoLogin.onclick = () => { currentAdminAuthView = 'login'; renderAdminApp(); };
+      const btnBackLink = document.getElementById('btnBackToLoginFromReg');
+      if (btnBackLink) btnBackLink.onclick = () => { currentAdminAuthView = 'login'; renderAdminApp(); };
 
-      const form = document.getElementById('staffRecoveryForm');
-      if (form) {
-        form.onsubmit = (e) => {
+      const formReg = document.getElementById('staffRegisterForm');
+      if (formReg) {
+        formReg.onsubmit = async (e) => {
           e.preventDefault();
-          const email = document.getElementById('recoveryEmailInput').value.trim();
-          const errEl = document.getElementById('recoveryErrorMsg');
-          const user = findStaffAccount(email);
+          const email = document.getElementById('regEmailInput').value.trim();
+          const rol = document.getElementById('regRolSelect').value;
+          const pass = document.getElementById('regPassInput').value;
+          const passConfirm = document.getElementById('regPassConfirmInput').value;
+          const errEl = document.getElementById('registerErrorMsg');
+          const successEl = document.getElementById('registerSuccessMsg');
+          const submitBtn = formReg.querySelector('button[type="submit"]');
 
-          if (user) {
-            const randomOtp = `WMB-${Math.floor(1000 + Math.random() * 9000)}`;
-            recoveryPendingAccount = {
-              email: user.email,
-              name: user.name,
-              role: user.role,
-              otp: randomOtp
-            };
-            currentAdminAuthView = 'reset';
-            renderAdminApp();
-          } else {
+          errEl.style.display = 'none';
+
+          if (pass.length < 8) {
             errEl.style.display = 'block';
-            errEl.innerText = '❌ El correo no figura en el padrón de personal del hotel.';
-          }
-        };
-      }
-    }
-    // -------------------------------------------------------------
-    // VISTA 3: RECUPERACIÓN - PASO 2 (INGRESAR OTP Y NUEVA CLAVE)
-    // -------------------------------------------------------------
-    else if (currentAdminAuthView === 'reset') {
-      const acc = recoveryPendingAccount || { email: 'recepcion@wimbledon.pe', name: 'Personal', otp: 'WMB-5821' };
-
-      container.innerHTML = `
-        <div style="max-width: 480px; margin: 2rem auto; background: #0b0f19; border: 2px solid rgba(16, 185, 129, 0.4); border-radius: 24px; padding: 2.5rem; color: #fff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);">
-          <div style="text-align: center; margin-bottom: 1.75rem;">
-            <span style="color: #34d399; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">IDENTIDAD COMPROBADA</span>
-            <h1 style="font-family: var(--font-serif); font-size: 1.95rem; margin-top: 0.4rem; color: #fff;">Nueva Contraseña</h1>
-            <p style="color: #94a3b8; font-size: 0.82rem; margin-top: 0.35rem;">
-              Colaborador: <strong style="color: #fff;">${acc.name}</strong> (${acc.email})
-            </p>
-          </div>
-
-          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: #a7f3d0; text-align: center;">
-            ✉️ Código de seguridad emitido: <strong style="color: #34d399; font-family: monospace; font-size: 1rem; letter-spacing: 2px;">${acc.otp}</strong>
-          </div>
-
-          <form id="staffResetForm" style="display: flex; flex-direction: column; gap: 1.15rem;">
-            <div>
-              <label for="inputOtp" style="display: block; font-size: 0.78rem; color: #cbd5e1; font-weight: 700; margin-bottom: 0.4rem; letter-spacing: 0.5px;">
-                CÓDIGO DE VERIFICACIÓN (OTP)
-              </label>
-              <input 
-                type="text" 
-                id="inputOtp" 
-                value="${acc.otp}" 
-                placeholder="Ej: WMB-XXXX" 
-                style="width: 100%; padding: 0.85rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: #34d399; font-family: monospace; font-size: 1rem; font-weight: bold; letter-spacing: 2px; outline: none;" 
-                required 
-              />
-            </div>
-
-            <div>
-              <label for="newPassInput" style="display: block; font-size: 0.78rem; color: #cbd5e1; font-weight: 700; margin-bottom: 0.4rem; letter-spacing: 0.5px;">
-                NUEVA CONTRASEÑA
-              </label>
-              <input 
-                type="password" 
-                id="newPassInput" 
-                placeholder="Ingresa tu nueva clave (mínimo 4 caracteres)" 
-                style="width: 100%; padding: 0.85rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;" 
-                required 
-              />
-            </div>
-
-            <div>
-              <label for="confirmPassInput" style="display: block; font-size: 0.78rem; color: #cbd5e1; font-weight: 700; margin-bottom: 0.4rem; letter-spacing: 0.5px;">
-                CONFIRMAR NUEVA CONTRASEÑA
-              </label>
-              <input 
-                type="password" 
-                id="confirmPassInput" 
-                placeholder="Repite la nueva clave" 
-                style="width: 100%; padding: 0.85rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;" 
-                required 
-              />
-            </div>
-
-            <div id="resetErrorMsg" style="display: none; color: #f43f5e; font-size: 0.85rem; text-align: center; font-weight: bold; background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.3); border-radius: 8px; padding: 0.6rem;"></div>
-
-            <button type="submit" class="btn-editorial-light" style="width: 100%; text-align: center; justify-content: center; padding: 1.1rem; font-weight: bold; font-size: 1rem; cursor: pointer; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 12px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.35);">
-              RESTABLECER CONTRASEÑA E INGRESAR
-            </button>
-
-            <div style="text-align: center; margin-top: 0.4rem;">
-              <button 
-                type="button" 
-                id="btnBackToLogin2" 
-                style="background: none; border: none; color: #94a3b8; font-size: 0.82rem; cursor: pointer; text-decoration: underline;"
-              >
-                ← Cancelar y volver al login
-              </button>
-            </div>
-          </form>
-        </div>
-      `;
-
-      const btnBack2 = document.getElementById('btnBackToLogin2');
-      if (btnBack2) {
-        btnBack2.onclick = () => {
-          currentAdminAuthView = 'login';
-          recoveryPendingAccount = null;
-          renderAdminApp();
-        };
-      }
-
-      const form = document.getElementById('staffResetForm');
-      if (form) {
-        form.onsubmit = (e) => {
-          e.preventDefault();
-          const otp = document.getElementById('inputOtp').value.trim();
-          const p1 = document.getElementById('newPassInput').value;
-          const p2 = document.getElementById('confirmPassInput').value;
-          const errEl = document.getElementById('resetErrorMsg');
-
-          if (otp !== acc.otp) {
-            errEl.style.display = 'block';
-            errEl.innerText = '❌ El código de verificación no coincide.';
+            errEl.innerText = '❌ La contraseña debe tener al menos 8 caracteres.';
             return;
           }
 
-          if (p1.length < 4) {
-            errEl.style.display = 'block';
-            errEl.innerText = '❌ La nueva contraseña debe tener al menos 4 caracteres.';
-            return;
-          }
-
-          if (p1 !== p2) {
+          if (pass !== passConfirm) {
             errEl.style.display = 'block';
             errEl.innerText = '❌ Las contraseñas no coinciden.';
             return;
           }
 
-          updateStaffAccountPassword(acc.email, p1);
-          alert(`✅ ¡Contraseña restablecida con éxito para ${acc.email}!\nIniciando sesión en el sistema...`);
-          
-          currentStaffSession = {
-            role: acc.role,
-            name: acc.name,
-            email: acc.email
-          };
-          currentAdminAuthView = 'login';
-          recoveryPendingAccount = null;
-          renderAdminApp();
+          submitBtn.setAttribute('disabled', 'true');
+          submitBtn.innerText = 'Enviando solicitud...';
+
+          try {
+            await api.registrarPersonal({ email, password: pass, rol });
+            formReg.style.display = 'none';
+            successEl.style.display = 'block';
+            const btnAfterReg = document.getElementById('btnBackToLoginAfterReg');
+            if (btnAfterReg) {
+              btnAfterReg.onclick = () => {
+                currentAdminAuthView = 'login';
+                renderAdminApp();
+              };
+            }
+          } catch (regErr) {
+            errEl.style.display = 'block';
+            errEl.innerText = `❌ Error: ${regErr.message || 'No se pudo procesar el registro.'}`;
+            submitBtn.removeAttribute('disabled');
+            submitBtn.innerText = 'ENVIAR SOLICITUD DE ALTA';
+          }
         };
       }
     }
@@ -573,7 +494,7 @@ function renderAdminApp() {
           <div>
             <span style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">PANEL HOTEL WIMBLEDON EN VIVO</span>
             <h2 style="font-family: var(--font-serif); font-size: 2rem; color: #fff; margin-top: 0.2rem;">
-              ${role === 'gerente' ? '📊 Gerencia & Indicadores de Negocio' : (role === 'recepcion' ? '🛎️ Recepción, Check-in & Rack Operativo' : '🧹 Gestión de Limpieza & Mantenimiento')}
+              ${role === 'gerente' ? (currentGerenteSubView === 'solicitudes' ? '👥 Aprobación de Altas de Personal' : '📊 Gerencia & Indicadores de Negocio') : (role === 'recepcion' ? '🛎️ Recepción, Check-in & Rack Operativo' : '🧹 Gestión de Limpieza & Mantenimiento')}
             </h2>
             <div style="display: flex; align-items: center; gap: 0.6rem; margin-top: 0.35rem;">
               <span class="avail-dot"></span>
@@ -581,6 +502,23 @@ function renderAdminApp() {
                 SESIÓN ACTIVA: ${role.toUpperCase()} — ${name}
               </span>
             </div>
+
+            ${role === 'gerente' ? `
+              <div style="display: flex; gap: 0.5rem; margin-top: 0.85rem;">
+                <button 
+                  id="btnSubViewDashboard" 
+                  style="padding: 0.45rem 1rem; font-size: 0.8rem; font-weight: 600; border-radius: 8px; cursor: pointer; border: 1px solid ${currentGerenteSubView === 'dashboard' ? '#fbbf24' : '#334155'}; background: ${currentGerenteSubView === 'dashboard' ? 'rgba(251, 191, 36, 0.15)' : '#0f172a'}; color: ${currentGerenteSubView === 'dashboard' ? '#fbbf24' : '#94a3b8'};"
+                >
+                  📊 Indicadores & KPIs
+                </button>
+                <button 
+                  id="btnSubViewSolicitudes" 
+                  style="padding: 0.45rem 1rem; font-size: 0.8rem; font-weight: 600; border-radius: 8px; cursor: pointer; border: 1px solid ${currentGerenteSubView === 'solicitudes' ? '#38bdf8' : '#334155'}; background: ${currentGerenteSubView === 'solicitudes' ? 'rgba(56, 189, 248, 0.15)' : '#0f172a'}; color: ${currentGerenteSubView === 'solicitudes' ? '#38bdf8' : '#94a3b8'};"
+                >
+                  👥 Solicitudes de Acceso (Personal)
+                </button>
+              </div>
+            ` : ''}
           </div>
           <div style="display: flex; gap: 0.75rem;">
             <button id="btnSwitchRole" class="btn-editorial-outline" style="padding: 0.6rem 1.25rem; font-size: 0.8rem; border-color: #fbbf24; color: #fbbf24; cursor: pointer; border-radius: 8px;">
@@ -593,27 +531,47 @@ function renderAdminApp() {
         </div>
 
         <!-- CONTENIDO ESPECÍFICO SEGÚN ROL -->
-        ${role === 'gerente' ? renderGerenteWorkspace() : (role === 'recepcion' ? renderRecepcionWorkspace() : renderLimpiezaWorkspace())}
+        ${role === 'gerente' 
+          ? (currentGerenteSubView === 'solicitudes' ? renderSolicitudesAccesoWorkspace() : renderGerenteWorkspace()) 
+          : (role === 'recepcion' ? renderRecepcionWorkspace() : renderLimpiezaWorkspace())}
       </div>
     `;
 
-    const handleLogout = async () => {
-      try {
-        await supabase.auth.signOut();
-      } catch (e) {
-        console.warn('Error en sign out:', e);
-      }
+    const handleLogout = () => {
       localStorage.removeItem('wimbledon_staff_session');
       localStorage.removeItem('wimbledon_jwt_token');
       currentStaffSession = null;
       roomsRack = [];
       liveSupabaseReservas = [];
+      liveGerenteKpis = null;
       renderAdminApp();
     };
     document.getElementById('btnSwitchRole').onclick = handleLogout;
     document.getElementById('btnLogout').onclick = handleLogout;
 
-    if (role === 'gerente') setupGerenteEvents();
+    if (role === 'gerente') {
+      const btnDash = document.getElementById('btnSubViewDashboard');
+      const btnSol = document.getElementById('btnSubViewSolicitudes');
+      if (btnDash) {
+        btnDash.onclick = () => {
+          currentGerenteSubView = 'dashboard';
+          renderAdminApp();
+        };
+      }
+      if (btnSol) {
+        btnSol.onclick = async () => {
+          currentGerenteSubView = 'solicitudes';
+          await cargarUsuariosPendientes();
+          renderAdminApp();
+        };
+      }
+
+      if (currentGerenteSubView === 'solicitudes') {
+        setupSolicitudesEvents();
+      } else {
+        setupGerenteEvents();
+      }
+    }
     if (role === 'recepcion') setupRecepcionEvents();
     if (role === 'limpieza') setupLimpiezaEvents();
   }
@@ -680,38 +638,22 @@ async function consultarDniReniec(dni) {
     return { ok: false, error: 'El DNI debe contener exactamente 8 dígitos numéricos.' };
   }
 
-  // Consulta HTTP GET a endpoints de RENIEC en Perú
-  const candidateUrls = [
-    `https://api.apis.net.pe/v2/reniec/dni?numero=${cleanDni}`,
-    `https://api.perudevs.com/api/v1/dni/complete?document=${cleanDni}`
-  ];
-
-  for (const url of candidateUrls) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2600);
-      const res = await fetch(url, { signal: controller.signal });
-      clearTimeout(timeoutId);
-      if (res.ok) {
-        const data = await res.json();
-        const nombres = (data.nombres || data.data?.nombres || data.nombre || '').trim();
-        const apePat = (data.apellidoPaterno || data.data?.apellido_paterno || data.paterno || '').trim();
-        const apeMat = (data.apellidoMaterno || data.data?.apellido_materno || data.materno || '').trim();
-        if (nombres) {
-          const nombreCompleto = `${nombres} ${apePat} ${apeMat}`.trim();
-          return {
-            ok: true,
-            source: 'RENIEC Oficial (En Línea)',
-            nombres,
-            apellidoPaterno: apePat,
-            apellidoMaterno: apeMat,
-            nombreCompleto
-          };
-        }
-      }
-    } catch (e) {
-      // Intentar fallback si falla la red externa o CORS
+  // 1. Consulta segura al proxy Backend Spring Boot (evita CORS y cachea respuestas)
+  try {
+    const token = currentStaffSession?.jwtToken;
+    const persona = await api.consultarReniec(token, cleanDni);
+    if (persona && persona.nombres) {
+      return {
+        ok: true,
+        source: 'RENIEC Oficial (Vía Backend Wimbledon)',
+        nombres: persona.nombres,
+        apellidoPaterno: persona.apellidoPaterno || '',
+        apellidoMaterno: persona.apellidoMaterno || '',
+        nombreCompleto: persona.nombreCompleto || `${persona.nombres} ${persona.apellidoPaterno || ''} ${persona.apellidoMaterno || ''}`.trim()
+      };
     }
+  } catch (backendErr) {
+    console.warn('Backend RENIEC proxy inaccesible, recurriendo a padrón de contingencia:', backendErr);
   }
 
   // Padrón de contingencia operativo (Demo / Offline / Restricción CORS)
@@ -1489,19 +1431,20 @@ function setupCardClickEvents() {
   });
 }
 
+const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+
+function normalizarTokenQr(textoEscaneado) {
+  if (!textoEscaneado) return '';
+  const match = String(textoEscaneado).match(UUID_RE);
+  return match ? match[0] : String(textoEscaneado).trim();
+}
+
 async function processCheckinValidation(code) {
   const fb = document.getElementById('qrValidateFeedback');
   if (!fb) return;
 
-  // El pase entrega el qrToken completo del backend, de 36 caracteres. Se envia
-  // INTEGRO, tal cual: el recorte por separador existia porque el pase antiguo
-  // componia `codigo|PIN` y el backend solo conocia el codigo. Una vez que el
-  // pase entrega el token del backend, recortar eliminaria parte de un valor que
-  // el backend espera entero.
-  //
-  // Los pases emitidos antes del despliegue quedan NO RESOLUBLES, consecuencia
-  // directa de no haber grandfathering, no un defecto de esta implementacion.
-  const cleanCode = code ? String(code).trim() : '';
+  // Extrae el UUID puro si llega la URL completa o el token escaneado
+  const cleanCode = normalizarTokenQr(code);
   let matchedReserva = null;
   let room = null;
   let backendCheckinResult = null;
@@ -1810,31 +1753,67 @@ function computeRealGerenteKPIs() {
     todayRevenue
   };
 }
+async function cargarGerenteKpis(periodo = currentGerentePeriod) {
+  const token = currentStaffSession?.jwtToken;
+  if (!token) return;
+  loadingGerenteKpis = true;
+  gerenteKpisError = null;
+  try {
+    const data = await api.obtenerKpisAdmin(token, periodo);
+    if (data) {
+      liveGerenteKpis = data;
+    }
+  } catch (err) {
+    console.warn('No se pudieron obtener KPIs de Spring Boot en vivo:', err);
+    gerenteKpisError = 'No se pudieron cargar los KPIs en tiempo real desde el servidor.';
+  } finally {
+    loadingGerenteKpis = false;
+  }
+}
+
+async function cargarUsuariosPendientes() {
+  const token = currentStaffSession?.jwtToken;
+  if (!token) return;
+  try {
+    usuariosPendientesCache = await api.listarUsuariosPendientes(token);
+  } catch (err) {
+    console.warn('Error al obtener lista de solicitudes pendientes:', err);
+    usuariosPendientesCache = [];
+  }
+}
 
 function renderGerenteWorkspace() {
-  const realKPIs = computeRealGerenteKPIs();
   const data = JSON.parse(JSON.stringify(gerenteAnalyticsData[currentGerentePeriod]));
   const { kpis, bars, breakdown, ranking } = data;
 
-  // Integrar métricas reales de Supabase Cloud
-  if (liveSupabaseKpis) {
-    kpis.ingresos.val = `S/ ${Number(liveSupabaseKpis.facturacion_total_soles).toLocaleString('es-PE')}`;
-    kpis.ingresos.sub = `Auditado en Supabase Cloud (${liveSupabaseKpis.total_historico_reservas} reservas acumuladas)`;
-    kpis.ingresos.num = 95;
+  // Integrar métricas reales calculadas por Spring Boot & MySQL
+  if (liveGerenteKpis) {
+    const occ = Number(liveGerenteKpis.tasaOcupacion) || 0;
+    kpis.ocupacion.val = `${occ.toFixed(1)}%`;
+    kpis.ocupacion.num = occ;
+    kpis.ocupacion.sub = `${liveGerenteKpis.habitacionesOcupadas || 0} de ${liveGerenteKpis.totalHabitaciones || 132} habitaciones ocupadas`;
 
-    const pctOcc = Math.max(8, Math.round((liveSupabaseKpis.habitaciones_ocupadas_ahora / (liveSupabaseKpis.total_habitaciones_inventario || 132)) * 100));
-    kpis.ocupacion.val = `${pctOcc}%`;
-    kpis.ocupacion.num = pctOcc;
-    kpis.ocupacion.sub = `${liveSupabaseKpis.habitaciones_ocupadas_ahora} de ${liveSupabaseKpis.total_habitaciones_inventario || 132} habitaciones ocupadas`;
+    const ing = Number(liveGerenteKpis.ingresosTotales) || 0;
+    kpis.ingresos.val = `S/ ${ing.toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
+    kpis.ingresos.sub = `Auditado en Spring Boot & MySQL (${currentGerentePeriod})`;
+    kpis.ingresos.num = Math.min(100, Math.round((ing / (currentGerentePeriod === 'dia' ? 5000 : (currentGerentePeriod === 'mes' ? 120000 : 1200000))) * 100));
 
-    kpis.checkinQr.val = `${Math.round(100 - liveSupabaseKpis.tasa_cancelacion_pct)}%`;
-    kpis.checkinQr.sub = `${liveSupabaseKpis.reservas_web} reservas web online verificadas`;
-  } else if (currentGerentePeriod === 'dia') {
-    const baseRevenue = 4820;
-    const totalTodayRev = baseRevenue + realKPIs.todayRevenue;
-    kpis.ingresos.val = `S/ ${totalTodayRev.toLocaleString('es-PE')}`;
-    if (realKPIs.todayCount > 0) {
-      kpis.ingresos.sub = `S/ ${baseRevenue} base + S/ ${realKPIs.todayRevenue} (${realKPIs.todayCount} res. en vivo)`;
+    const rot = Number(liveGerenteKpis.rotacionPromedio) || 0;
+    kpis.rotacion.val = `${rot.toFixed(1)}x`;
+    kpis.rotacion.num = Math.min(100, Math.round(rot * 25));
+
+    const qrPct = Number(liveGerenteKpis.checkinDigitalPct) || 0;
+    kpis.checkinQr.val = `${qrPct.toFixed(0)}%`;
+    kpis.checkinQr.num = qrPct;
+
+    if (liveGerenteKpis.ocupacionPorDia && liveGerenteKpis.ocupacionPorDia.length > 0) {
+      data.bars = liveGerenteKpis.ocupacionPorDia.map(d => ({
+        label: d.dia,
+        val: `${(d.ocupacionPct || 0).toFixed(0)}%`,
+        heightPct: Math.min(100, Math.max(10, Math.round(d.ocupacionPct || 0))),
+        color: (d.ocupacionPct || 0) >= 70 ? 'linear-gradient(180deg, #fbbf24, #d97706)' : 'linear-gradient(180deg, #38bdf8, #0284c7)',
+        highlight: (d.ocupacionPct || 0) >= 70
+      }));
     }
   }
 
@@ -1862,7 +1841,7 @@ function renderGerenteWorkspace() {
               BUSINESS INTELLIGENCE & ANALYTICS EXECUTIVE
             </span>
             <span style="font-size: 0.65rem; background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); padding: 0.2rem 0.6rem; border-radius: var(--radius-pill); font-weight: 700;">
-              ${data.badge}
+              ${liveGerenteKpis ? '🟢 Conectado a Spring Boot' : data.badge}
             </span>
           </div>
           <h3 style="font-family: var(--font-serif); font-size: 1.75rem; color: #fff; margin: 0;">
@@ -1889,6 +1868,12 @@ function renderGerenteWorkspace() {
           </button>
         </div>
       </div>
+
+      ${gerenteKpisError ? `
+        <div style="background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.3); border-radius: 12px; padding: 0.75rem 1rem; color: #f43f5e; font-size: 0.82rem; margin-bottom: 1.5rem; text-align: center;">
+          ⚠️ ${gerenteKpisError}
+        </div>
+      ` : ''}
 
       <!-- 4 TARJETAS KPI CON MEDIDORES RADIALES (DIALES CIRCULARES) -->
       <div class="gerente-kpi-grid">
@@ -2083,10 +2068,11 @@ function renderGerenteWorkspace() {
 function setupGerenteEvents() {
   // Selector de período Día / Mes / Año
   document.querySelectorAll('#gerentePeriodTabs .period-tab-btn').forEach(btn => {
-    btn.onclick = (e) => {
+    btn.onclick = async (e) => {
       const period = e.currentTarget.getAttribute('data-period');
       if (period && period !== currentGerentePeriod) {
         currentGerentePeriod = period;
+        await cargarGerenteKpis(currentGerentePeriod);
         renderAdminApp();
       }
     };
@@ -2119,6 +2105,161 @@ function setupGerenteEvents() {
       document.body.removeChild(link);
     };
   }
+}
+
+function renderSolicitudesAccesoWorkspace() {
+  return `
+    <div id="solicitudesContainer" style="animation: cardFadeIn 0.35s ease;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span style="font-size: 0.72rem; color: #38bdf8; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase;">
+            SEGURIDAD & CONTROL DE IDENTIDADES (RBAC)
+          </span>
+          <h3 style="font-family: var(--font-serif); font-size: 1.75rem; color: #fff; margin: 0.2rem 0 0 0;">
+            Solicitudes de Alta de Personal
+          </h3>
+          <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
+            Colaboradores que crearon cuenta en la pantalla de login y esperan activación de rol.
+          </p>
+        </div>
+
+        <button 
+          id="btnRefrescarSolicitudes" 
+          class="btn-editorial-outline" 
+          style="padding: 0.55rem 1.2rem; border-color: #38bdf8; color: #38bdf8; font-size: 0.8rem; border-radius: var(--radius-pill); cursor: pointer;"
+        >
+          🔄 Actualizar Lista
+        </button>
+      </div>
+
+      <div class="analytics-panel-card">
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 1px solid #334155; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase;">
+                <th style="padding: 0.75rem;">ID</th>
+                <th style="padding: 0.75rem;">Correo Corporativo</th>
+                <th style="padding: 0.75rem;">Rol Solicitado</th>
+                <th style="padding: 0.75rem;">Estado</th>
+                <th style="padding: 0.75rem;">Fecha Registro</th>
+                <th style="padding: 0.75rem; text-align: right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${usuariosPendientesCache.length === 0 ? `
+                <tr>
+                  <td colspan="6" style="padding: 3rem 1rem; text-align: center; color: #94a3b8;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">✅</div>
+                    <strong style="color: #fff; display: block; font-size: 1rem;">No hay solicitudes de acceso pendientes</strong>
+                    Todas las cuentas del personal han sido evaluadas y autorizadas.
+                  </td>
+                </tr>
+              ` : usuariosPendientesCache.map(u => `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+                  <td style="padding: 0.85rem 0.75rem; font-family: monospace; color: #cbd5e1;">#${u.id}</td>
+                  <td style="padding: 0.85rem 0.75rem;">
+                    <strong style="color: #fff;">${u.email}</strong>
+                  </td>
+                  <td style="padding: 0.85rem 0.75rem;">
+                    <span style="display: inline-block; padding: 0.25rem 0.65rem; border-radius: 6px; font-weight: 700; font-size: 0.75rem; background: ${u.rolSolicitado === 'RECEPCIONISTA' ? 'rgba(56, 189, 248, 0.15)' : (u.rolSolicitado === 'GERENTE' ? 'rgba(251, 191, 36, 0.15)' : 'rgba(16, 185, 129, 0.15)')}; color: ${u.rolSolicitado === 'RECEPCIONISTA' ? '#38bdf8' : (u.rolSolicitado === 'GERENTE' ? '#fbbf24' : '#34d399')}; border: 1px solid ${u.rolSolicitado === 'RECEPCIONISTA' ? 'rgba(56, 189, 248, 0.3)' : (u.rolSolicitado === 'GERENTE' ? 'rgba(251, 191, 36, 0.3)' : 'rgba(16, 185, 129, 0.3)')};">
+                      ${u.rolSolicitado}
+                    </span>
+                  </td>
+                  <td style="padding: 0.85rem 0.75rem;">
+                    <span style="font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: var(--radius-pill); font-weight: 700; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">
+                      PENDIENTE
+                    </span>
+                  </td>
+                  <td style="padding: 0.85rem 0.75rem; color: #94a3b8; font-size: 0.8rem;">
+                    ${u.fechaCreacion ? new Date(u.fechaCreacion).toLocaleString() : 'Reciente'}
+                  </td>
+                  <td style="padding: 0.85rem 0.75rem; text-align: right;">
+                    <div style="display: inline-flex; gap: 0.5rem;">
+                      <button 
+                        class="btn-aprobar-usuario" 
+                        data-id="${u.id}" 
+                        data-email="${u.email}" 
+                        style="padding: 0.45rem 0.85rem; font-size: 0.75rem; background: #10b981; color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;"
+                      >
+                        ✓ Aprobar
+                      </button>
+                      <button 
+                        class="btn-rechazar-usuario" 
+                        data-id="${u.id}" 
+                        data-email="${u.email}" 
+                        style="padding: 0.45rem 0.85rem; font-size: 0.75rem; background: rgba(244, 63, 94, 0.2); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.4); border-radius: 6px; font-weight: bold; cursor: pointer;"
+                      >
+                        ✕ Rechazar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function setupSolicitudesEvents() {
+  const btnRefresh = document.getElementById('btnRefrescarSolicitudes');
+  if (btnRefresh) {
+    btnRefresh.onclick = async () => {
+      btnRefresh.innerText = 'Cargando...';
+      await cargarUsuariosPendientes();
+      renderAdminApp();
+    };
+  }
+
+  document.querySelectorAll('.btn-aprobar-usuario').forEach(btn => {
+    btn.onclick = async (e) => {
+      const id = e.currentTarget.getAttribute('data-id');
+      const email = e.currentTarget.getAttribute('data-email');
+      const token = currentStaffSession?.jwtToken;
+      if (!id || !token) return;
+
+      e.currentTarget.setAttribute('disabled', 'true');
+      e.currentTarget.innerText = 'Aprobando...';
+      try {
+        await api.aprobarUsuario(id, token);
+        alert(`✅ Cuenta aprobada con éxito para ${email}. Ahora puede iniciar sesión con sus credenciales.`);
+        await cargarUsuariosPendientes();
+        renderAdminApp();
+      } catch (err) {
+        alert(`❌ Error al aprobar usuario: ${err.message}`);
+        e.currentTarget.removeAttribute('disabled');
+        e.currentTarget.innerText = '✓ Aprobar';
+      }
+    };
+  });
+
+  document.querySelectorAll('.btn-rechazar-usuario').forEach(btn => {
+    btn.onclick = async (e) => {
+      const id = e.currentTarget.getAttribute('data-id');
+      const email = e.currentTarget.getAttribute('data-email');
+      const token = currentStaffSession?.jwtToken;
+      if (!id || !token) return;
+
+      if (!confirm(`¿Rechazar y eliminar la solicitud de acceso para ${email}?`)) {
+        return;
+      }
+
+      e.currentTarget.setAttribute('disabled', 'true');
+      e.currentTarget.innerText = 'Rechazando...';
+      try {
+        await api.rechazarUsuario(id, token);
+        alert(`Solicitud rechazada y descartada para ${email}.`);
+        await cargarUsuariosPendientes();
+        renderAdminApp();
+      } catch (err) {
+        alert(`❌ Error al rechazar solicitud: ${err.message}`);
+        e.currentTarget.removeAttribute('disabled');
+        e.currentTarget.innerText = '✕ Rechazar';
+      }
+    };
+  });
 }
 
 renderAdminApp();

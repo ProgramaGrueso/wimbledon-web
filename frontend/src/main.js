@@ -23,29 +23,29 @@ const AVAILABLE_EXTRAS = [
 
 const GASTRO_CATEGORIES = {
   gourmet: [
-    { nombre: "Fetuccini al Alfredo", precio: "S/ 24.00", desc: "Pasta artesanal en cremosa salsa Alfredo con jamón inglés y parmesano.", img: "https://images.unsplash.com/photo-1645112411341-6c4fd023714a?q=80&w=600&auto=format&fit=crop" },
-    { nombre: "Lomo Saltado Tradicional", precio: "S/ 28.00", desc: "Trozos de lomo fino salteados al wok con cebolla, tomate criollo y papas doradas.", img: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=600&auto=format&fit=crop" },
-    { nombre: "Bisteck a lo Pobre", precio: "S/ 28.00", desc: "Filete jugoso con plátano frito, huevos montados, arroz y papas crocantes.", img: "https://images.unsplash.com/photo-1558030006-450675393462?q=80&w=600&auto=format&fit=crop" },
-    { nombre: "Milanesa Napolitana con Pesto", precio: "S/ 28.00", desc: "Milanesa gratinada con pomodoro y mozzarella, servida con pasta al pesto.", img: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?q=80&w=600&auto=format&fit=crop" },
-    { nombre: "Suprema de Pollo Dorada", precio: "S/ 24.00", desc: "Pechuga en panko fino, servida con papas fritas y ensalada fresca.", img: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=600&auto=format&fit=crop" }
+    { nombre: "Fetuccini al Alfredo", precio: "S/ 24.00", desc: "Pasta artesanal en cremosa salsa Alfredo con jamón inglés y parmesano.", img: "/images/gastro/fetuccini-alfredo.jpg" },
+    { nombre: "Lomo Saltado Tradicional", precio: "S/ 28.00", desc: "Trozos de lomo fino salteados al wok con cebolla, tomate criollo y papas doradas.", img: "/images/gastro/lomo-saltado.jpg" },
+    { nombre: "Bisteck a lo Pobre", precio: "S/ 28.00", desc: "Filete jugoso con plátano frito, huevos montados, arroz y papas crocantes.", img: "/images/gastro/bisteck-a-lo-pobre.jpg" },
+    { nombre: "Milanesa Napolitana con Pesto", precio: "S/ 28.00", desc: "Milanesa gratinada con pomodoro y mozzarella, servida con pasta al pesto.", img: "/images/gastro/milanesa-napolitana.jpg" },
+    { nombre: "Suprema de Pollo Dorada", precio: "S/ 24.00", desc: "Pechuga en panko fino, servida con papas fritas y ensalada fresca.", img: "/images/gastro/suprema-pollo.jpg" }
   ],
   fast: [
-    { nombre: "Signature Wimbledon Cheeseburger", precio: "S/ 24.00", desc: "Doble carne smash, cheddar fundido, tocino y salsa secreta en brioche.", img: "https://wimbledon-hotel.com/wp-content/uploads/2025/10/hamburguesa-smash.png" },
-    { nombre: "Piqueo Premium Wimbledon", precio: "S/ 48.00", desc: "Tequeños con queso, alitas barbecue, chicharrón de pollo y guacamole.", img: "https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?q=80&w=600&auto=format&fit=crop" },
-    { nombre: "Club Sandwich Tradicional", precio: "S/ 22.00", desc: "Tres niveles con pollo deshilachado, tocino, jamón, huevo y vegetales frescos.", img: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?q=80&w=600&auto=format&fit=crop" },
-    { nombre: "Tequeños con Queso (12 unid.)", precio: "S/ 18.00", desc: "Wantanes crocantes rellenos de queso fundente con salsa guacamole fresca.", img: "https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?q=80&w=600&auto=format&fit=crop" }
+    { nombre: "Signature Wimbledon Cheeseburger", precio: "S/ 24.00", desc: "Doble carne smash, cheddar fundido, tocino y salsa secreta en brioche.", img: "/images/gastro/hamburguesa-smash.jpg" },
+    { nombre: "Piqueo Premium Wimbledon", precio: "S/ 48.00", desc: "Tequeños con queso, alitas barbecue, chicharrón de pollo y guacamole.", img: "/images/gastro/piqueo-premium.jpg" },
+    { nombre: "Club Sandwich Tradicional", precio: "S/ 22.00", desc: "Tres niveles con pollo deshilachado, tocino, jamón, huevo y vegetales frescos.", img: "/images/gastro/club-sandwich.jpg" },
+    { nombre: "Tequeños con Queso (12 unid.)", precio: "S/ 18.00", desc: "Wantanes crocantes rellenos de queso fundente con salsa guacamole fresca.", img: "/images/gastro/tequenos-queso.jpg" }
   ],
   bar: [
-    { nombre: "Pisco Sour Catedral", precio: "S/ 22.00", desc: "Pisco Quebranta premium, limón criollo, jarabe y amargo de angostura.", img: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=600&auto=format&fit=crop" },
-    { nombre: "Chilcano de Pisco Frutal", precio: "S/ 20.00", desc: "Pisco seleccionado, ginger ale helada, gotas de lima y frutos del bosque.", img: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?q=80&w=600&auto=format&fit=crop" },
-    { nombre: "Champagne Riccadonna Asti", precio: "S/ 75.00", desc: "Espumante italiano dulce y afrutado, servido en hielera con copas flauta.", img: "https://images.unsplash.com/photo-1569919659476-f0852f6834b7?q=80&w=600&auto=format&fit=crop" },
-    { nombre: "Whisky Chivas Regal 12 Años", precio: "S/ 180.00", desc: "Blended Scotch Whisky escocés servido en vaso roca con hielo premium.", img: "https://images.unsplash.com/photo-1527061011665-3652c757a4d4?q=80&w=600&auto=format&fit=crop" }
+    { nombre: "Pisco Sour Catedral", precio: "S/ 22.00", desc: "Pisco Quebranta premium, limón criollo, jarabe y amargo de angostura.", img: "/images/gastro/pisco-sour.jpg" },
+    { nombre: "Chilcano de Pisco Frutal", precio: "S/ 20.00", desc: "Pisco seleccionado, ginger ale helada, gotas de lima y frutos del bosque.", img: "/images/gastro/chilcano-frutal.jpg" },
+    { nombre: "Champagne Riccadonna Asti", precio: "S/ 75.00", desc: "Espumante italiano dulce y afrutado, servido en hielera con copas flauta.", img: "/images/gastro/champagne-riccadonna.jpg" },
+    { nombre: "Whisky Chivas Regal 12 Años", precio: "S/ 180.00", desc: "Blended Scotch Whisky escocés servido en vaso roca con hielo premium.", img: "/images/gastro/whisky-chivas.jpg" }
   ],
   minibar: [
-    { nombre: "Pack Íntimo Sensitivo Durex", precio: "S/ 25.00", desc: "Preservativos ultrafinos + gel lubricante íntimo a base de agua.", img: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=600&auto=format&fit=crop" },
-    { nombre: "Energy Red Bull Helada", precio: "S/ 14.00", desc: "Bebida energizante servida fría para revitalizar tu estadía.", img: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?q=80&w=600&auto=format&fit=crop" },
-    { nombre: "Cerveza Corona Extra (Pack x2)", precio: "S/ 20.00", desc: "Cervezas importadas servidas con limón en hielera privada.", img: "https://images.unsplash.com/photo-1608270546103-9799276d4350?q=80&w=600&auto=format&fit=crop" },
-    { nombre: "Chocolates Finos Ferrero Rocher", precio: "S/ 24.00", desc: "Caja de bombones con avellana entera bañada en chocolate.", img: "https://images.unsplash.com/photo-1549007994-cb92caebd54b?q=80&w=600&auto=format&fit=crop" }
+    { nombre: "Pack Íntimo Sensitivo Durex", precio: "S/ 25.00", desc: "Preservativos ultrafinos + gel lubricante íntimo a base de agua.", img: "/images/gastro/pack-durex.jpg" },
+    { nombre: "Energy Red Bull Helada", precio: "S/ 14.00", desc: "Bebida energizante servida fría para revitalizar tu estadía.", img: "/images/gastro/redbull.jpg" },
+    { nombre: "Cerveza Corona Extra (Pack x2)", precio: "S/ 20.00", desc: "Cervezas importadas servidas con limón en hielera privada.", img: "/images/gastro/cerveza-corona.jpg" },
+    { nombre: "Chocolates Finos Ferrero Rocher", precio: "S/ 24.00", desc: "Caja de bombones con avellana entera bañada en chocolate.", img: "/images/gastro/chocolates-ferrero.jpg" }
   ]
 };
 
@@ -174,7 +174,8 @@ function renderEditorialApp() {
       <section id="hero" class="hero-editorial-pinned">
         <div id="heroCardMedia" class="hero-card-media">
           <img 
-            src="https://wimbledon-hotel.com/wp-content/uploads/2022/12/suite-presidencial-1.jpg" 
+            src="/images/hero/hero-presidencial.jpg" 
+            onerror="this.onerror=null; this.src='/images/suites/suite-presidencial.jpg';"
             alt="Hotel Wimbledon Presidencial Suite" 
             class="hero-img-media" 
           />
@@ -812,7 +813,7 @@ function renderSuitesList(filterCategory = 'all') {
         return `
           <div class="suite-card-horizontal" data-id="${room.id}">
             <div class="suite-card-img-wrapper js-open-drawer" data-id="${room.id}" style="cursor: pointer;" title="Ver Ficha Técnica">
-              <img src="${room.imagen_url || 'https://wimbledon-hotel.com/wp-content/uploads/2022/12/suite-presidencial-1.jpg'}" alt="${room.nombre}" class="suite-card-img" loading="lazy" />
+              <img src="${room.imagen_url || '/images/suites/suite-presidencial.jpg'}" onerror="this.onerror=null; this.src='/images/suites/suite-presidencial.jpg';" alt="${room.nombre}" class="suite-card-img" loading="lazy" />
               <span class="suite-card-price-badge">${priceDisplay}</span>
             </div>
             <div class="suite-card-info">
@@ -852,7 +853,7 @@ function renderSuitesList(filterCategory = 'all') {
         return `
           <div class="suite-grid-card" data-id="${room.id}">
             <div class="suite-grid-img-wrap js-open-drawer" data-id="${room.id}" style="cursor: pointer;" title="Ver Ficha Técnica">
-              <img src="${room.imagen_url || 'https://wimbledon-hotel.com/wp-content/uploads/2022/12/suite-presidencial-1.jpg'}" alt="${room.nombre}" class="suite-grid-img" loading="lazy" />
+              <img src="${room.imagen_url || '/images/suites/suite-presidencial.jpg'}" onerror="this.onerror=null; this.src='/images/suites/suite-presidencial.jpg';" alt="${room.nombre}" class="suite-grid-img" loading="lazy" />
               <span class="suite-grid-badge">${categoryName}</span>
               <span class="suite-grid-avail">
                 <span class="avail-dot"></span>
@@ -895,7 +896,7 @@ function renderGastronomiaList(categoryKey = 'gourmet') {
   container.innerHTML = items.map(item => `
     <div class="gastro-item-card">
       <div style="height: 170px; overflow: hidden; border-radius: 12px; margin-bottom: 1rem; position: relative;">
-        <img src="${item.img}" alt="${item.nombre}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'" loading="lazy" />
+        <img src="${item.img}" onerror="this.onerror=null; this.src='/images/suites/suite-presidencial.jpg';" alt="${item.nombre}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'" loading="lazy" />
       </div>
       <div class="gastro-item-header">
         <h4 class="gastro-item-title">${item.nombre}</h4>
@@ -983,7 +984,7 @@ function openDrawer(roomId) {
       <h2 class="drawer-spec-title">${titleFormatted}</h2>
       <div class="drawer-spec-price">| ${spec.precio_exacto}</div>
       <p class="drawer-spec-intro">${spec.intro}</p>
-      <img src="${room.imagen_url}" alt="${spec.nombre}" class="drawer-spec-img" />
+      <img src="${room.imagen_url || '/images/suites/suite-presidencial.jpg'}" onerror="this.onerror=null; this.src='/images/suites/suite-presidencial.jpg';" alt="${spec.nombre}" class="drawer-spec-img" />
       <h4 class="drawer-spec-heading">Habitación equipada con:</h4>
       <ul class="drawer-spec-bullets">
         ${spec.equipamiento.map(item => `<li>${item}</li>`).join('')}
@@ -1875,6 +1876,13 @@ async function confirmAndSaveBooking(room, totalAmount) {
   const telefono = checkoutState.customerPhone || '990370681';
 
   let reserva;
+  const modalidadMap = {
+    '3 Horas': 'TRES_HORAS',
+    '6 Horas': 'SEIS_HORAS',
+    'Toda la Noche': 'DOCE_HORAS'
+  };
+  const modalidad = modalidadMap[checkoutState.duration] || 'SEIS_HORAS';
+
   try {
     reserva = await api.crearReserva({
       habitacionId: habitacion.id,
@@ -1883,7 +1891,8 @@ async function confirmAndSaveBooking(room, totalAmount) {
       nombreCompleto,
       telefono,
       email,
-      notas: ''
+      notas: '',
+      modalidad
     });
   } catch (err) {
     const mensaje = err && err.status === 409
@@ -1896,23 +1905,10 @@ async function confirmAndSaveBooking(room, totalAmount) {
     return fallo('No pudimos registrar tu reserva. Intentalo de nuevo en unos minutos.');
   }
 
-  // 3. La hora de salida es la del servidor, sin excepcion. La ventana de
-  //    validez del pase se deriva de ese mismo valor persistido, asi que el pase
-  //    y la ventana que aplicara recepcion no pueden divergir.
-  //
-  //    Si el servidor asigno una hora de salida distinta de la que habria salido
-  //    de la modalidad elegida, la diferencia se le indica al huesped en vez de
-  //    ocultarsela. El servidor manda porque CrearReservaRequest no admite
-  //    duracion ni horaSalida.
+  // 3. La hora de salida es respetada y persistida por el servidor según la modalidad
   const horaSalidaServidor = String(reserva.horaSalida || '').slice(0, 5);
   const modalidadElegida = checkoutState.duration;
-  const [hIn, mIn] = horaIngreso.split(':').map(Number);
-  const salidaEsperada = horaIngreso
-    ? String((hIn + duracionHoras) % 24).padStart(2, '0') + ':' + String(mIn || 0).padStart(2, '0')
-    : '';
-  const notaDiferencia = (horaSalidaServidor && salidaEsperada && horaSalidaServidor !== salidaEsperada)
-    ? `Solicitaste ${modalidadElegida}. El hotel fijo la salida en ${horaSalidaServidor} segun el bloque de la suite.`
-    : '';
+  const notaDiferencia = '';
 
   const booking = {
     id: reserva.id != null ? String(reserva.id) : String(reserva.qrToken),

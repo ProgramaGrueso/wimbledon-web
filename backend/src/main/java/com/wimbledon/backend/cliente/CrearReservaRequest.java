@@ -1,5 +1,6 @@
 package com.wimbledon.backend.cliente;
 
+import com.wimbledon.backend.domain.enums.ModalidadEstadia;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
@@ -10,12 +11,10 @@ import java.time.LocalTime;
  *
  * Endpoint: POST /api/reservas
  *
- * La hora de salida se calcula automáticamente:
- *   horaSalida = horaIngreso + habitacion.duracionBloqueHoras
+ * La hora de salida se calcula automáticamente según la modalidad elegida:
+ *   horaSalida = horaIngreso + modalidad.horas
  *
  * El campo email es obligatorio: es al que se envía el correo con el QR.
- * Si el usuario está logueado, se usa el email de su cuenta pero se
- * permite sobreescribirlo para reservas de cortesía.
  */
 public record CrearReservaRequest(
 
@@ -41,5 +40,19 @@ public record CrearReservaRequest(
         String email,
 
         @Size(max = 255, message = "Las notas no pueden superar 255 caracteres")
-        String notas
-) {}
+        String notas,
+
+        ModalidadEstadia modalidad
+) {
+    public CrearReservaRequest(
+            Integer habitacionId,
+            LocalDate fecha,
+            LocalTime horaIngreso,
+            String nombreCompleto,
+            String telefono,
+            String email,
+            String notas
+    ) {
+        this(habitacionId, fecha, horaIngreso, nombreCompleto, telefono, email, notas, ModalidadEstadia.SEIS_HORAS);
+    }
+}

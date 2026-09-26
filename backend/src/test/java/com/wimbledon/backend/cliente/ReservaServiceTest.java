@@ -49,6 +49,9 @@ class ReservaServiceTest {
     @Mock
     private ReservaConfirmacionService confirmacionService;
 
+    @Mock
+    private TarifaService tarifaService;
+
     @InjectMocks
     private ReservaService reservaService;
 
@@ -61,6 +64,8 @@ class ReservaServiceTest {
         ReflectionTestUtils.setField(reservaService, "ventanaConfirmacionMinutos", 30);
         ReflectionTestUtils.setField(reservaService, "margenMinimoMinutos", 5);
         ReflectionTestUtils.setField(reservaService, "maxPendientesPorUsuario", 2);
+        org.mockito.Mockito.lenient().when(tarifaService.calcularTarifa(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new BigDecimal("156.00"));
 
         habitacionSuite = Habitacion.builder()
                 .id(860)
@@ -326,19 +331,19 @@ class ReservaServiceTest {
     }
 
     @Test
-    @DisplayName("CrearReservaRequest no admite campo de duración ni de horaSalida")
+    @DisplayName("CrearReservaRequest no admite campo de duración arbitraria ni de horaSalida")
     void testElClienteNoFijaLaHoraDeSalida() {
-        // El record tiene exactamente siete componentes y ninguno es duración u
-        // hora de salida: el servidor es la única fuente de verdad del horario.
-        assertEquals(7, CrearReservaRequest.class.getRecordComponents().length,
-                "El contrato de creación no crece con este cambio");
+        assertEquals(8, CrearReservaRequest.class.getRecordComponents().length,
+                "El contrato de creación contiene 8 componentes incluyendo modalidad");
 
         List<String> nombres = Arrays.stream(CrearReservaRequest.class.getRecordComponents())
                 .map(RecordComponent::getName)
                 .toList();
 
+        assertTrue(nombres.contains("modalidad"),
+                "El contrato incluye la modalidad tipada");
         assertFalse(nombres.contains("duracionHoras"),
-                "El cliente no puede enviar duración: horaSalida se deriva de duracionBloqueHoras");
+                "El cliente no puede enviar duración arbitraria: horaSalida se deriva de la modalidad");
         assertFalse(nombres.contains("horaSalida"),
                 "El cliente no puede enviar hora de salida: la calcula el servidor");
         assertTrue(nombres.contains("habitacionId"),
