@@ -63,24 +63,12 @@ public class OperacionConsumoCheckin {
                 .orElseThrow(() -> new CredencialNoUtilizableException(
                         MotivoRechazo.DESCONOCIDA, null));
 
-        // 2. Estado de negocio primero: es lo que recepcion puede explicar.
-        if (reserva.getEstado() == EstadoReserva.CANCELADA) {
-            throw new ReservaCanceladaException(reserva.getId());
-        }
-
-        // 3. Estado de negocio: reserva ya finalizada.
-        if (reserva.getEstado() == EstadoReserva.FINALIZADA) {
-            throw new ReservaFinalizadaException(reserva.getId());
-        }
+        // 2 y 3. Estado de negocio primero: es lo que recepcion puede explicar.
+        //        Compartido con la ruta de resolucion para que no diverjan.
+        Clasificador.exigirEstadoNoTerminal(reserva);
 
         // 4 y 5. Validez colapsada: misma excepcion, mismo codigo, mismo mensaje.
-        if (Boolean.TRUE.equals(reserva.getQrUsado())) {
-            throw new CredencialNoUtilizableException(MotivoRechazo.YA_USADA, reserva.getId());
-        }
-
-        if (!calculadoraVentana.dentroDeVentana(reserva)) {
-            throw new CredencialNoUtilizableException(MotivoRechazo.FUERA_DE_VENTANA, reserva.getId());
-        }
+        Clasificador.exigirCredencialVigente(reserva, calculadoraVentana);
 
         // 6. Aseo previo, todavia sin haber consumido la credencial.
         Habitacion habitacion = reserva.getHabitacion();

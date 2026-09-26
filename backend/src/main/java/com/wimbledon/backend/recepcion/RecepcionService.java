@@ -30,7 +30,7 @@ public class RecepcionService {
     private final ReservaRepository reservaRepository;
     private final HabitacionRepository habitacionRepository;
     private final ReservaService reservaService;
-    private final OperacionConsumoCheckin operacionConsumoCheckin;
+    private final CheckinService checkinService;
 
     /**
      * Estados que Recepción puede asignar a una habitación.
@@ -69,33 +69,19 @@ public class RecepcionService {
     /**
      * Valida el token QR escaneado y realiza el check-in.
      *
-     * El consumo se delega en {@link OperacionConsumoCheckin}, que es la
-     * unidad transaccional unica: mantiene el bloqueo de fila de la reserva
-     * desde la resolucion hasta el commit, de modo que como maximo una
-     * invocacion concurrente por credencial alcanza el estado CHECKIN.
+     * Delega en {@link CheckinService}, que es la ruta de consumo compartida con
+     * \`GET /api/checkin/validar/{token}\`. NO lleva \`@Transactional\` propio a
+     * proposito: envolver la unidad transaccional de \`OperacionConsumoCheckin\`
+     * en una transaccion anidada ocultaria la frontera del bloqueo de fila, que
+     * es la garantia que hace unico el consumo.
      *
-     * Validaciones, en el orden en que las aplica la operacion:
-     *  - El token debe existir en la BD
-     *  - La reserva no debe estar cancelada ni finalizada
-     *  - El QR no debe haber sido usado antes
-     *  - El instante actual debe caer dentro de la ventana de la estadia
-     *  - La habitacion no debe requerir aseo previo
-     *
-     * Efecto secundario: marca la habitacion como OCUPADA automaticamente.
+     * @deprecated El controlador ya invoca {@link CheckinService#consumir}
+     *             directamente. Este metodo se conserva como punto de entrada
+     *             unico del bloque de check-in dentro de este servicio; no tiene
+     *             llamadores y es candidato a retirada en un hito propio.
      */
-    @Transactional
-    public CheckinResponse realizarCheckin(String token) {
-        OperacionConsumoCheckin.ResultadoCheckin resultado = operacionConsumoCheckin.consumir(token);
-        Reserva reserva = resultado.reserva();
-        Habitacion habitacion = resultado.habitacion();
-
-        return new CheckinResponse(
-                reserva.getNombreHuesped(),
-                habitacion.getNombre(),
-                reserva.getHoraIngreso(),
-                reserva.getHoraSalida(),
-                "Bienvenido/a. Check-in completado exitosamente."
-        );
+    public CheckinResponse realizarCheckin(String token, OperadorOperacion operador) {
+        return checkinService.consumir(token, operador);
     }
 
     // ── Reserva manual (walk-in / telefónica) ─────────────────────────────────

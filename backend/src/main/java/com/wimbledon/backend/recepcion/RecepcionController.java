@@ -8,6 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -30,6 +31,7 @@ import java.util.List;
 public class RecepcionController {
 
     private final RecepcionService recepcionService;
+    private final CheckinService checkinService;
 
     // ── Agenda ────────────────────────────────────────────────────────────────
 
@@ -67,15 +69,24 @@ public class RecepcionController {
      *  3. Backend valida, cambia estado a CHECKIN, marca habitación OCUPADA
      *  4. Devuelve pantalla de bienvenida (nombre, habitación, horario)
      *
+     * La identidad del operador se deriva de la Authentication en curso: el
+     * email de getName(), el rol de getAuthorities() —que es la columna rol de la
+     * base de datos, no el claim del JWT— y la IP de getDetails(). Esa
+     * identidad alimenta la traza del intento, nunca la autorización, que sigue
+     * aplicando la anotación de clase.
+     *
      * Errores manejados:
-     *  - 404 → token no reconocido
-     *  - 409 → QR ya usado / reserva cancelada / reserva finalizada
+     *  - 400 → token en blanco o con longitud excesiva
+     *  - 409 → credencial no utilizable / reserva cancelada / reserva finalizada
+     *            / habitación que requiere aseo
      */
     @PostMapping("/checkin")
     public ResponseEntity<CheckinResponse> checkin(
-            @Valid @RequestBody CheckinRequest request
+            @Valid @RequestBody CheckinRequest request,
+            Authentication authentication
     ) {
-        return ResponseEntity.ok(recepcionService.realizarCheckin(request.token()));
+        OperadorOperacion operador = OperadorOperacion.desde(authentication);
+        return ResponseEntity.ok(checkinService.consumir(request.token(), operador));
     }
 
     // ── Reserva manual ────────────────────────────────────────────────────────
