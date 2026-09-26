@@ -1,7 +1,9 @@
 package com.wimbledon.backend.config;
 
+import com.wimbledon.backend.recepcion.ConfiguracionCheckin;
 import com.wimbledon.backend.security.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,12 +13,16 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.Clock;
+import java.time.ZoneId;
+
 /**
  * Beans de infraestructura de Spring Security.
  * Separado de SecurityConfig para mantener la cadena de filtros limpia.
  */
 @Configuration
 @RequiredArgsConstructor
+@EnableConfigurationProperties(ConfiguracionCheckin.class)
 public class ApplicationConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
@@ -25,6 +31,23 @@ public class ApplicationConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * Reloj de la aplicacion fijado a la zona horaria del hotel.
+     *
+     * ACOPLAMIENTO: application.properties declara
+     * {@code serverTimezone=America/Lima} en la URL JDBC. La ventana de
+     * vigencia del pase se evalua con {@code LocalDateTime}, que no lleva zona,
+     * de modo que un reloj en UTC desalinearia toda la validacion: un ingreso
+     * real de las 19:30 en Lima se evaluaria como las 00:30 del dia siguiente
+     * y ninguna reserva seria valida.
+     *
+     * Precondicion: la JVM opera en la zona del hotel, o este Clock se ajusta.
+     */
+    @Bean
+    public Clock clock() {
+        return Clock.system(ZoneId.of("America/Lima"));
     }
 
     /**
