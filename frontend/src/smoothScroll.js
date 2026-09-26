@@ -30,64 +30,25 @@ export function initSmoothScroll(options = {}) {
 export function initHeroPinAnimation() {
   const mm = gsap.matchMedia();
   mm.add('(min-width: 768px)', () => {
-    const pinWrapper = document.getElementById('heroPinWrapper');
-    const heroCardMedia = document.getElementById('heroCardMedia');
     const heroContent = document.getElementById('heroEditorialContent');
-    if (!pinWrapper || !heroCardMedia || !heroContent) return;
-    gsap.set(heroCardMedia, {
-      clipPath: 'inset(12% 16% 12% 16% round 24px)',
-      scale: 0.95,
-    });
-    const tl = gsap.timeline({
+    if (!heroContent) return;
+    
+    // Revelado y desvanecimiento suave al hacer scroll sin bloquear la página
+    gsap.to(heroContent, {
       scrollTrigger: {
-        trigger: pinWrapper,
+        trigger: '#hero',
         start: 'top top',
-        end: '+=100%',
-        scrub: 1.2,
-        pin: '#hero',
-        anticipatePin: 1,
-        invalidateOnRefresh: true,
+        end: 'bottom top',
+        scrub: 1.0,
       },
+      y: 60,
+      opacity: 0.2,
+      ease: 'power1.out',
     });
-    tl.to(
-      heroCardMedia,
-      {
-        clipPath: 'inset(0% 0% 0% 0% round 0px)',
-        scale: 1.0,
-        ease: 'power2.inOut',
-        duration: 1,
-      },
-      0
-    );
-    tl.to(
-      heroContent,
-      {
-        yPercent: -50,
-        opacity: 0,
-        ease: 'power1.in',
-        duration: 0.8,
-      },
-      0
-    );
+    
     return () => {
-      gsap.set([heroCardMedia, heroContent], { clearProps: 'all' });
+      gsap.set(heroContent, { clearProps: 'all' });
     };
-  });
-  mm.add('(max-width: 767px)', () => {
-    const heroCardMedia = document.getElementById('heroCardMedia');
-    const heroContent = document.getElementById('heroEditorialContent');
-    if (heroCardMedia) {
-      gsap.set(heroCardMedia, {
-        clipPath: 'inset(0% 0% 0% 0% round 0px)',
-        scale: 1,
-      });
-    }
-    if (heroContent) {
-      gsap.set(heroContent, {
-        yPercent: 0,
-        opacity: 1,
-      });
-    }
   });
   return mm;
 }
@@ -220,103 +181,23 @@ export function refreshHorizontalSuitesScroll() {
     return;
   }
 
-  // 3. Limpiar estilos y transformaciones en elementos hijos de la pista (NUNCA en section)
-  gsap.set([track, cards, imgs, pinnedEl], { clearProps: 'all' });
+  // El carrusel de suites ahora es compacto y autónomo con scroll-snap y controles laterales
+  // ¡CERO scrolljacking forzado! La página fluye verticalmente de manera natural.
+  pinnedEl.style.height = 'auto';
+  pinnedEl.style.minHeight = 'auto';
+  pinnedEl.style.display = 'block';
+  pinnedEl.style.padding = '1.5rem 0';
+  pinnedEl.style.overflow = 'visible';
 
-  if (cards.length === 0) {
-    ScrollTrigger.refresh();
-    return;
-  }
-
-  const isDesktop = window.innerWidth >= 768;
-  const viewportWidth = window.innerWidth;
-
-  // Medir ancho total requerido por las tarjetas en fila
-  let totalCardsWidth = 0;
-  cards.forEach(c => {
-    totalCardsWidth += c.offsetWidth || 440;
-  });
-  const gap = 40; // 2.5rem
-  const totalTrackWidth = totalCardsWidth + (Math.max(0, cards.length - 1) * gap) + 160;
-  const overflow = totalTrackWidth - viewportWidth;
-
-  // 3. Si hay desborde horizontal real en desktop, habilitamos el pin sincronizado al overflow
-  if (isDesktop && overflow > 80) {
-    pinnedEl.style.height = '100vh';
-    pinnedEl.style.display = 'flex';
-    pinnedEl.style.flexDirection = 'column';
-    pinnedEl.style.justifyContent = 'center';
-    pinnedEl.style.alignItems = 'flex-start';
-    pinnedEl.style.padding = '3rem 0';
-    pinnedEl.style.overflow = 'hidden';
-
-    track.style.display = 'flex';
-    track.style.flexWrap = 'nowrap';
-    track.style.justifyContent = 'flex-start';
-    track.style.gap = '2.5rem';
-    track.style.padding = '0 4rem';
-    track.style.width = 'max-content';
-
-    const scrollDistance = Math.round(overflow * 1.05);
-
-    horizontalSuitesTL = gsap.timeline({
-      scrollTrigger: {
-        trigger: section,
-        start: 'top top',
-        end: () => `+=${scrollDistance}`, // Fin exacto al terminar las tarjetas, NUNCA espacio vacío
-        pin: pinnedEl,
-        scrub: 1.0,
-        invalidateOnRefresh: true,
-        anticipatePin: 1,
-        onUpdate: (self) => {
-          const skew = gsap.utils.clamp(-5, 5, self.getVelocity() / -300);
-          gsap.to(cards, {
-            skewX: skew,
-            duration: 0.25,
-            ease: 'power1.out',
-            overwrite: 'auto',
-          });
-        },
-      },
-    });
-
-    horizontalSuitesTL.to(track, {
-      x: -overflow,
-      ease: 'none',
-    });
-
-    imgs.forEach((img) => {
-      horizontalSuitesTL.fromTo(
-        img,
-        { xPercent: 12 },
-        { xPercent: -12, ease: 'none' },
-        0
-      );
-    });
-  } else {
-    // 4. Si las tarjetas caben en pantalla (ej: Vista al Mar, Presidenciales con pocas suites):
-    // ¡NO SE FIJA (NO PIN)! Las tarjetas se muestran centradas estáticamente y el usuario
-    // continúa escroleando suavemente hacia la siguiente sección sin quedar atrapado en el vacío.
-    pinnedEl.style.height = 'auto';
-    pinnedEl.style.minHeight = '65vh';
-    pinnedEl.style.display = 'flex';
-    pinnedEl.style.flexDirection = 'column';
-    pinnedEl.style.justifyContent = 'center';
-    pinnedEl.style.alignItems = 'center';
-    pinnedEl.style.padding = '3.5rem 1.5rem';
-    pinnedEl.style.overflow = 'visible';
-
-    track.style.display = 'flex';
-    track.style.flexWrap = 'wrap';
-    track.style.justifyContent = 'center';
-    track.style.alignItems = 'center';
-    track.style.gap = '2rem';
-    track.style.width = '100%';
-    track.style.maxWidth = '1440px';
-    track.style.margin = '0 auto';
-    track.style.padding = '0';
-    track.style.transform = 'none';
-  }
+  track.style.display = 'flex';
+  track.style.flexWrap = 'nowrap';
+  track.style.overflowX = 'auto';
+  track.style.scrollSnapType = 'x mandatory';
+  track.style.scrollBehavior = 'smooth';
+  track.style.gap = '1.5rem';
+  track.style.width = '100%';
+  track.style.padding = '0.5rem 1rem';
+  track.style.transform = 'none';
 
   ScrollTrigger.refresh();
 }

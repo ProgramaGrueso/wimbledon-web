@@ -154,6 +154,11 @@ async function initApp() {
     setupMyBookingListeners();
     setupCatalogControls();
     setupGastroTabs();
+    setupHeroSlider();
+    setupCompactSuitesCarousel();
+    setupLargeServicesCarousel();
+    setupTestimonialsInteractions();
+    setupDecoracionesListeners();
   } catch (error) {
     console.error('Error al cargar datos:', error);
     document.getElementById('app').innerHTML = `
@@ -169,38 +174,143 @@ function renderEditorialApp() {
   const contacto = landingData.contacto_real || {};
   const appEl = document.getElementById('app');
   appEl.innerHTML = `
-    <!-- HERO PIN CONTAINER (150VH WITH GSAP PIN + CLIP-PATH EXPAND) -->
-    <div id="heroPinWrapper" class="hero-pin-wrapper">
-      <section id="hero" class="hero-editorial-pinned">
-        <div id="heroCardMedia" class="hero-card-media">
-          <img 
-            src="/images/hero/hero-presidencial.jpg" 
-            onerror="this.onerror=null; this.src='/images/suites/suite-presidencial.jpg';"
-            alt="Hotel Wimbledon Presidencial Suite" 
-            class="hero-img-media" 
-          />
-          <div class="hero-media-overlay"></div>
-        </div>
-        <div id="heroEditorialContent" class="hero-editorial-content">
-          <span class="hero-editorial-tag">HOTEL WIMBLEDON</span>
-          <h1 class="hero-editorial-title">
-            Privacidad, Confort <span class="hero-title-sub">& Discreción frente al Mar</span>
-          </h1>
-          <p class="hero-editorial-desc">
-            Planifica tu estadía con nosotros, contamos con habitaciones de lujo, habitaciones temáticas, estacionamiento directo a algunas habitaciones, nuestra carta de comidas y bebidas que complementan tu visita.
-          </p>
-          <div class="hero-meta-bar">
-            <div class="hero-meta-item">Av. Costanera 2098 • San Miguel, Lima</div>
-            <div class="hero-meta-item">Servicio Privado 24/7</div>
-            <div class="hero-meta-item">Tel: 578-6000</div>
-          </div>
-          <div class="hero-actions-row">
-            <a href="#habitaciones" class="btn-hero-primary">EXPLORAR SUITES</a>
-            <button id="btnHeroReserve" class="btn-hero-secondary">RESERVA INMEDIATA</button>
+    <!-- HERO SLIDER SECTION CON FOTOS INTERCAMBIABLES (COMO LA WEB OFICIAL) -->
+    <section id="hero" class="hero-slider-section">
+      <div id="heroSliderWrapper" class="hero-slider-wrapper">
+        <!-- Slide 1: Dark Fantasies -->
+        <div class="hero-slide active" data-index="0">
+          <img src="/images/hero/hero-dark-fantasies.jpg" alt="Dark Fantasies Suite - Hotel Wimbledon" class="hero-slide-bg" />
+          <div class="hero-slide-overlay"></div>
+          <div class="hero-slide-content">
+            <span class="hero-editorial-tag">HOTEL WIMBLEDON • SAN MIGUEL</span>
+            <h1 class="hero-editorial-title">
+              Privacidad, Confort <span class="hero-title-sub">& Discreción frente al Mar</span>
+            </h1>
+            <p class="hero-editorial-desc">
+              Planifica tu estadía con nosotros, contamos con habitaciones de lujo, habitaciones temáticas, estacionamiento directo a algunas habitaciones, nuestra carta de comidas y bebidas que complementan tu visita.
+            </p>
+            <div class="hero-meta-bar">
+              <div class="hero-meta-item">Av. Costanera 2098 • San Miguel, Lima</div>
+              <div class="hero-meta-item">Atención Discreta 24/7</div>
+              <div class="hero-meta-item">Tel: 578-6000</div>
+            </div>
+            <div class="hero-actions-row">
+              <a href="#habitaciones" class="btn-hero-primary">EXPLORAR SUITES</a>
+              <button class="btn-hero-secondary js-hero-reserve-btn">RESERVA INMEDIATA</button>
+            </div>
           </div>
         </div>
-      </section>
-    </div>
+
+        <!-- Slide 2: Hawaian Dreams -->
+        <div class="hero-slide" data-index="1">
+          <img src="/images/hero/hero-hawaian.jpg" alt="Hawaian Dreams - Hotel Wimbledon" class="hero-slide-bg" />
+          <div class="hero-slide-overlay"></div>
+          <div class="hero-slide-content">
+            <span class="hero-editorial-tag">NUEVAS EXPERIENCIAS</span>
+            <h1 class="hero-editorial-title">
+              Suites Temáticas <span class="hero-title-sub">& Confort de Alta Gama</span>
+            </h1>
+            <p class="hero-editorial-desc">
+              Disfruta de una atmósfera exótica y relajante equipada con jacuzzi privado, aire acondicionado y servicio a la habitación las 24 horas.
+            </p>
+            <div class="hero-meta-bar">
+              <div class="hero-meta-item">Diseño Sensorial de Autor</div>
+              <div class="hero-meta-item">Jacuzzi con Hidromasaje</div>
+              <div class="hero-meta-item">WhatsApp: +51 990 370 681</div>
+            </div>
+            <div class="hero-actions-row">
+              <a href="#habitaciones" class="btn-hero-primary">VER HABITACIONES</a>
+              <button class="btn-hero-secondary js-hero-reserve-btn">RESERVAR AHORA</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 3: Suite Presidencial con Cámara Seca -->
+        <div class="hero-slide" data-index="2">
+          <img src="/images/hero/hero-presidencial.jpg" alt="Suite Presidencial - Hotel Wimbledon" class="hero-slide-bg" />
+          <div class="hero-slide-overlay"></div>
+          <div class="hero-slide-content">
+            <span class="hero-editorial-tag">BIENESTAR TÉRMICO EXCLUSIVO</span>
+            <h1 class="hero-editorial-title">
+              Cámara Seca <span class="hero-title-sub">& Jacuzzi en Suite</span>
+            </h1>
+            <p class="hero-editorial-desc">
+              Descanso de realeza con sauna finlandés en madera de cedro, cama redonda de confort 100%, pole dance y ducha española de alta presión.
+            </p>
+            <div class="hero-meta-bar">
+              <div class="hero-meta-item">Sauna Seco Privado</div>
+              <div class="hero-meta-item">Cama Redonda Confort</div>
+              <div class="hero-meta-item">Tarifa Especial 6 y 12 Horas</div>
+            </div>
+            <div class="hero-actions-row">
+              <a href="#habitaciones" class="btn-hero-primary">DESCUBRIR SUITES</a>
+              <button class="btn-hero-secondary js-hero-reserve-btn">RESERVA INMEDIATA</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 4: Riverside Dreams Presidencial -->
+        <div class="hero-slide" data-index="3">
+          <img src="/images/hero/hero-riverside.jpg" alt="Riverside Dreams Presidencial - Hotel Wimbledon" class="hero-slide-bg" />
+          <div class="hero-slide-overlay"></div>
+          <div class="hero-slide-content">
+            <span class="hero-editorial-tag">PRIVACIDAD SIN LÍMITES</span>
+            <h1 class="hero-editorial-title">
+              Parking Directo <span class="hero-title-sub">A Tu Habitación</span>
+            </h1>
+            <p class="hero-editorial-desc">
+              Ingresa en tu vehículo directamente a tu suite con portón automatizado privado. Sin contacto con terceros ni paso por recepción física.
+            </p>
+            <div class="hero-meta-bar">
+              <div class="hero-meta-item">Portón Cerrado Individual</div>
+              <div class="hero-meta-item">100% Confidencialidad</div>
+              <div class="hero-meta-item">Seguridad Perimetral 24/7</div>
+            </div>
+            <div class="hero-actions-row">
+              <a href="#parking" class="btn-hero-primary">CONOCE EL PARKING</a>
+              <button class="btn-hero-secondary js-hero-reserve-btn">RESERVAR CON COCHERA</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 5: Simple Vista al Mar -->
+        <div class="hero-slide" data-index="4">
+          <img src="/images/hero/hero-vista-mar.jpg" alt="Vista al Mar - Hotel Wimbledon" class="hero-slide-bg" />
+          <div class="hero-slide-overlay"></div>
+          <div class="hero-slide-content">
+            <span class="hero-editorial-tag">HORIZONTE COSTERO</span>
+            <h1 class="hero-editorial-title">
+              Vista al Océano <span class="hero-title-sub">En La Costa Verde</span>
+            </h1>
+            <p class="hero-editorial-desc">
+              Avenida Costanera 2098 en San Miguel. Atardeceres frente al mar con cristales insonorizados y máxima tranquilidad.
+            </p>
+            <div class="hero-meta-bar">
+              <div class="hero-meta-item">Frente a la Bahía de Lima</div>
+              <div class="hero-meta-item">Insonorización Acústica</div>
+              <div class="hero-meta-item">Av. Costanera 2098</div>
+            </div>
+            <div class="hero-actions-row">
+              <a href="#habitaciones" class="btn-hero-primary">EXPLORAR SUITES</a>
+              <button class="btn-hero-secondary js-hero-reserve-btn">RESERVA INMEDIATA</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flechas de Navegación del Slider -->
+        <button id="btnHeroPrev" class="hero-slider-arrow prev" aria-label="Diapositiva anterior">❮</button>
+        <button id="btnHeroNext" class="hero-slider-arrow next" aria-label="Diapositiva siguiente">❯</button>
+
+        <!-- Indicadores / Dots del Slider -->
+        <div class="hero-slider-dots" id="heroSliderDots">
+          <button class="hero-slider-dot active" data-slide="0" aria-label="Ir a diapositiva 1"></button>
+          <button class="hero-slider-dot" data-slide="1" aria-label="Ir a diapositiva 2"></button>
+          <button class="hero-slider-dot" data-slide="2" aria-label="Ir a diapositiva 3"></button>
+          <button class="hero-slider-dot" data-slide="3" aria-label="Ir a diapositiva 4"></button>
+          <button class="hero-slider-dot" data-slide="4" aria-label="Ir a diapositiva 5"></button>
+        </div>
+      </div>
+    </section>
     <!-- EDITORIAL CONCEPT SECTION WITH VIDEO BACKGROUND -->
     <section id="concepto" class="section-editorial section-video-bg">
       <div class="video-bg-container">
@@ -308,22 +418,22 @@ function renderEditorialApp() {
         </div>
       </div>
     </section>
-    <!-- SECCIÓN COLECCIÓN DE SUITES (INTERACTIVA CON SELECTOR DE MODO Y FILTROS) -->
-    <section id="habitaciones" class="section-editorial" style="background: #060911; padding-top: 5rem; padding-bottom: 3rem; border-top: 1px solid rgba(255,255,255,0.08); position: relative;">
-      <div class="editorial-container" style="padding-bottom: 1rem;">
-        <div class="suites-horizontal-header" style="text-align: center; margin-bottom: 2rem;">
-          <span class="editorial-tag text-gold">COLECCIÓN EXCLUSIVA DE AUTOR</span>
-          <h2 class="editorial-headline" style="color: var(--color-white); margin-top: 0.5rem;">Nuestras 16 Suites Temáticas</h2>
-          <p style="color: #94a3b8; max-width: 720px; margin: 0.75rem auto 0; font-size: 0.95rem; line-height: 1.6;">
-            Espacios concebidos para la intimidad más exigente y discreta frente al mar en San Miguel. Disfruta de jacuzzi con hidromasaje, sauna privado y cochera directa a tu habitación.
+    <!-- SECCIÓN NUESTRAS HABITACIONES (CARRUSEL COMPACTO QUE NO SECUESTRA LA PÁGINA) -->
+    <section id="habitaciones" class="section-editorial" style="background: #060911; padding-top: 5rem; padding-bottom: 4rem; border-top: 1px solid rgba(255,255,255,0.08); position: relative;">
+      <div class="editorial-container" style="padding-bottom: 0.5rem;">
+        <div class="suites-horizontal-header" style="text-align: center; margin-bottom: 1.5rem;">
+          <span class="editorial-tag text-gold">COLECCIÓN EXCLUSIVA DE SUITES</span>
+          <h2 class="editorial-headline" style="color: var(--color-white); margin-top: 0.5rem;">Nuestras habitaciones</h2>
+          <p style="color: #94a3b8; max-width: 760px; margin: 0.75rem auto 0; font-size: 1rem; line-height: 1.6;">
+            Planifica tu estadía con nosotros, contamos con habitaciones de lujo, habitaciones temáticas, estacionamiento directo a algunas habitaciones, nuestra carta de comidas y bebidas que complementan tu visita.
           </p>
         </div>
 
-        <!-- CONTROLES MODERNOS: SELECTOR DE MODO (CINEMÁTICO VS GRID) Y FILTROS DE AMENIDADES -->
+        <!-- CONTROLES: SELECTOR DE MODO Y FILTROS RÁPIDOS -->
         <div class="catalog-controls-bar">
           <div class="view-mode-toggle">
-            <button id="btnViewCinematic" class="view-toggle-btn active">✦ Vista Cinemática</button>
-            <button id="btnViewGrid" class="view-toggle-btn">⊞ Explorador Grid</button>
+            <button id="btnViewCinematic" class="view-toggle-btn active">✦ Carrusel Compacto</button>
+            <button id="btnViewGrid" class="view-toggle-btn">⊞ Mosaico Grid</button>
           </div>
           <div class="amenity-filters-row" id="amenityFiltersRow">
             <button class="amenity-chip-btn active" data-filter="all">Todas (16)</button>
@@ -335,24 +445,137 @@ function renderEditorialApp() {
         </div>
       </div>
 
-      <!-- SECCIÓN HORIZONTAL SCROLL: NUESTRAS SUITES (GSAP PIN + PARALLAX INTERNO + SKEW) -->
-      <div id="suitesHorizontalPinWrapper" class="suites-horizontal-wrapper">
-        <section id="suitesHorizontalPinned" class="suites-horizontal-pinned">
-          <div id="suitesHorizontalTrack" class="suites-horizontal-track">
-            <!-- Inyectado dinámicamente -->
+      <!-- CARRUSEL COMPACTO DE HABITACIONES (SIN PIN NI SCROLLJACKING FORZADO) -->
+      <div id="suitesCarouselWrapper" class="editorial-container suites-carousel-wrapper">
+        <div class="suites-carousel-controls">
+          <span style="font-size: 0.85rem; color: #94a3b8; letter-spacing: 0.05em;">Desliza horizontalmente o usa las flechas:</span>
+          <div style="display: flex; gap: 0.6rem;">
+            <button id="btnCarouselPrev" class="carousel-nav-btn" aria-label="Habitaciones anteriores">❮</button>
+            <button id="btnCarouselNext" class="carousel-nav-btn" aria-label="Habitaciones siguientes">❯</button>
           </div>
-        </section>
+        </div>
+        <div id="suitesCarouselTrackContainer" class="suites-carousel-track-container">
+          <!-- Inyectado dinámicamente: suite-card-compact -->
+        </div>
       </div>
 
-      <!-- SECCIÓN GRID VIEW ALTERNATIVO CON AMBIENT GLOW Y DETALLES -->
-      <div id="suitesGridSection" class="editorial-container view-mode-hidden" style="display: none; padding-bottom: 5rem; margin-top: 2rem;">
+      <!-- VISTA GRID ALTERNATIVA -->
+      <div id="suitesGridSection" class="editorial-container view-mode-hidden" style="display: none; padding-bottom: 3rem; margin-top: 2rem;">
         <div id="suitesGridView" class="suites-grid-layout">
           <!-- Inyectado dinámicamente -->
         </div>
       </div>
     </section>
-    <!-- EXPERIENCIA & SERVICIOS ACCESIBLES (DESPLEGABLE INTERACTIVO AL TACTO / CLICK) -->
-    <section id="experiencia" class="section-editorial bg-black text-white" aria-labelledby="experienciaTitle">
+
+    <!-- SECCIÓN PARKING DIRECTO A LA HABITACIÓN (DE LA WEB OFICIAL) -->
+    <section id="parking" class="section-editorial section-parking">
+      <div class="editorial-container">
+        <div class="parking-layout">
+          <div>
+            <span class="editorial-tag text-gold">DISCRECIÓN Y PRIVACIDAD ABSOLUTA</span>
+            <h2 class="editorial-headline" style="color: #ffffff; margin-top: 0.5rem;">Parking Directo a la Habitación</h2>
+            <p style="color: #cbd5e1; font-size: 1.05rem; line-height: 1.7; margin-top: 1.25rem;">
+              Pensando en tu privacidad y hermetismo, contamos con <strong>Parking Directo a la habitación</strong>. Ingresas con tu vehículo a una cochera privada individual con portón automatizado cerrado, conectada directamente al interior de tu suite.
+            </p>
+            <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.85rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem; color: #fbbf24;">
+                <span style="font-size: 1.2rem;">✓</span>
+                <span style="color: #e2e8f0; font-size: 0.95rem;">Cero contacto con recepción física ni zonas comunes.</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.75rem; color: #fbbf24;">
+                <span style="font-size: 1.2rem;">✓</span>
+                <span style="color: #e2e8f0; font-size: 0.95rem;">Portón cerrado individual exclusivo para tu habitación.</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.75rem; color: #fbbf24;">
+                <span style="font-size: 1.2rem;">✓</span>
+                <span style="color: #e2e8f0; font-size: 0.95rem;">Atención y custodia perimetral discreta las 24 horas.</span>
+              </div>
+            </div>
+            <div style="margin-top: 2.5rem; display: flex; gap: 1rem;">
+              <a href="#habitaciones" class="btn-hero-primary" style="text-decoration: none;">VER SUITES CON COCHERA</a>
+              <a href="https://wa.me/51990370681?text=Hola%20Hotel%20Wimbledon,%20deseo%20consultar%20disponibilidad%20de%20habitaciones%20con%20parking%20directo." target="_blank" rel="noopener noreferrer" class="btn-hero-secondary" style="text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                <span>💬 WhatsApp Directo</span>
+              </a>
+            </div>
+          </div>
+          <div>
+            <img src="/images/servicios/parking-directo.png" alt="Parking directo a la habitación Hotel Wimbledon" class="parking-banner-img" loading="lazy" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN DECORACIONES ESPECIALES (DE LA WEB OFICIAL) -->
+    <section id="decoraciones" class="section-editorial section-decoraciones">
+      <div class="editorial-container">
+        <div class="editorial-header-block reveal" style="text-align: center; max-width: 820px; margin: 0 auto;">
+          <span class="editorial-tag text-gold">OCASIONES INOLVIDABLES & ANIVERSARIOS</span>
+          <h2 class="editorial-headline" style="color: #ffffff; margin-top: 0.5rem;">Decoraciones Románticas Especiales</h2>
+          <p style="color: #94a3b8; margin-top: 0.75rem; font-size: 1.05rem; line-height: 1.6;">
+            Enamórate de nuestras decoraciones que tenemos para ti; encontrarás diseños sencillos pero hermosos, y también ambientaciones modernas y elegantes para celebrar aniversarios, cumpleaños o noches especiales.
+          </p>
+        </div>
+
+        <div class="decoraciones-grid">
+          <!-- Decoración 1 -->
+          <div class="deco-card">
+            <div class="deco-img-wrap">
+              <img src="/images/decoraciones/decoracion-1.jpg" alt="Decoración 1 Aniversario Hotel Wimbledon" class="deco-img" loading="lazy" />
+              <span class="deco-badge">Pack Pasión & Globos</span>
+            </div>
+            <div class="deco-info">
+              <h3 class="deco-title">Decoración 1 — Velada Romántica</h3>
+              <p class="deco-desc">
+                Arreglo temático con globos metalizados en tonos rojos y dorados, letrero luminoso LED, pétalos de rosa sobre la cama y copas de champaña para brindar.
+              </p>
+              <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #fbbf24; font-weight: 700; font-size: 1.1rem;">S/ 60.00</span>
+                <button class="btn-compact-reserve js-add-deco" data-deco="1" style="padding: 0.55rem 1rem;">Solicitar con Reserva</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Decoración 2 -->
+          <div class="deco-card">
+            <div class="deco-img-wrap">
+              <img src="/images/decoraciones/decoracion-2.jpg" alt="Decoración 2 Jacuzzi Hotel Wimbledon" class="deco-img" loading="lazy" />
+              <span class="deco-badge">Pack Jacuzzi & Velas</span>
+            </div>
+            <div class="deco-info">
+              <h3 class="deco-title">Decoración 2 — Noche Íntima Jacuzzi</h3>
+              <p class="deco-desc">
+                Ambientación sensorial con velas aromáticas LED alrededor de la tina de hidromasaje, sales minerales relajantes, pétalos y espumante helado en hielera.
+              </p>
+              <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #fbbf24; font-weight: 700; font-size: 1.1rem;">S/ 75.00</span>
+                <button class="btn-compact-reserve js-add-deco" data-deco="2" style="padding: 0.55rem 1rem;">Solicitar con Reserva</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Decoración 3 -->
+          <div class="deco-card">
+            <div class="deco-img-wrap">
+              <img src="/images/decoraciones/decoracion-3.jpg" alt="Decoración 3 Presidencial Hotel Wimbledon" class="deco-img" loading="lazy" />
+              <span class="deco-badge">Pack Luxury Aniversario</span>
+            </div>
+            <div class="deco-info">
+              <h3 class="deco-title">Decoración 3 — Experiencia Completa</h3>
+              <p class="deco-desc">
+                Decoración premium integral en suite con bouquet de flores naturales, caja de bombones finos Ferrero Rocher, iluminación tenue y botella de espumante Riccadonna.
+              </p>
+              <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #fbbf24; font-weight: 700; font-size: 1.1rem;">S/ 95.00</span>
+                <button class="btn-compact-reserve js-add-deco" data-deco="3" style="padding: 0.55rem 1rem;">Solicitar con Reserva</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN CARRUSEL GRANDE DE SERVICIOS & INSTALACIONES EXCLUSIVAS (DESAPARICIÓN CINEMÁTICA) -->
+    <section id="experiencia" class="services-carousel-section" aria-labelledby="experienciaTitle">
       <div class="editorial-container">
         <div class="editorial-header-block reveal">
           <span class="editorial-tag">INSTALACIONES & EXPERIENCIA</span>
@@ -362,244 +585,206 @@ function renderEditorialApp() {
           </p>
         </div>
 
-        <!-- BOTÓN DE ACTIVACIÓN PRINCIPAL (DESPLIEGA EL PANEL DE LOS 6 SERVICIOS) -->
-        <div class="services-toggle-wrap reveal">
-          <button 
-            type="button" 
-            id="btnToggleServicesSection" 
-            class="services-section-toggle-btn"
-            aria-expanded="false" 
-            aria-controls="servicesMainPanel"
-          >
-            <div class="services-toggle-left">
-              <span class="services-toggle-icon" aria-hidden="true">✨</span>
-              <div class="services-toggle-text-block">
-                <span class="services-toggle-badge">TOQUE PARA ACTIVAR</span>
-                <span class="services-toggle-heading" id="servicesToggleLabel">Ver las 6 Amenidades & Servicios Exclusivos</span>
-              </div>
-            </div>
-            <div class="services-toggle-right">
-              <span class="services-toggle-status" id="servicesToggleStatus">Oculto</span>
-              <span class="services-toggle-arrow" aria-hidden="true">↓</span>
-            </div>
+        <!-- CHIPS SELECTORES DE AMENIDAD SUPERIOR -->
+        <div class="services-nav-chips reveal" id="servicesNavChips" role="tablist" aria-label="Navegación de servicios">
+          <button type="button" class="service-nav-chip active" data-index="0" role="tab" aria-selected="true">
+            01 Jacuzzi Privado
+          </button>
+          <button type="button" class="service-nav-chip" data-index="1" role="tab" aria-selected="false">
+            02 Cochera Directa
+          </button>
+          <button type="button" class="service-nav-chip" data-index="2" role="tab" aria-selected="false">
+            03 Bar & Mixología
+          </button>
+          <button type="button" class="service-nav-chip" data-index="3" role="tab" aria-selected="false">
+            04 Cámara Seca & Sauna
+          </button>
+          <button type="button" class="service-nav-chip" data-index="4" role="tab" aria-selected="false">
+            05 Room Service 24/7
+          </button>
+          <button type="button" class="service-nav-chip" data-index="5" role="tab" aria-selected="false">
+            06 Vista al Mar
           </button>
         </div>
 
-        <!-- PANEL DE LOS 6 SERVICIOS (OCULTO POR DEFECTO HASTA SU ACTIVACIÓN) -->
-        <div id="servicesMainPanel" class="services-main-panel" hidden>
-          <p class="services-a11y-hint" role="note">
-            <span class="a11y-hint-badge">Vista Adaptada</span>
-            <span>Toca o pulsa cualquier amenidad para desplegar la fotografía ampliada y detalles de confort.</span>
-          </p>
-          <ul class="services-interactive-list" role="list">
-          <!-- 01 JACUZZI PRIVADO & SPA -->
-          <li class="service-item reveal" data-service="jacuzzi">
-            <button type="button" class="service-trigger" aria-expanded="false" aria-controls="serviceDetail01" id="serviceTrigger01">
-              <div class="service-left">
-                <span class="service-num">01</span>
-                <h3 class="service-title">Jacuzzi Privado & Spa</h3>
+        <!-- ESCENARIO PRINCIPAL DEL CARRUSEL GRANDE (CON EFECTO DISOLVER / DESAPARICIÓN) -->
+        <div class="services-showcase-stage" id="servicesShowcaseStage" aria-live="polite">
+          <!-- Slide 01: Jacuzzi -->
+          <article class="services-showcase-slide active" data-index="0" role="tabpanel">
+            <div class="service-slide-media-wrap">
+              <img src="/images/suites/jacuzzi-deluxe.jpg" alt="Tina de hidromasaje y jacuzzi privado en suite Hotel Wimbledon" class="service-slide-img" loading="eager" />
+              <span class="service-slide-badge">Bienestar & Confort</span>
+            </div>
+            <div class="service-slide-content-wrap">
+              <span class="service-slide-watermark" aria-hidden="true">01</span>
+              <span class="service-slide-tag">HIDROMASAJE EN SUITE</span>
+              <h3 class="service-slide-title">Jacuzzi Privado & Hidromasaje</h3>
+              <div class="service-slide-subtitle">Sistema de termoterapia e inmersión a 38°C</div>
+              <p class="service-slide-desc">
+                Tina de hidromasaje climatizada de alta presión con boquillas regulables, sistema de recirculación continua a 38°C, sales minerales aromáticas y cromoterapia LED integrada. Máximo relax y confort ergonómico para dos personas.
+              </p>
+              <div class="service-slide-pills">
+                <div class="service-slide-pill"><span>✓</span><span>Agua Climatizada 38°C</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Cromoterapia LED</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Sales Minerales Incluidas</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Desinfección UV Sanitaria</span></div>
               </div>
-              <div class="service-right">
-                <span class="service-tagline">Hidromasaje en Suite</span>
-                <span class="service-arrow" aria-hidden="true">↓</span>
-              </div>
-            </button>
-            <div id="serviceDetail01" class="service-detail-drawer" role="region" aria-labelledby="serviceTrigger01" hidden>
-              <div class="service-detail-grid">
-                <div class="service-detail-media">
-                  <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=1200&auto=format&fit=crop" alt="Tina de hidromasaje y jacuzzi privado con iluminación ambiental en suite" loading="lazy" />
-                </div>
-                <div class="service-detail-content">
-                  <div class="service-detail-badge">Bienestar & Termoterapia</div>
-                  <h4 class="service-detail-title">Jacuzzi de Alta Presión con Hidromasaje</h4>
-                  <p class="service-detail-desc">
-                    Tina de hidromasaje climatizada de alta presión con boquillas regulables, sistema de recirculación continua a 38°C, sales minerales aromáticas y cromoterapia LED integrada. Máximo relax y confort ergonómico para dos personas.
-                  </p>
-                  <div class="service-detail-pills">
-                    <span class="service-pill">✓ Agua Climatizada 38°C</span>
-                    <span class="service-pill">✓ Cromoterapia LED</span>
-                    <span class="service-pill">✓ Sales Minerales Incluidas</span>
-                    <span class="service-pill">✓ Desinfección UV Grado Sanitario</span>
-                  </div>
-                  <a href="#habitaciones" class="service-cta-btn">Ver suites con jacuzzi →</a>
-                </div>
+              <div class="service-slide-actions">
+                <a href="#habitaciones" class="service-cta-btn">Ver suites con jacuzzi →</a>
               </div>
             </div>
-          </li>
-          <!-- 02 ESTACIONAMIENTO PRIVADO DIRECTO -->
-          <li class="service-item reveal" data-service="estacionamiento">
-            <button type="button" class="service-trigger" aria-expanded="false" aria-controls="serviceDetail02" id="serviceTrigger02">
-              <div class="service-left">
-                <span class="service-num">02</span>
-                <h3 class="service-title">Estacionamiento Privado Directo</h3>
+          </article>
+
+          <!-- Slide 02: Estacionamiento -->
+          <article class="services-showcase-slide" data-index="1" role="tabpanel">
+            <div class="service-slide-media-wrap">
+              <img src="/images/servicios/parking-directo.png" alt="Cochera individual privada con acceso directo a suite Hotel Wimbledon" class="service-slide-img" loading="lazy" />
+              <span class="service-slide-badge">Discreción Absoluta</span>
+            </div>
+            <div class="service-slide-content-wrap">
+              <span class="service-slide-watermark" aria-hidden="true">02</span>
+              <span class="service-slide-tag">ACCESO DIRECTO 24/7</span>
+              <h3 class="service-slide-title">Cochera Privada & Acceso Directo</h3>
+              <div class="service-slide-subtitle">Ingreso vehicular reservado con portón automatizado</div>
+              <p class="service-slide-desc">
+                Espacio individual de aparcamiento cerrado con portón automático de apertura inmediata. Permite ingresar y retirarse directamente a la suite sin transitar por zonas comunes ni interactuar físicamente en recepción.
+              </p>
+              <div class="service-slide-pills">
+                <div class="service-slide-pill"><span>✓</span><span>Portón Automatizado</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Entrada Directa Interna</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Vigilancia Perimetral 24/7</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>100% Cero Contacto</span></div>
               </div>
-              <div class="service-right">
-                <span class="service-tagline">Discreción & Acceso 24/7</span>
-                <span class="service-arrow" aria-hidden="true">↓</span>
-              </div>
-            </button>
-            <div id="serviceDetail02" class="service-detail-drawer" role="region" aria-labelledby="serviceTrigger02" hidden>
-              <div class="service-detail-grid">
-                <div class="service-detail-media">
-                  <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1200&auto=format&fit=crop" alt="Cochera individual privada y techada con acceso directo a habitación" loading="lazy" />
-                </div>
-                <div class="service-detail-content">
-                  <div class="service-detail-badge">Privacidad & Seguridad</div>
-                  <h4 class="service-detail-title">Cochera Techada con Entrada a la Suite</h4>
-                  <p class="service-detail-desc">
-                    Espacio individual de aparcamiento cerrado con portón automático de apertura inmediata. Permite ingresar y retirarse directamente a la suite sin transitar por zonas comunes ni interactuar físicamente en recepción.
-                  </p>
-                  <div class="service-detail-pills">
-                    <span class="service-pill">✓ Portón Automatizado</span>
-                    <span class="service-pill">✓ Acceso Directo Interno</span>
-                    <span class="service-pill">✓ Vigilancia Perimetral 24/7</span>
-                    <span class="service-pill">✓ 100% Cero Contacto</span>
-                  </div>
-                  <a href="#habitaciones" class="service-cta-btn">Ver suites con cochera →</a>
-                </div>
+              <div class="service-slide-actions">
+                <a href="#habitaciones" class="service-cta-btn">Ver suites con cochera →</a>
               </div>
             </div>
-          </li>
-          <!-- 03 BAR & MIXOLOGÍA DE AUTOR -->
-          <li class="service-item reveal" data-service="bar">
-            <button type="button" class="service-trigger" aria-expanded="false" aria-controls="serviceDetail03" id="serviceTrigger03">
-              <div class="service-left">
-                <span class="service-num">03</span>
-                <h3 class="service-title">Bar & Mixología de Autor</h3>
+          </article>
+
+          <!-- Slide 03: Bar & Mixología -->
+          <article class="services-showcase-slide" data-index="2" role="tabpanel">
+            <div class="service-slide-media-wrap">
+              <img src="/images/gastro/pisco-sour.jpg" alt="Coctelería de autor y Pisco Sour Catedral Hotel Wimbledon" class="service-slide-img" loading="lazy" />
+              <span class="service-slide-badge">Coctelería Gourmet</span>
+            </div>
+            <div class="service-slide-content-wrap">
+              <span class="service-slide-watermark" aria-hidden="true">03</span>
+              <span class="service-slide-tag">LICORES & CÓCTELES</span>
+              <h3 class="service-slide-title">Bar & Mixología de Autor</h3>
+              <div class="service-slide-subtitle">Carta exclusiva de cócteles clásicos y licores reserva</div>
+              <p class="service-slide-desc">
+                Más de 70 referencias en whiskies importados, vodkas, tequilas, champagnes franceses y vinos de reserva. Elaboración en minutos con hielo cristalino y cristalería premium, servido directamente a la puerta de su suite.
+              </p>
+              <div class="service-slide-pills">
+                <div class="service-slide-pill"><span>✓</span><span>70+ Etiquetas Importadas</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Coctelería de Autor</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Champagnes y Espumantes</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Servicio Continuo 24 Horas</span></div>
               </div>
-              <div class="service-right">
-                <span class="service-tagline">Licores & Cócteles Gourmet</span>
-                <span class="service-arrow" aria-hidden="true">↓</span>
-              </div>
-            </button>
-            <div id="serviceDetail03" class="service-detail-drawer" role="region" aria-labelledby="serviceTrigger03" hidden>
-              <div class="service-detail-grid">
-                <div class="service-detail-media">
-                  <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1200&auto=format&fit=crop" alt="Coctelería de autor y cristalería premium en el bar" loading="lazy" />
-                </div>
-                <div class="service-detail-content">
-                  <div class="service-detail-badge">Coctelería de Alta Gama</div>
-                  <h4 class="service-detail-title">Carta Exclusiva de Licores y Vinos</h4>
-                  <p class="service-detail-desc">
-                    Más de 70 referencias en whiskies importados, vodkas, tequilas, champagnes franceses y vinos de reserva. Elaboración en minutos con hielo cristalino y cristalería premium, servido directamente a la puerta de su suite.
-                  </p>
-                  <div class="service-detail-pills">
-                    <span class="service-pill">✓ 70+ Etiquetas Premium</span>
-                    <span class="service-pill">✓ Coctelería de Autor</span>
-                    <span class="service-pill">✓ Champagnes y Espumantes</span>
-                    <span class="service-pill">✓ Servicio Continuo 24 Horas</span>
-                  </div>
-                  <a href="#gastronomia" class="service-cta-btn">Explorar carta del bar →</a>
-                </div>
+              <div class="service-slide-actions">
+                <a href="#gastronomia" class="service-cta-btn">Explorar carta del bar →</a>
               </div>
             </div>
-          </li>
-          <!-- 04 CÁMARA SECA & SAUNA PRIVADO -->
-          <li class="service-item reveal" data-service="sauna">
-            <button type="button" class="service-trigger" aria-expanded="false" aria-controls="serviceDetail04" id="serviceTrigger04">
-              <div class="service-left">
-                <span class="service-num">04</span>
-                <h3 class="service-title">Cámara Seca & Sauna Privado</h3>
+          </article>
+
+          <!-- Slide 04: Cámara Seca & Sauna -->
+          <article class="services-showcase-slide" data-index="3" role="tabpanel">
+            <div class="service-slide-media-wrap">
+              <img src="/images/suites/suite-presidencial-camara-seca.jpg" alt="Cámara seca revestida en madera en suite Hotel Wimbledon" class="service-slide-img" loading="lazy" />
+              <span class="service-slide-badge">Relajación & Desintoxicación</span>
+            </div>
+            <div class="service-slide-content-wrap">
+              <span class="service-slide-watermark" aria-hidden="true">04</span>
+              <span class="service-slide-tag">SAUNA FINLANDÉS</span>
+              <h3 class="service-slide-title">Cámara Seca & Sauna Privado</h3>
+              <div class="service-slide-subtitle">Revestimiento en cedro aromático selecto y piedras volcánicas</div>
+              <p class="service-slide-desc">
+                Espacio térmico individual revestido en cedro aromático selecto, dotado de panel digital para regular la temperatura, piedras volcánicas, esencias puras de eucalipto y ducha española contigua de alto caudal.
+              </p>
+              <div class="service-slide-pills">
+                <div class="service-slide-pill"><span>✓</span><span>Cedro Aromático Natural</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Termostato Digital Regulable</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Ducha Española Contigua</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Aromaterapia Eucalipto Puro</span></div>
               </div>
-              <div class="service-right">
-                <span class="service-tagline">Bienestar & Desconexión</span>
-                <span class="service-arrow" aria-hidden="true">↓</span>
-              </div>
-            </button>
-            <div id="serviceDetail04" class="service-detail-drawer" role="region" aria-labelledby="serviceTrigger04" hidden>
-              <div class="service-detail-grid">
-                <div class="service-detail-media">
-                  <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop" alt="Cámara seca revestida en madera de cedro con piedras volcánicas" loading="lazy" />
-                </div>
-                <div class="service-detail-content">
-                  <div class="service-detail-badge">Relajación & Desintoxicación</div>
-                  <h4 class="service-detail-title">Sauna Finlandés en Madera de Cedro</h4>
-                  <p class="service-detail-desc">
-                    Espacio térmico individual revestido en cedro aromático selecto, dotado de panel digital para regular la temperatura, piedras volcánicas, esencias puras de eucalipto y ducha española contigua de alto caudal.
-                  </p>
-                  <div class="service-detail-pills">
-                    <span class="service-pill">✓ Cedro Aromático Natural</span>
-                    <span class="service-pill">✓ Termostato Digital</span>
-                    <span class="service-pill">✓ Ducha Española Contigua</span>
-                    <span class="service-pill">✓ Aromaterapia Eucalipto</span>
-                  </div>
-                  <a href="#habitaciones" class="service-cta-btn">Ver suites con sauna →</a>
-                </div>
+              <div class="service-slide-actions">
+                <a href="#habitaciones" class="service-cta-btn">Ver suites con sauna →</a>
               </div>
             </div>
-          </li>
-          <!-- 05 ROOM SERVICE GOURMET 24/7 -->
-          <li class="service-item reveal" data-service="room-service">
-            <button type="button" class="service-trigger" aria-expanded="false" aria-controls="serviceDetail05" id="serviceTrigger05">
-              <div class="service-left">
-                <span class="service-num">05</span>
-                <h3 class="service-title">Room Service Gourmet 24/7</h3>
+          </article>
+
+          <!-- Slide 05: Room Service -->
+          <article class="services-showcase-slide" data-index="4" role="tabpanel">
+            <div class="service-slide-media-wrap">
+              <img src="/images/gastro/hamburguesa-smash.png" alt="Hamburguesa Smash y platos gourmet Hotel Wimbledon" class="service-slide-img" loading="lazy" />
+              <span class="service-slide-badge">Gastronomía 24 Horas</span>
+            </div>
+            <div class="service-slide-content-wrap">
+              <span class="service-slide-watermark" aria-hidden="true">05</span>
+              <span class="service-slide-tag">CARTA DIRECTA A LA SUITE</span>
+              <h3 class="service-slide-title">Room Service Gourmet 24/7</h3>
+              <div class="service-slide-subtitle">Cocina de autor elaborada al instante con entrega reservada</div>
+              <p class="service-slide-desc">
+                Carta completa de platos elaborados al instante: smash burgers de carne angus, broaster crujiente, sándwiches artesanales, piqueos calientes y coctelería. Entrega discreta y hermética a través de compartimento privado.
+              </p>
+              <div class="service-slide-pills">
+                <div class="service-slide-pill"><span>✓</span><span>Platos Preparados al Momento</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Ventanilla Hermética Privada</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Atención Continua 24/7</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Empaque Térmico de Alta Higiene</span></div>
               </div>
-              <div class="service-right">
-                <span class="service-tagline">Carta Directa a la Habitación</span>
-                <span class="service-arrow" aria-hidden="true">↓</span>
-              </div>
-            </button>
-            <div id="serviceDetail05" class="service-detail-drawer" role="region" aria-labelledby="serviceTrigger05" hidden>
-              <div class="service-detail-grid">
-                <div class="service-detail-media">
-                  <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1200&auto=format&fit=crop" alt="Platos gourmet de alta cocina servidos a la habitación" loading="lazy" />
-                </div>
-                <div class="service-detail-content">
-                  <div class="service-detail-badge">Gastronomía Exclusiva</div>
-                  <h4 class="service-detail-title">Cocina Central Activa las 24 Horas</h4>
-                  <p class="service-detail-desc">
-                    Carta completa de 21 platos elaborados al instante: lomo saltado al wok, pastas artesanales, piqueos calientes y postres gourmet. Entrega reservada a través de compartimento de doble esclusa para total intimidad.
-                  </p>
-                  <div class="service-detail-pills">
-                    <span class="service-pill">✓ 21 Platos a la Carta</span>
-                    <span class="service-pill">✓ Ventanilla Hermética Privada</span>
-                    <span class="service-pill">✓ Preparación Inmediata</span>
-                    <span class="service-pill">✓ Cocina Activa 24/7</span>
-                  </div>
-                  <a href="#gastronomia" class="service-cta-btn">Ver carta de comidas →</a>
-                </div>
+              <div class="service-slide-actions">
+                <a href="#gastronomia" class="service-cta-btn">Ver carta de comidas →</a>
               </div>
             </div>
-          </li>
-          <!-- 06 SUITES CON VISTA PANORÁMICA -->
-          <li class="service-item reveal" data-service="vista-mar">
-            <button type="button" class="service-trigger" aria-expanded="false" aria-controls="serviceDetail06" id="serviceTrigger06">
-              <div class="service-left">
-                <span class="service-num">06</span>
-                <h3 class="service-title">Suites con Vista Panorámica</h3>
+          </article>
+
+          <!-- Slide 06: Vista al Mar -->
+          <article class="services-showcase-slide" data-index="5" role="tabpanel">
+            <div class="service-slide-media-wrap">
+              <img src="/images/suites/simple-vista-al-mar.jpg" alt="Vista al mar frente al océano pacífico Hotel Wimbledon" class="service-slide-img" loading="lazy" />
+              <span class="service-slide-badge">Horizonte & Costa Verde</span>
+            </div>
+            <div class="service-slide-content-wrap">
+              <span class="service-slide-watermark" aria-hidden="true">06</span>
+              <span class="service-slide-tag">FRENTE AL OCÉANO</span>
+              <h3 class="service-slide-title">Suites con Vista Panorámica</h3>
+              <div class="service-slide-subtitle">Ventanales directos al mar con aislamiento acústico integral</div>
+              <p class="service-slide-desc">
+                Cristales panorámicos de alta tecnología con vista directa al mar de San Miguel en la Costa Verde. Aislamiento termoacústico con doble acristalamiento y polarizado exterior de privacidad absoluta.
+              </p>
+              <div class="service-slide-pills">
+                <div class="service-slide-pill"><span>✓</span><span>Vista Frontal al Océano</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Doble Vidrio Acústico</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Polarizado de Privacidad Total</span></div>
+                <div class="service-slide-pill"><span>✓</span><span>Atardeceres Panorámicos</span></div>
               </div>
-              <div class="service-right">
-                <span class="service-tagline">Frente al Océano Pacífico</span>
-                <span class="service-arrow" aria-hidden="true">↓</span>
-              </div>
-            </button>
-            <div id="serviceDetail06" class="service-detail-drawer" role="region" aria-labelledby="serviceTrigger06" hidden>
-              <div class="service-detail-grid">
-                <div class="service-detail-media">
-                  <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1200&auto=format&fit=crop" alt="Vista panorámica al mar frente al océano pacífico desde la suite" loading="lazy" />
-                </div>
-                <div class="service-detail-content">
-                  <div class="service-detail-badge">Paisaje Costero</div>
-                  <h4 class="service-detail-title">Ventanales Panorámicos a la Costa Verde</h4>
-                  <p class="service-detail-desc">
-                    Cristales de piso a techo con vistas directas al mar de San Miguel. Equipados con tratamiento térmico, cristales acústicos de doble cámara y polarizado de alta privacidad que impide cualquier visibilidad desde el exterior.
-                  </p>
-                  <div class="service-detail-pills">
-                    <span class="service-pill">✓ Vista Directa al Océano</span>
-                    <span class="service-pill">✓ Vidrio Acústico Insonorizado</span>
-                    <span class="service-pill">✓ Polarizado Unilateral 100%</span>
-                    <span class="service-pill">✓ Atardeceres Panorámicos</span>
-                  </div>
-                  <a href="#habitaciones" class="service-cta-btn">Ver suites frente al mar →</a>
-                </div>
+              <div class="service-slide-actions">
+                <a href="#habitaciones" class="service-cta-btn">Ver suites frente al mar →</a>
               </div>
             </div>
-          </li>
-        </ul>
+          </article>
+        </div>
+
+        <!-- BARRA INFERIOR DE CONTROLES: CONTADOR, TRACK DE PROGRESO Y FLECHAS -->
+        <div class="services-showcase-bar reveal">
+          <div class="services-counter-wrap">
+            <span class="services-counter-text" id="servicesSlideCounter">01 / 06</span>
+            <div class="services-progress-track" aria-hidden="true">
+              <div class="services-progress-bar" id="servicesProgressBar" style="width: 16.66%;"></div>
+            </div>
+          </div>
+          <div class="services-arrows-wrap">
+            <button type="button" class="service-arrow-btn" id="btnServicesPrev" aria-label="Amenidad anterior">
+              ←
+            </button>
+            <button type="button" class="service-arrow-btn" id="btnServicesNext" aria-label="Siguiente amenidad">
+              →
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
     <!-- GASTRONOMÍA EDITORIAL DE LUJO (4 CATEGORÍAS EN VIVO) -->
     <section id="gastronomia" class="section-editorial" style="background: #060911; border-top: 1px solid rgba(255,255,255,0.08); padding: 6rem 0;">
       <div class="editorial-container">
@@ -624,6 +809,218 @@ function renderEditorialApp() {
         </div>
       </div>
     </section>
+
+    <!-- TESTIMONIOS & EXPERIENCIAS REALES DE PAREJAS (SUGERENTES & DISCRETAS) -->
+    <section id="testimonios" class="section-testimonials" aria-labelledby="testimoniosHeading">
+      <div class="editorial-container">
+        <div class="editorial-header-block reveal" style="text-align: center; max-width: 820px; margin-left: auto; margin-right: auto;">
+          <span class="editorial-tag">CONFIDENCIAL & EXCLUSIVO • EXPERIENCIAS DE HUÉSPEDES</span>
+          <h2 id="testimoniosHeading" class="editorial-headline" style="color: var(--color-white);">Historias de Pasión & Confort Absoluto</h2>
+          <p style="color: #cbd5e1; margin-top: 1rem; font-size: 1.05rem; line-height: 1.6;">
+            Voces y vivencias de parejas que convirtieron una noche cualquiera en una experiencia ardiente e inolvidable. Cero miradas, máxima complicidad y discreción garantizada las 24 horas.
+          </p>
+        </div>
+
+        <!-- BARRA DE MÉTRICAS & SOCIAL PROOF -->
+        <div class="testimonials-stat-bar reveal">
+          <div class="stat-pill">
+            <span style="color: #fbbf24; font-size: 1.1rem;">★</span>
+            <span><strong>4.9 / 5.0</strong> en Satisfacción de Parejas</span>
+          </div>
+          <div class="stat-pill">
+            <span style="color: #fbbf24; font-size: 1.1rem;">🔒</span>
+            <span><strong>100% Discreción</strong> y Cero Contacto</span>
+          </div>
+          <div class="stat-pill">
+            <span style="color: #fbbf24; font-size: 1.1rem;">✨</span>
+            <span><strong>+14,200</strong> Noches de Pasión Verificadas</span>
+          </div>
+        </div>
+
+        <!-- SELECTORES / FILTROS DE CATEGORÍA -->
+        <div class="testimonials-filter-chips reveal" id="testimonialsFilterChips" role="tablist" aria-label="Filtrar testimonios">
+          <button type="button" class="testimonial-filter-btn active" data-filter="all" role="tab" aria-selected="true">
+            🔥 Todas las Experiencias (6)
+          </button>
+          <button type="button" class="testimonial-filter-btn" data-filter="jacuzzi" role="tab" aria-selected="false">
+            🛁 Jacuzzis & Hidromasaje
+          </button>
+          <button type="button" class="testimonial-filter-btn" data-filter="pole" role="tab" aria-selected="false">
+            👠 Dark Fantasies & Pole Dance
+          </button>
+          <button type="button" class="testimonial-filter-btn" data-filter="romance" role="tab" aria-selected="false">
+            🍓 Packs Romance & Aniversario
+          </button>
+          <button type="button" class="testimonial-filter-btn" data-filter="sauna" role="tab" aria-selected="false">
+            🧖 Sauna Finlandés & Mar
+          </button>
+        </div>
+
+        <!-- GRILLA DE TESTIMONIOS -->
+        <div class="testimonials-grid" id="testimonialsGrid">
+          <!-- Card 1: Jacuzzi Deluxe -->
+          <article class="testimonial-card reveal" data-category="jacuzzi">
+            <div>
+              <div class="testimonial-top">
+                <span class="testimonial-badge">🔥 Noche de Aniversario Ardiente</span>
+                <span class="testimonial-stars" aria-label="5 de 5 estrellas">★★★★★</span>
+              </div>
+              <p class="testimonial-quote">
+                “Llegamos por la <em>cochera privada con portón automático</em> y la adrenalina se disparó desde el primer segundo. El <em>jacuzzi con agua bien caliente y luces rojas tenues</em> fue de otro planeta... pusimos champán en el hidromasaje y <em>no salimos del agua en horas</em>. La privacidad es total, nadie te ve ni te interrumpe. Una de las noches más intensas y calientes de nuestras vidas.”
+              </p>
+              <div class="testimonial-highlight">
+                <span>🍷</span> Incluyó Botella de Espumante & Hidromasaje 38°C
+              </div>
+            </div>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">CR</div>
+              <div class="testimonial-meta">
+                <span class="testimonial-name">Camila & Renzo V. <span class="verified-icon" title="Huésped Verificado">✓</span></span>
+                <span class="testimonial-suite-tag">Suite Presidencial con Jacuzzi & Sauna</span>
+                <span class="testimonial-time">Hospedaje verificado • Hace 2 días</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 2: Pole Dance Dark Fantasies -->
+          <article class="testimonial-card reveal" data-category="pole">
+            <div>
+              <div class="testimonial-top">
+                <span class="testimonial-badge">👠 Fantasía Cumplida al Máximo</span>
+                <span class="testimonial-stars" aria-label="5 de 5 estrellas">★★★★★</span>
+              </div>
+              <p class="testimonial-quote">
+                “La suite Dark Fantasies con el <em>tubo de pole dance y los espejos gigantes en el techo y paredes</em> despertó cosas que teníamos pendientes cumplir hace tiempo. La atmósfera con las luces LED púrpuras y el <em>sillón tántrico erótico</em> nos encendió desde que cruzamos la puerta. <em>Desatamos todo sin preocuparnos por el ruido</em> porque la insonorización es perfecta. Salimos renovados y con ganas de repetir ya.”
+              </p>
+              <div class="testimonial-highlight">
+                <span>🪞</span> Espejos en Techo, Tubo Pole Dance & Luces Neón
+              </div>
+            </div>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">VS</div>
+              <div class="testimonial-meta">
+                <span class="testimonial-name">Valeria S. & Pareja <span class="verified-icon" title="Huésped Verificado">✓</span></span>
+                <span class="testimonial-suite-tag">Suite Temática Dark Fantasies</span>
+                <span class="testimonial-time">Hospedaje verificado • Fin de semana</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 3: Pack Romance & Fresas con Chocolate -->
+          <article class="testimonial-card reveal" data-category="romance">
+            <div>
+              <div class="testimonial-top">
+                <span class="testimonial-badge">💋 Piel a Flor de Piel</span>
+                <span class="testimonial-stars" aria-label="5 de 5 estrellas">★★★★★</span>
+              </div>
+              <p class="testimonial-quote">
+                “Pedí el pack de decoración con <em>pétalos de rosa, velas y fresas bañadas en chocolate</em>. Cuando ella abrió la puerta de la suite con las luces tenues y la tina humeando con sales aromáticas, la reacción fue instantánea: <em>no alcanzamos ni a soltar las maletas</em>. El servicio al cuarto por la <em>ventanilla ciega hermética</em> es 10/10: pedimos cócteles de madrugada sin tener que vestirnos ni cruzar miradas con nadie.”
+              </p>
+              <div class="testimonial-highlight">
+                <span>🍓</span> Fresas con Chocolate & Ventanilla Cero Contacto
+              </div>
+            </div>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">DA</div>
+              <div class="testimonial-meta">
+                <span class="testimonial-name">Diego & Andrea M. <span class="verified-icon" title="Huésped Verificado">✓</span></span>
+                <span class="testimonial-suite-tag">Suite Jacuzzi Deluxe con Cochera</span>
+                <span class="testimonial-time">Hospedaje verificado • Hace 5 días</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 4: Sauna Finlandés & Vista Mar -->
+          <article class="testimonial-card reveal" data-category="sauna">
+            <div>
+              <div class="testimonial-top">
+                <span class="testimonial-badge">🌊 Sauna, Coctelería & Placer Puro</span>
+                <span class="testimonial-stars" aria-label="5 de 5 estrellas">★★★★★</span>
+              </div>
+              <p class="testimonial-quote">
+                “Entrar a la <em>cámara de sauna finlandesa en cedro aromático a sudar juntos</em>, salir directo a la ducha española helada y de ahí a la cama king size <em>frente a los ventanales con el sonido del mar</em>... una combinación afrodisíaca incomparable. El Pisco Sour Catedral que nos subieron a la suite estuvo supremo. Te olvidas por completo del mundo exterior.”
+              </p>
+              <div class="testimonial-highlight">
+                <span>🧖</span> Sauna Finlandés en Cedro & Ducha Española
+              </div>
+            </div>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">FB</div>
+              <div class="testimonial-meta">
+                <span class="testimonial-name">Fernando B. & Pareja <span class="verified-icon" title="Huésped Verificado">✓</span></span>
+                <span class="testimonial-suite-tag">Suite Cámara Seca & Vista al Mar</span>
+                <span class="testimonial-time">Hospedaje verificado • Esta semana</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 5: Suite Presidencial Wimbledon -->
+          <article class="testimonial-card reveal" data-category="jacuzzi">
+            <div>
+              <div class="testimonial-top">
+                <span class="testimonial-badge">✨ Fuego & Confort Total</span>
+                <span class="testimonial-stars" aria-label="5 de 5 estrellas">★★★★★</span>
+              </div>
+              <p class="testimonial-quote">
+                “Buscábamos un escape íntimo donde <em>la privacidad fuera sagrada y el confort de primer nivel</em>. En Wimbledon todo está pensado para el disfrute en pareja sin tabúes. La <em>tina de hidromasaje doble es gigantesca</em>, la música por Bluetooth envolvente y la cama comodísima para <em>entregarse toda la noche sin prisas</em>. La mejor inversión para reavivar la llama.”
+              </p>
+              <div class="testimonial-highlight">
+                <span>🎵</span> Sonido Bluetooth Envolvente & Tina Doble Extra-Grande
+              </div>
+            </div>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">LK</div>
+              <div class="testimonial-meta">
+                <span class="testimonial-name">Luciana K. & M. <span class="verified-icon" title="Huésped Verificado">✓</span></span>
+                <span class="testimonial-suite-tag">Suite Presidencial Wimbledon</span>
+                <span class="testimonial-time">Hospedaje verificado • Hace 1 semana</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 6: Escapada Discreta -->
+          <article class="testimonial-card reveal" data-category="romance">
+            <div>
+              <div class="testimonial-top">
+                <span class="testimonial-badge">⚡ Escapada Secreta 100% Discreta</span>
+                <span class="testimonial-stars" aria-label="5 de 5 estrellas">★★★★★</span>
+              </div>
+              <p class="testimonial-quote">
+                “Aprovechamos una <em>escapada por la tarde para romper la rutina</em> y desconectar del estrés. Subes del auto directo a la suite sin pasar por recepción, aire acondicionado a punto, sábanas impecables y un <em>baño con hidromasaje que te deja con ganas de quedarte a vivir</em>. La velocidad con la que nos sirvieron los piqueos calientes fue de diez. Se convirtió en nuestro secreto favorito.”
+              </p>
+              <div class="testimonial-highlight">
+                <span>🚗</span> Acceso Vehicular Directo & Discreción Absoluta
+              </div>
+            </div>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">JR</div>
+              <div class="testimonial-meta">
+                <span class="testimonial-name">Javier R. & C. <span class="verified-icon" title="Huésped Verificado">✓</span></span>
+                <span class="testimonial-suite-tag">Suite Ejecutiva con Cochera Directa</span>
+                <span class="testimonial-time">Hospedaje verificado • Hace 4 días</span>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <!-- BANNER DE LLAMADO A LA ACCIÓN SEDUCTOR -->
+        <div class="testimonials-cta-box reveal">
+          <h3 class="testimonials-cta-title">Atrévete a Romper la Rutina Esta Noche</h3>
+          <p class="testimonials-cta-desc">
+            Elige tu suite privada con jacuzzi climatizado, cámara seca, pole dance o vista al mar. Acceso confidencial 24 horas y total privacidad garantizada.
+          </p>
+          <div class="testimonials-cta-actions">
+            <button type="button" class="btn-hero-primary js-testimonial-reserve-btn" style="border: none; cursor: pointer; text-decoration: none;">
+              ✨ RESERVAR MI SUITE PRIVADA AHORA
+            </button>
+            <a href="https://wa.me/51990370681?text=Hola%20Hotel%20Wimbledon,%20deseo%20consultar%20disponibilidad%20de%20suites%20con%20jacuzzi%20para%20hoy" target="_blank" rel="noopener noreferrer" class="btn-hero-secondary" style="text-decoration: none;">
+              💬 WhatsApp Confidencial 24/7
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- UBICACIÓN & ACCESO PRIVADO (MAPA & REFERENCIAS DIRECTAS) -->
     <section id="ubicacion" class="section-editorial bg-black" aria-labelledby="ubicacionHeading">
       <span id="reserva" style="display:block; position:relative; top:-80px; visibility:hidden;" aria-hidden="true"></span>
@@ -725,6 +1122,7 @@ function renderEditorialApp() {
           <a href="#promocion">PROMOCIÓN</a>
           <a href="#habitaciones">HABITACIONES</a>
           <a href="#experiencia">SERVICIOS</a>
+          <a href="#testimonios">EXPERIENCIAS</a>
           <a href="#ubicacion">UBICACIÓN</a>
           <a href="https://wimbledon-hotel.com/politicas-y-restricciones/" target="_blank">POLÍTICAS Y RESTRICCIONES</a>
           <a href="https://wimbledon-hotel.com/codigo-etico/" target="_blank">CÓDIGO ÉTICO</a>
@@ -796,12 +1194,12 @@ const EDITORIAL_ROOM_COPY = {
 };
 function renderSuitesList(filterCategory = 'all') {
   currentAmenityFilter = filterCategory;
-  const trackContainer = document.getElementById('suitesHorizontalTrack');
+  const trackContainer = document.getElementById('suitesCarouselTrackContainer') || document.getElementById('suitesHorizontalTrack');
   const gridContainer = document.getElementById('suitesGridView');
 
   const filtered = roomsData.filter(room => roomMatchesFilter(room, filterCategory));
 
-  // 1. Render Track Cinemático Horizontal
+  // 1. Render Carrusel Compacto de Suites (Foto real 800x600, tarjeta elegante, no secuestra la pantalla)
   if (trackContainer) {
     if (filtered.length === 0) {
       trackContainer.innerHTML = `<div style="padding: 3rem; text-align: center; color: #94a3b8; width: 100%;">No hay suites disponibles con este filtro.</div>`;
@@ -811,25 +1209,22 @@ function renderSuitesList(filterCategory = 'all') {
         const categoryName = room.categoria_nombre || 'Suite de Lujo';
         const priceDisplay = room.precio ? `${room.precio}` : 'S/ 150';
         return `
-          <div class="suite-card-horizontal" data-id="${room.id}">
-            <div class="suite-card-img-wrapper js-open-drawer" data-id="${room.id}" style="cursor: pointer;" title="Ver Ficha Técnica">
-              <img src="${room.imagen_url || '/images/suites/suite-presidencial.jpg'}" onerror="this.onerror=null; this.src='/images/suites/suite-presidencial.jpg';" alt="${room.nombre}" class="suite-card-img" loading="lazy" />
-              <span class="suite-card-price-badge">${priceDisplay}</span>
+          <div class="suite-card-compact" data-id="${room.id}">
+            <div class="suite-compact-media js-open-drawer" data-id="${room.id}" title="Ver Ficha Técnica y Galería">
+              <img src="${room.imagen_url || '/images/suites/suite-presidencial.jpg'}" onerror="this.onerror=null; this.src='/images/suites/suite-presidencial.jpg';" alt="${room.nombre}" class="suite-compact-img" loading="lazy" />
+              <span class="suite-compact-price-pill">${priceDisplay} / 6h</span>
+              <span class="suite-compact-cat-pill">${categoryName}</span>
             </div>
-            <div class="suite-card-info">
-              <div class="suite-card-meta-row">
-                <span class="suite-card-num">${String(index + 1).padStart(2, '0')}</span>
-                <span class="suite-card-category">— ${categoryName}</span>
+            <div class="suite-compact-body">
+              <h3 class="suite-compact-title">${room.nombre}</h3>
+              <div class="suite-compact-pills">
+                ${amenities.slice(0, 2).map(a => `<span class="suite-compact-pill">${a}</span>`).join('')}
               </div>
-              <h3 class="suite-card-title">${room.nombre}</h3>
-              <div class="suite-card-badges">
-                ${amenities.slice(0, 3).map(a => `<span class="suite-badge">— ${a}</span>`).join('')}
-              </div>
-              <div class="suite-card-actions" style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                <button class="btn-editorial-light js-direct-checkout" data-id="${room.id}" style="flex: 1; padding: 0.65rem 0.85rem; font-size: 0.78rem; font-weight: 700; background: linear-gradient(135deg, #d97706, #fbbf24); color: #000; border: none; border-radius: 8px; cursor: pointer;">
-                  Reservar Ahora
+              <div class="suite-compact-actions">
+                <button class="btn-compact-reserve js-direct-checkout" data-id="${room.id}">
+                  Reservar
                 </button>
-                <button class="btn-editorial-outline js-open-drawer" data-id="${room.id}" style="flex: 1; padding: 0.65rem 0.85rem; font-size: 0.78rem; font-weight: 600; border: 1px solid rgba(251, 191, 36, 0.4); color: #fbbf24; border-radius: 8px; cursor: pointer;">
+                <button class="btn-compact-details js-open-drawer" data-id="${room.id}">
                   Detalles
                 </button>
               </div>
@@ -882,6 +1277,7 @@ function renderSuitesList(filterCategory = 'all') {
 
   setupDrawerListeners();
   setupDirectCheckoutListeners();
+  setupDecoracionesListeners();
 
   // Asegurar que solo la vista activa esté visible sin duplicados
   applyCatalogViewMode(catalogViewMode);
@@ -2287,7 +2683,7 @@ function applyCatalogViewMode(mode) {
   catalogViewMode = mode;
   const btnCinematic = document.getElementById('btnViewCinematic');
   const btnGrid = document.getElementById('btnViewGrid');
-  const trackWrapper = document.getElementById('suitesHorizontalPinWrapper');
+  const trackWrapper = document.getElementById('suitesCarouselWrapper') || document.getElementById('suitesHorizontalPinWrapper');
   const gridSection = document.getElementById('suitesGridSection');
 
   if (btnCinematic && btnGrid && trackWrapper && gridSection) {
@@ -2298,9 +2694,6 @@ function applyCatalogViewMode(mode) {
       trackWrapper.style.display = 'block';
       gridSection.classList.add('view-mode-hidden');
       gridSection.style.display = 'none';
-      requestAnimationFrame(() => {
-        refreshHorizontalSuitesScroll();
-      });
     } else {
       btnGrid.classList.add('active');
       btnCinematic.classList.remove('active');
@@ -2308,11 +2701,303 @@ function applyCatalogViewMode(mode) {
       trackWrapper.style.display = 'none';
       gridSection.classList.remove('view-mode-hidden');
       gridSection.style.display = 'block';
-      requestAnimationFrame(() => {
-        refreshHorizontalSuitesScroll();
-      });
     }
   }
+}
+
+function setupHeroSlider() {
+  const slides = document.querySelectorAll('.hero-slide');
+  const dots = document.querySelectorAll('.hero-slider-dot');
+  const btnPrev = document.getElementById('btnHeroPrev');
+  const btnNext = document.getElementById('btnHeroNext');
+  const wrapper = document.getElementById('heroSliderWrapper');
+  if (!slides.length) return;
+
+  let currentSlide = 0;
+  let sliderTimer = null;
+
+  function goToSlide(index) {
+    slides.forEach((s, idx) => {
+      s.classList.toggle('active', idx === index);
+    });
+    dots.forEach((d, idx) => {
+      d.classList.toggle('active', idx === index);
+    });
+    currentSlide = index;
+  }
+
+  function nextSlide() {
+    const next = (currentSlide + 1) % slides.length;
+    goToSlide(next);
+  }
+
+  function prevSlide() {
+    const prev = (currentSlide - 1 + slides.length) % slides.length;
+    goToSlide(prev);
+  }
+
+  function startAutoplay() {
+    stopAutoplay();
+    sliderTimer = setInterval(nextSlide, 5000);
+  }
+
+  function stopAutoplay() {
+    if (sliderTimer) clearInterval(sliderTimer);
+  }
+
+  if (btnNext) {
+    btnNext.onclick = (e) => {
+      e.preventDefault();
+      nextSlide();
+      startAutoplay();
+    };
+  }
+
+  if (btnPrev) {
+    btnPrev.onclick = (e) => {
+      e.preventDefault();
+      prevSlide();
+      startAutoplay();
+    };
+  }
+
+  dots.forEach(dot => {
+    dot.onclick = (e) => {
+      e.preventDefault();
+      const idx = parseInt(e.currentTarget.getAttribute('data-slide'), 10);
+      if (!isNaN(idx)) {
+        goToSlide(idx);
+        startAutoplay();
+      }
+    };
+  });
+
+  if (wrapper) {
+    wrapper.addEventListener('mouseenter', stopAutoplay);
+    wrapper.addEventListener('mouseleave', startAutoplay);
+  }
+
+  document.querySelectorAll('.js-hero-reserve-btn').forEach(btn => {
+    btn.onclick = () => {
+      const defaultRoomId = roomsData.length > 0 ? roomsData[0].id : 860;
+      openCheckoutModal(defaultRoomId);
+    };
+  });
+
+  startAutoplay();
+}
+
+function setupCompactSuitesCarousel() {
+  const container = document.getElementById('suitesCarouselTrackContainer');
+  const btnPrev = document.getElementById('btnCarouselPrev');
+  const btnNext = document.getElementById('btnCarouselNext');
+  if (container && btnPrev && btnNext) {
+    btnPrev.onclick = () => {
+      container.scrollBy({ left: -330, behavior: 'smooth' });
+    };
+    btnNext.onclick = () => {
+      container.scrollBy({ left: 330, behavior: 'smooth' });
+    };
+  }
+}
+
+function setupLargeServicesCarousel() {
+  const stage = document.getElementById('servicesShowcaseStage');
+  const slides = document.querySelectorAll('.services-showcase-slide');
+  const chips = document.querySelectorAll('.service-nav-chip');
+  const btnPrev = document.getElementById('btnServicesPrev');
+  const btnNext = document.getElementById('btnServicesNext');
+  const counter = document.getElementById('servicesSlideCounter');
+  const progressBar = document.getElementById('servicesProgressBar');
+
+  if (!stage || !slides.length) return;
+
+  let currentIndex = 0;
+  let isTransitioning = false;
+  let autoplayTimer = null;
+  const total = slides.length;
+
+  function updateControls(index) {
+    if (counter) {
+      counter.textContent = `0${index + 1} / 0${total}`;
+    }
+    if (progressBar) {
+      const pct = ((index + 1) / total) * 100;
+      progressBar.style.width = `${pct}%`;
+    }
+    chips.forEach((chip, i) => {
+      const isActive = i === index;
+      chip.classList.toggle('active', isActive);
+      chip.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+  }
+
+  function goToSlide(targetIndex, direction = 'next') {
+    if (isTransitioning || targetIndex === currentIndex) return;
+    isTransitioning = true;
+
+    const currentSlide = slides[currentIndex];
+    const nextSlide = slides[targetIndex];
+    if (!currentSlide || !nextSlide) {
+      isTransitioning = false;
+      return;
+    }
+
+    const leavingClass = direction === 'next' ? 'slide-leaving-next' : 'slide-leaving-prev';
+
+    // 1. Aplicar clase de desaparición cinemática al slide actual y quitar active
+    currentSlide.classList.remove('active');
+    currentSlide.classList.add(leavingClass);
+
+    // 2. Activar el nuevo slide
+    nextSlide.classList.remove('slide-leaving-next', 'slide-leaving-prev');
+    nextSlide.classList.add('active');
+
+    // 3. Actualizar controles
+    currentIndex = targetIndex;
+    updateControls(currentIndex);
+
+    // 4. Restaurar slide anterior a su estado inactivo tras completarse el efecto de desvanecimiento
+    setTimeout(() => {
+      currentSlide.classList.remove('slide-leaving-next', 'slide-leaving-prev');
+      isTransitioning = false;
+    }, 720);
+  }
+
+  function nextSlide() {
+    const nextIdx = (currentIndex + 1) % total;
+    goToSlide(nextIdx, 'next');
+  }
+
+  function prevSlide() {
+    const prevIdx = (currentIndex - 1 + total) % total;
+    goToSlide(prevIdx, 'prev');
+  }
+
+  if (btnNext) {
+    btnNext.addEventListener('click', (e) => {
+      e.preventDefault();
+      nextSlide();
+      resetAutoplay();
+    });
+  }
+
+  if (btnPrev) {
+    btnPrev.addEventListener('click', (e) => {
+      e.preventDefault();
+      prevSlide();
+      resetAutoplay();
+    });
+  }
+
+  chips.forEach((chip) => {
+    chip.addEventListener('click', (e) => {
+      e.preventDefault();
+      const idx = parseInt(chip.getAttribute('data-index'), 10);
+      if (!isNaN(idx) && idx !== currentIndex) {
+        const dir = idx > currentIndex ? 'next' : 'prev';
+        goToSlide(idx, dir);
+        resetAutoplay();
+      }
+    });
+  });
+
+  function startAutoplay() {
+    stopAutoplay();
+    autoplayTimer = setInterval(nextSlide, 6500);
+  }
+
+  function stopAutoplay() {
+    if (autoplayTimer) {
+      clearInterval(autoplayTimer);
+      autoplayTimer = null;
+    }
+  }
+
+  function resetAutoplay() {
+    stopAutoplay();
+    startAutoplay();
+  }
+
+  stage.addEventListener('mouseenter', stopAutoplay);
+  stage.addEventListener('mouseleave', startAutoplay);
+
+  let touchStartX = 0;
+  let touchEndX = 0;
+  stage.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+    stopAutoplay();
+  }, { passive: true });
+
+  stage.addEventListener('touchend', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    const diff = touchStartX - touchEndX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        nextSlide();
+      } else {
+        prevSlide();
+      }
+    }
+    startAutoplay();
+  }, { passive: true });
+
+  updateControls(currentIndex);
+  startAutoplay();
+}
+
+function setupTestimonialsInteractions() {
+  const chips = document.querySelectorAll('.testimonial-filter-btn');
+  const cards = document.querySelectorAll('.testimonial-card');
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', (e) => {
+      e.preventDefault();
+      chips.forEach(c => {
+        c.classList.remove('active');
+        c.setAttribute('aria-selected', 'false');
+      });
+      chip.classList.add('active');
+      chip.setAttribute('aria-selected', 'true');
+
+      const filter = chip.getAttribute('data-filter');
+
+      cards.forEach(card => {
+        const cat = card.getAttribute('data-category');
+        if (filter === 'all' || cat === filter) {
+          card.style.display = 'flex';
+          card.style.opacity = '0';
+          card.style.transform = 'translateY(15px)';
+          setTimeout(() => {
+            card.style.transition = 'all 0.35s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+          }, 30);
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  document.querySelectorAll('.js-testimonial-reserve-btn').forEach(btn => {
+    btn.onclick = () => {
+      const defaultRoomId = roomsData.length > 0 ? roomsData[0].id : 860;
+      openCheckoutModal(defaultRoomId);
+    };
+  });
+}
+
+function setupDecoracionesListeners() {
+  document.querySelectorAll('.js-add-deco').forEach(btn => {
+    btn.onclick = (e) => {
+      const decoId = e.currentTarget.getAttribute('data-deco');
+      const defaultRoomId = roomsData.length > 0 ? roomsData[0].id : 860;
+      checkoutState.selectedExtras = ['deco'];
+      openCheckoutModal(defaultRoomId);
+      showToastNotification(`✨ Pack Decoración ${decoId} añadido a tu reserva`);
+    };
+  });
 }
 
 function setupCatalogControls() {

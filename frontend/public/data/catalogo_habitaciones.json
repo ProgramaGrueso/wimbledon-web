@@ -8,7 +8,14 @@
     "precio": "S/ 156",
     "imagen_url": "/images/suites/suite-presidencial.jpg",
     "descripcion": "¡Ten los sueños más placenteros! Nuestra habitación de lujo está equipada con todos los detalles que permitan a nuestros clientes tener descanso propio de una realeza. Detalles: Cama redonda, Sillón Tántrico de Cuarzo, Cámara Seca, Ducha española, Jacuzzi con Hidromasaje, Pole Dance, Baño privado y Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Vista al mar Cama Redonda Sillón tántrico Ducha española Jacuzzi Pole Dance Secadora de cabello Frigobar Televisión con Cable y DVD Radio (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18% + 5% recargo al consumo. RESERVAR",
-    "resumen": "¡Ten los sueños más placenteros! Nuestra habitación de lujo está equipada con todos los detalles que permitan"
+    "resumen": "¡Ten los sueños más placenteros! Nuestra habitación de lujo está equipada con todos los detalles que permitan",
+    "galeria": [
+      "/images/suites/suite-presidencial.jpg",
+      "/images/suites/suite-presidencial-2.jpg",
+      "/images/suites/suite-presidencial-3.jpg",
+      "/images/suites/suite-presidencial-4.jpg",
+      "/images/suites/suite-presidencial-5.jpg"
+    ]
   },
   {
     "id": 528,
@@ -19,7 +26,14 @@
     "precio": "S/ 125",
     "imagen_url": "/images/suites/tropical-dreams.jpg",
     "descripcion": "Habitación de lujo diseñada para los clientes exclusivos que desean vivir un momento inolvidable. Detalles: Cama Queen confort 100%, Pole Dance, Jacuzzi, Ducha Española, Frigo bar (con cargo extra). Habitación equipada con: Cama Queen Confort 100% Ducha española Jacuzzi Pole Dance Frigo bar (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
-    "resumen": "Habitación de lujo diseñada para los clientes exclusivos que desean vivir un momento inolvidable. Detalles: Cama Queen"
+    "resumen": "Habitación de lujo diseñada para los clientes exclusivos que desean vivir un momento inolvidable. Detalles: Cama Queen",
+    "galeria": [
+      "/images/suites/tropical-dreams.jpg",
+      "/images/suites/tropical-dreams-2.jpg",
+      "/images/suites/tropical-dreams-3.jpg",
+      "/images/suites/tropical-dreams-4.jpg",
+      "/images/suites/tropical-dreams-5.jpg"
+    ]
   },
   {
     "id": 526,
@@ -30,7 +44,14 @@
     "precio": "S/ 156",
     "imagen_url": "/images/suites/riverside-dreams-presidencial.jpg",
     "descripcion": "¡Dónde fluye la pasión! Nuestra habitación de lujo está diseñada de manera que nuestros clientes vivan momentos inolvidables que les permitan fluir en sintonía con el amor. Detalles: Vista a un río artificial, Cama King, Jacuzzi, Pole Dance, Sillón Tántrico, Frigo bar (con cargo extra). Habitación equipada con: Vista a un río artificial Sillón Tántrico Cama (King size) Jacuzzi Pole Dance Frigo bar (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18% + 5% recargo al consumo. RESERVAR",
-    "resumen": "¡Dónde fluye la pasión! Nuestra habitación de lujo está diseñada de manera que nuestros clientes vivan momentos"
+    "resumen": "¡Dónde fluye la pasión! Nuestra habitación de lujo está diseñada de manera que nuestros clientes vivan momentos",
+    "galeria": [
+      "/images/suites/riverside-dreams-presidencial.jpg",
+      "/images/suites/riverside-dreams-presidencial-2.jpg",
+      "/images/suites/riverside-dreams-presidencial-3.jpg",
+      "/images/suites/riverside-dreams-presidencial-4.jpg",
+      "/images/suites/riverside-dreams-presidencial-5.jpg"
+    ]
   },
   {
     "id": 523,
@@ -39,9 +60,16 @@
     "categoria_id": 4,
     "categoria_nombre": "Habitaciones",
     "precio": "S/ 200",
-    "imagen_url": "/images/suites/suite-presidencial-camara-seca.jpg",
+    "imagen_url": "/images/suites/suite-presidencial-con-camara-seca.jpg",
     "descripcion": "¡Ten los sueños más placenteros! Nuestra habitación de lujo está equipada con todos los detalles que permitan a nuestros clientes tener descanso propio de una realeza. Detalles: Cama redonda, Sillón Tántrico de Cuarzo, Cámara Seca, Ducha española, Jacuzzi con Hidromasaje, Pole Dance, Baño privado y Frigo bar (con cargo extra). Habitación equipada con: Cama redonda Sillón Tántrico de Cuarzo Cámara Seca Ducha Española Jacuzzi con Hidromasaje Pole Dance Baño privado Frigo bar (Tarifa válida por 7 HORAS)RESERVAR",
-    "resumen": "¡Ten los sueños más placenteros! Nuestra habitación de lujo está equipada con todos los detalles que permitan"
+    "resumen": "¡Ten los sueños más placenteros! Nuestra habitación de lujo está equipada con todos los detalles que permitan",
+    "galeria": [
+      "/images/suites/suite-presidencial-con-camara-seca.jpg",
+      "/images/suites/suite-presidencial-con-camara-seca-2.jpg",
+      "/images/suites/suite-presidencial-con-camara-seca-3.jpg",
+      "/images/suites/suite-presidencial-con-camara-seca-4.jpg",
+      "/images/suites/suite-presidencial-con-camara-seca-5.jpg"
+    ]
   },
   {
     "id": 227,
@@ -52,7 +80,14 @@
     "precio": "S/ 208",
     "imagen_url": "/images/suites/dark-fantasies.jpg",
     "descripcion": "¡El límite lo pones tú! Una habitación que cumple fantasías; exclusiva para nuestros clientes más exigentes, equipadas con todas las comodidades para que las parejas jueguen con su imaginación y se desviven en pasión. Detalles: Cama King, Cruz de sumisión ó Pared de sumisión, Ducha española, Jacuzzi, Pole dance, Sillón Tántrico y Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama (King size) Ducha española Jacuzzi Pole Dance Sillón Tántrico Frigo bar (Tarifa válida por 7 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
-    "resumen": "¡El límite lo pones tú! Una habitación que cumple fantasías; exclusiva para nuestros clientes más exigentes, equipadas"
+    "resumen": "¡El límite lo pones tú! Una habitación que cumple fantasías; exclusiva para nuestros clientes más exigentes, equipadas",
+    "galeria": [
+      "/images/suites/dark-fantasies.jpg",
+      "/images/suites/dark-fantasies-2.jpg",
+      "/images/suites/dark-fantasies-3.jpg",
+      "/images/suites/dark-fantasies-4.jpg",
+      "/images/suites/dark-fantasies-5.jpg"
+    ]
   },
   {
     "id": 43,
@@ -63,7 +98,14 @@
     "precio": "S/ 150",
     "imagen_url": "/images/suites/habitacion-especial.jpg",
     "descripcion": "¡Un espacio único! Nuestras habitaciones especiales fueron hechas con un toque extra de placer y discreción para que los eternos enamorados vivan momentos inolvidables. Detalles: Cama redonda, Jacuzzi con hidromasaje, Sillón Tántrico, Pole dance, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Estacionamiento directo a la Habitación Cama redonda Sillón tántrico Ducha española Jacuzzi Frigobar Secadora de cabello Tv con servicio de cable y DVD (Tarifa válida por 6 HORAS)RESERVAR",
-    "resumen": "¡Un espacio único! Nuestras habitaciones especiales fueron hechas con un toque extra de placer y discreción para"
+    "resumen": "¡Un espacio único! Nuestras habitaciones especiales fueron hechas con un toque extra de placer y discreción para",
+    "galeria": [
+      "/images/suites/habitacion-especial.jpg",
+      "/images/suites/habitacion-especial-2.jpg",
+      "/images/suites/habitacion-especial-3.jpg",
+      "/images/suites/habitacion-especial-4.jpg",
+      "/images/suites/habitacion-especial-5.jpg"
+    ]
   },
   {
     "id": 35,
@@ -74,7 +116,14 @@
     "precio": "S/ 55",
     "imagen_url": "/images/suites/habitacion-delux.jpg",
     "descripcion": "¡Ven, charlemos un ratito! Habitación confortable para que nuestros clientes vivan un instante de pasión. Detalles: Cama de Dos Plazas, Baño con Agua Fría y Caliente, Equipadas con Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama 2 plazas Baño con agua fría y caliente Frigo bar (Tarifa válida por 6 HORAS)RESERVAR",
-    "resumen": "¡Ven, charlemos un ratito! Habitación confortable para que nuestros clientes vivan un instante de pasión."
+    "resumen": "¡Ven, charlemos un ratito! Habitación confortable para que nuestros clientes vivan un instante de pasión.",
+    "galeria": [
+      "/images/suites/habitacion-delux.jpg",
+      "/images/suites/habitacion-delux-2.jpg",
+      "/images/suites/habitacion-delux-3.jpg",
+      "/images/suites/habitacion-delux-4.jpg",
+      "/images/suites/habitacion-delux-5.jpg"
+    ]
   },
   {
     "id": 33,
@@ -85,7 +134,14 @@
     "precio": "S/ 73",
     "imagen_url": "/images/suites/hawaian-dreams.jpg",
     "descripcion": "¡Aloha! Habitación diseñada con detalles tropicales que recrearán un ambiente como en el mismo Hawai. Detalles: Cama 2 Plazas confort 100%, Aire acondicionado, Baño agua, fría – caliente, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama 2 plazas confort 100% Aire acondicionado Baño agua fría &#8211; caliente Frigobar (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
-    "resumen": "¡Aloha! Habitación diseñada con detalles tropicales que recrearán un ambiente como en el mismo Hawai."
+    "resumen": "¡Aloha! Habitación diseñada con detalles tropicales que recrearán un ambiente como en el mismo Hawai.",
+    "galeria": [
+      "/images/suites/hawaian-dreams.jpg",
+      "/images/suites/hawaian-dreams-2.jpg",
+      "/images/suites/hawaian-dreams-3.jpg",
+      "/images/suites/hawaian-dreams-4.jpg",
+      "/images/suites/hawaian-dreams-5.jpg"
+    ]
   },
   {
     "id": 31,
@@ -96,7 +152,14 @@
     "precio": "S/ 89",
     "imagen_url": "/images/suites/simple-con-jacuzzi.jpg",
     "descripcion": "¡Te veo en el Jacuzzi! Habitación confortable para que nuestros clientes pasen momentos pasionales en el Jacuzzi. Detalles: Parking directo a la habitación, Cama 2 Plazas / confort 100%, Ducha Española, Baño agua fría – caliente, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Parking directo a la habitación Cama 2 plazas confort 100% Ducha española Baño agua fría &#8211; caliente Frigobar Televisión con Cable y DVD (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
-    "resumen": "¡Te veo en el Jacuzzi! Habitación confortable para que nuestros clientes pasen momentos pasionales en el Jacuzzi."
+    "resumen": "¡Te veo en el Jacuzzi! Habitación confortable para que nuestros clientes pasen momentos pasionales en el Jacuzzi.",
+    "galeria": [
+      "/images/suites/simple-con-jacuzzi.jpg",
+      "/images/suites/simple-con-jacuzzi-2.jpg",
+      "/images/suites/simple-con-jacuzzi-3.jpg",
+      "/images/suites/simple-con-jacuzzi-4.jpg",
+      "/images/suites/simple-con-jacuzzi-5.jpg"
+    ]
   },
   {
     "id": 29,
@@ -107,7 +170,14 @@
     "precio": "S/ 73",
     "imagen_url": "/images/suites/simple-vista-al-mar.jpg",
     "descripcion": "¡Veamos juntos el mar! Habitación confortable para que nuestros clientes tengan un momento de pasión con el mar como único testigo. Detalles: Vista al mar, Cama 2 Plazas / confort 100%, Baño agua fría – caliente, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Vista al mar (de acuerdo a disponibilidad) Cama 2 plazas confort 100% Frigo bar Baño agua fría &#8211; caliente Televisión con Cable y DVD (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18% + 5% recargo al consumo. RESERVAR",
-    "resumen": "¡Veamos juntos el mar! Habitación confortable para que nuestros clientes tengan un momento de pasión con el"
+    "resumen": "¡Veamos juntos el mar! Habitación confortable para que nuestros clientes tengan un momento de pasión con el",
+    "galeria": [
+      "/images/suites/simple-vista-al-mar.jpg",
+      "/images/suites/simple-vista-al-mar-2.jpg",
+      "/images/suites/simple-vista-al-mar-3.jpg",
+      "/images/suites/simple-vista-al-mar-4.jpg",
+      "/images/suites/simple-vista-al-mar-5.jpg"
+    ]
   },
   {
     "id": 27,
@@ -116,9 +186,16 @@
     "categoria_id": 4,
     "categoria_nombre": "Habitaciones",
     "precio": "S/ 104",
-    "imagen_url": "/images/suites/jacuzzi-deluxe.jpg",
+    "imagen_url": "/images/suites/habitacion-con-jacuzzi-deluxe.jpg",
     "descripcion": "¡Velada en el Jacuzzi! Nuestra habitación ejecutiva cuenta con todas las comodidades para que nuestros clientes hagan a un lado la rutina y vivan momentos de satisfacción en nuestro relajante Jacuzzi. Detalles: Cama Queen confort 100%, Pole dance, Jacuzzi, Aire acondicionado, Baño agua fría – caliente, Frigobar (con cargo extra).Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama (Queen size) Jacuzzi Baño agua fría &#8211; caliente Frigo bar Televisión con Cable y DVD (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
-    "resumen": "¡Velada en el Jacuzzi! Nuestra habitación ejecutiva cuenta con todas las comodidades para que nuestros clientes hagan a"
+    "resumen": "¡Velada en el Jacuzzi! Nuestra habitación ejecutiva cuenta con todas las comodidades para que nuestros clientes hagan a",
+    "galeria": [
+      "/images/suites/habitacion-con-jacuzzi-deluxe.jpg",
+      "/images/suites/habitacion-con-jacuzzi-deluxe-2.jpg",
+      "/images/suites/habitacion-con-jacuzzi-deluxe-3.jpg",
+      "/images/suites/habitacion-con-jacuzzi-deluxe-4.jpg",
+      "/images/suites/habitacion-con-jacuzzi-deluxe-5.jpg"
+    ]
   },
   {
     "id": 24,
@@ -129,7 +206,14 @@
     "precio": "S/ 200",
     "imagen_url": "/images/suites/camara-seca-y-jacuzzi.jpg",
     "descripcion": "¡No hagamos el amor, él nos hará! Una habitación donde se respira amor; exclusiva para las parejas más exigentes, equipada con todas las comodidades que nuestros clientes necesitan para pasar momentos inolvidables. Detalles: Cama redonda confort 100%, Cámara seca, Pole dance, Jacuzzi, Ducha española, Baño agua fría – caliente, Frigobar (con cargo extra).Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cámara redonda confort 100% Cámara seca Jacuzzi Pole Dance Ducha española Baño agua fría &#8211; caliente Frigo bar Televisión con Cable y DVD (Tarifa válida por 7 HORAS)RESERVAR",
-    "resumen": "¡No hagamos el amor, él nos hará! Una habitación donde se respira amor; exclusiva para las parejas más"
+    "resumen": "¡No hagamos el amor, él nos hará! Una habitación donde se respira amor; exclusiva para las parejas más",
+    "galeria": [
+      "/images/suites/camara-seca-y-jacuzzi.jpg",
+      "/images/suites/camara-seca-y-jacuzzi-2.jpg",
+      "/images/suites/camara-seca-y-jacuzzi-3.jpg",
+      "/images/suites/camara-seca-y-jacuzzi-4.jpg",
+      "/images/suites/camara-seca-y-jacuzzi-5.jpg"
+    ]
   },
   {
     "id": 22,
@@ -140,7 +224,14 @@
     "precio": "S/ 125",
     "imagen_url": "/images/suites/riverside-dreams.jpg",
     "descripcion": "¡Dónde fluye la pasión! Nuestra habitación de lujo está diseñada de manera que nuestros clientes vivan momentos inolvidables que les permitan fluir en sintonía con el amor. Detalles: Cama Queen confort 100%, Pole dance, Jacuzzi, Aire acondicionado, Baño agua fría – caliente, Frigobar (con cargo extra).Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama (Queen size) Jacuzzi Pole Dance Aire acondicionado Baño agua fría &#8211; caliente Frigo bar Televisión con Cable y DVD (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18% + 5% recargo al consumo. RESERVAR",
-    "resumen": "¡Dónde fluye la pasión! Nuestra habitación de lujo está diseñada de manera que nuestros clientes vivan momentos inolvidables"
+    "resumen": "¡Dónde fluye la pasión! Nuestra habitación de lujo está diseñada de manera que nuestros clientes vivan momentos inolvidables",
+    "galeria": [
+      "/images/suites/riverside-dreams.jpg",
+      "/images/suites/riverside-dreams-2.jpg",
+      "/images/suites/riverside-dreams-3.jpg",
+      "/images/suites/riverside-dreams-4.jpg",
+      "/images/suites/riverside-dreams-5.jpg"
+    ]
   },
   {
     "id": 20,
@@ -151,7 +242,14 @@
     "precio": "S/ 100",
     "imagen_url": "/images/suites/venetian-flowers.jpg",
     "descripcion": "¡Tengamos una velada! Nuestra habitación ejecutiva cuenta con todas las comodidades para que nuestros clientes hagan a un lado la rutina y vivan experiencias satisfactorias. Detalles: Cama Queen confort 100%, Pole dance, Jacuzzi, Aire acondicionado, Baño agua fría – caliente, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Cama (Queen size) Jacuzzi Aire acondicionado Baño agua fría &#8211; caliente Frigo bar Televisión con Cable y DVD (Tarifa válida por 6 HORAS)RESERVAR",
-    "resumen": "¡Tengamos una velada! Nuestra habitación ejecutiva cuenta con todas las comodidades para que nuestros clientes hagan a"
+    "resumen": "¡Tengamos una velada! Nuestra habitación ejecutiva cuenta con todas las comodidades para que nuestros clientes hagan a",
+    "galeria": [
+      "/images/suites/venetian-flowers.jpg",
+      "/images/suites/venetian-flowers-2.jpg",
+      "/images/suites/venetian-flowers-3.jpg",
+      "/images/suites/venetian-flowers-4.jpg",
+      "/images/suites/venetian-flowers-5.jpg"
+    ]
   },
   {
     "id": 16,
@@ -162,7 +260,14 @@
     "precio": "S/ 125",
     "imagen_url": "/images/suites/pacific-dreams.jpg",
     "descripcion": "¡Una elegancia que somete! Habitación de lujo diseñada para clientes exclusivos que desean vivir del máximo placer. Detalles: Vista al mar (de acuerdo a disponibilidad con un agregado extra de 20 soles), Cama (King size / queen size), Sillón tántrico, Cabina hidromasaje, Ducha española, Jacuzzi, Pole Dance, Secadora de cabello, Frigobar (con cargo extra). Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Vista al mar (de acuerdo a disponibilidad) Cama (Queen size) Ducha española Jacuzzi Pole Dance Frigobar Televisión con Cable y DVD Radio (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo. RESERVAR",
-    "resumen": "¡Una elegancia que somete! Habitación de lujo diseñada para clientes exclusivos que desean vivir del máximo placer."
+    "resumen": "¡Una elegancia que somete! Habitación de lujo diseñada para clientes exclusivos que desean vivir del máximo placer.",
+    "galeria": [
+      "/images/suites/pacific-dreams.jpg",
+      "/images/suites/pacific-dreams-2.jpg",
+      "/images/suites/pacific-dreams-3.jpg",
+      "/images/suites/pacific-dreams-4.jpg",
+      "/images/suites/pacific-dreams-5.jpg"
+    ]
   },
   {
     "id": 14,
@@ -173,6 +278,13 @@
     "precio": "S/ 177",
     "imagen_url": "/images/suites/pacific-dreams-presidencial.jpg",
     "descripcion": "¡Una elegancia que somete! Habitación de lujo diseñada para clientes exclusivos que desean vivir del máximo placer. Detalles: Vista al mar (de acuerdo a disponibilidad con un agregado extra de 20 soles), Cama (King size / queen size), Sillón tántrico, Cabina hidromasaje, Ducha española, Jacuzzi, Pole Dance, Secadora de cabello, Frigobar (con cargo extra).Habitación de lujo hecha para clientes exclusivos que deseen pasar un momento inolvidable junto a su pareja. Habitación equipada con: Vista al mar (de acuerdo a disponibilidad) Cama (King size / Queen size) Sillón tántrico Ducha española Jacuzzi Pole Dance Secadora de cabello Frigobar Televisión con Cable y DVD Radio (Tarifa válida por 6 HORAS) En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
-    "resumen": "¡Una elegancia que somete! Habitación de lujo diseñada para clientes exclusivos que desean vivir del máximo placer. Detalles:"
+    "resumen": "¡Una elegancia que somete! Habitación de lujo diseñada para clientes exclusivos que desean vivir del máximo placer. Detalles:",
+    "galeria": [
+      "/images/suites/pacific-dreams-presidencial.jpg",
+      "/images/suites/pacific-dreams-presidencial-2.jpg",
+      "/images/suites/pacific-dreams-presidencial-3.jpg",
+      "/images/suites/pacific-dreams-presidencial-4.jpg",
+      "/images/suites/pacific-dreams-presidencial-5.jpg"
+    ]
   }
 ]

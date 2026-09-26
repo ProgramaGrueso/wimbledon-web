@@ -17,7 +17,15 @@
       "Radio"
     ],
     "duracion": "(Tarifa válida por 6 HORAS)",
-    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
+    "imagen_url": "/images/suites/pacific-dreams-presidencial.jpg",
+    "galeria": [
+      "/images/suites/pacific-dreams-presidencial.jpg",
+      "/images/suites/pacific-dreams-presidencial-2.jpg",
+      "/images/suites/pacific-dreams-presidencial-3.jpg",
+      "/images/suites/pacific-dreams-presidencial-4.jpg",
+      "/images/suites/pacific-dreams-presidencial-5.jpg"
+    ]
   },
   "16": {
     "id": 16,
@@ -35,7 +43,15 @@
       "Radio"
     ],
     "duracion": "(Tarifa válida por 6 HORAS)",
-    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
+    "imagen_url": "/images/suites/pacific-dreams.jpg",
+    "galeria": [
+      "/images/suites/pacific-dreams.jpg",
+      "/images/suites/pacific-dreams-2.jpg",
+      "/images/suites/pacific-dreams-3.jpg",
+      "/images/suites/pacific-dreams-4.jpg",
+      "/images/suites/pacific-dreams-5.jpg"
+    ]
   },
   "20": {
     "id": 20,
@@ -51,7 +67,15 @@
       "Televisión con Cable y DVD"
     ],
     "duracion": "(Tarifa válida por 6 HORAS)",
-    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
+    "imagen_url": "/images/suites/venetian-flowers.jpg",
+    "galeria": [
+      "/images/suites/venetian-flowers.jpg",
+      "/images/suites/venetian-flowers-2.jpg",
+      "/images/suites/venetian-flowers-3.jpg",
+      "/images/suites/venetian-flowers-4.jpg",
+      "/images/suites/venetian-flowers-5.jpg"
+    ]
   },
   "22": {
     "id": 22,
@@ -68,7 +92,15 @@
       "Televisión con Cable y DVD"
     ],
     "duracion": "(Tarifa válida por 6 HORAS)",
-    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
+    "imagen_url": "/images/suites/riverside-dreams.jpg",
+    "galeria": [
+      "/images/suites/riverside-dreams.jpg",
+      "/images/suites/riverside-dreams-2.jpg",
+      "/images/suites/riverside-dreams-3.jpg",
+      "/images/suites/riverside-dreams-4.jpg",
+      "/images/suites/riverside-dreams-5.jpg"
+    ]
   },
   "24": {
     "id": 24,
@@ -86,7 +118,15 @@
       "Televisión con Cable y DVD"
     ],
     "duracion": "(Tarifa válida por 7 HORAS)",
-    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
+    "imagen_url": "/images/suites/camara-seca-y-jacuzzi.jpg",
+    "galeria": [
+      "/images/suites/camara-seca-y-jacuzzi.jpg",
+      "/images/suites/camara-seca-y-jacuzzi-2.jpg",
+      "/images/suites/camara-seca-y-jacuzzi-3.jpg",
+      "/images/suites/camara-seca-y-jacuzzi-4.jpg",
+      "/images/suites/camara-seca-y-jacuzzi-5.jpg"
+    ]
   },
   "27": {
     "id": 27,
@@ -101,7 +141,15 @@
       "Televisión con Cable y DVD"
     ],
     "duracion": "(Tarifa válida por 6 HORAS)",
-    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
+    "imagen_url": "/images/suites/habitacion-con-jacuzzi-deluxe.jpg",
+    "galeria": [
+      "/images/suites/habitacion-con-jacuzzi-deluxe.jpg",
+      "/images/suites/habitacion-con-jacuzzi-deluxe-2.jpg",
+      "/images/suites/habitacion-con-jacuzzi-deluxe-3.jpg",
+      "/images/suites/habitacion-con-jacuzzi-deluxe-4.jpg",
+      "/images/suites/habitacion-con-jacuzzi-deluxe-5.jpg"
+    ]
   },
   "29": {
     "id": 29,
@@ -116,7 +164,15 @@
       "Televisión con Cable y DVD"
     ],
     "duracion": "(Tarifa válida por 6 HORAS)",
-    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
+    "imagen_url": "/images/suites/simple-vista-al-mar.jpg",
+    "galeria": [
+      "/images/suites/simple-vista-al-mar.jpg",
+      "/images/suites/simple-vista-al-mar-2.jpg",
+      "/images/suites/simple-vista-al-mar-3.jpg",
+      "/images/suites/simple-vista-al-mar-4.jpg",
+      "/images/suites/simple-vista-al-mar-5.jpg"
+    ]
   },
   "31": {
     "id": 31,
@@ -132,7 +188,15 @@
       "Televisión con Cable y DVD"
     ],
     "duracion": "(Tarifa válida por 6 HORAS)",
-    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
+    "imagen_url": "/images/suites/simple-con-jacuzzi.jpg",
+    "galeria": [
+      "/images/suites/simple-con-jacuzzi.jpg",
+      "/images/suites/simple-con-jacuzzi-2.jpg",
+      "/images/suites/simple-con-jacuzzi-3.jpg",
+      "/images/suites/simple-con-jacuzzi-4.jpg",
+      "/images/suites/simple-con-jacuzzi-5.jpg"
+    ]
   },
   "33": {
     "id": 33,
@@ -146,7 +210,15 @@
       "Frigobar"
     ],
     "duracion": "(Tarifa válida por 6 HORAS)",
-    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
+    "imagen_url": "/images/suites/hawaian-dreams.jpg",
+    "galeria": [
+      "/images/suites/hawaian-dreams.jpg",
+      "/images/suites/hawaian-dreams-2.jpg",
+      "/images/suites/hawaian-dreams-3.jpg",
+      "/images/suites/hawaian-dreams-4.jpg",
+      "/images/suites/hawaian-dreams-5.jpg"
+    ]
   },
   "35": {
     "id": 35,
@@ -159,7 +231,15 @@
       "Frigo bar"
     ],
     "duracion": "(Tarifa válida por 6 HORAS)",
-    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
+    "imagen_url": "/images/suites/habitacion-delux.jpg",
+    "galeria": [
+      "/images/suites/habitacion-delux.jpg",
+      "/images/suites/habitacion-delux-2.jpg",
+      "/images/suites/habitacion-delux-3.jpg",
+      "/images/suites/habitacion-delux-4.jpg",
+      "/images/suites/habitacion-delux-5.jpg"
+    ]
   },
   "43": {
     "id": 43,
@@ -177,7 +257,15 @@
       "Tv con servicio de cable y DVD"
     ],
     "duracion": "(Tarifa válida por 6 HORAS)",
-    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
+    "imagen_url": "/images/suites/habitacion-especial.jpg",
+    "galeria": [
+      "/images/suites/habitacion-especial.jpg",
+      "/images/suites/habitacion-especial-2.jpg",
+      "/images/suites/habitacion-especial-3.jpg",
+      "/images/suites/habitacion-especial-4.jpg",
+      "/images/suites/habitacion-especial-5.jpg"
+    ]
   },
   "227": {
     "id": 227,
@@ -193,7 +281,15 @@
       "Frigo bar"
     ],
     "duracion": "(Tarifa válida por 7 HORAS)",
-    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
+    "imagen_url": "/images/suites/dark-fantasies.jpg",
+    "galeria": [
+      "/images/suites/dark-fantasies.jpg",
+      "/images/suites/dark-fantasies-2.jpg",
+      "/images/suites/dark-fantasies-3.jpg",
+      "/images/suites/dark-fantasies-4.jpg",
+      "/images/suites/dark-fantasies-5.jpg"
+    ]
   },
   "523": {
     "id": 523,
@@ -211,7 +307,15 @@
       "Frigo bar"
     ],
     "duracion": "(Tarifa válida por 7 HORAS)",
-    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
+    "imagen_url": "/images/suites/suite-presidencial-con-camara-seca.jpg",
+    "galeria": [
+      "/images/suites/suite-presidencial-con-camara-seca.jpg",
+      "/images/suites/suite-presidencial-con-camara-seca-2.jpg",
+      "/images/suites/suite-presidencial-con-camara-seca-3.jpg",
+      "/images/suites/suite-presidencial-con-camara-seca-4.jpg",
+      "/images/suites/suite-presidencial-con-camara-seca-5.jpg"
+    ]
   },
   "526": {
     "id": 526,
@@ -227,7 +331,15 @@
       "Frigo bar"
     ],
     "duracion": "(Tarifa válida por 6 HORAS)",
-    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
+    "imagen_url": "/images/suites/riverside-dreams-presidencial.jpg",
+    "galeria": [
+      "/images/suites/riverside-dreams-presidencial.jpg",
+      "/images/suites/riverside-dreams-presidencial-2.jpg",
+      "/images/suites/riverside-dreams-presidencial-3.jpg",
+      "/images/suites/riverside-dreams-presidencial-4.jpg",
+      "/images/suites/riverside-dreams-presidencial-5.jpg"
+    ]
   },
   "528": {
     "id": 528,
@@ -242,7 +354,15 @@
       "Frigo bar"
     ],
     "duracion": "(Tarifa válida por 6 HORAS)",
-    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
+    "imagen_url": "/images/suites/tropical-dreams.jpg",
+    "galeria": [
+      "/images/suites/tropical-dreams.jpg",
+      "/images/suites/tropical-dreams-2.jpg",
+      "/images/suites/tropical-dreams-3.jpg",
+      "/images/suites/tropical-dreams-4.jpg",
+      "/images/suites/tropical-dreams-5.jpg"
+    ]
   },
   "860": {
     "id": 860,
@@ -260,6 +380,14 @@
       "Frigobar ."
     ],
     "duracion": "(Tarifa válida por 6 HORAS)",
-    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo."
+    "impuestos": "En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.",
+    "imagen_url": "/images/suites/suite-presidencial.jpg",
+    "galeria": [
+      "/images/suites/suite-presidencial.jpg",
+      "/images/suites/suite-presidencial-2.jpg",
+      "/images/suites/suite-presidencial-3.jpg",
+      "/images/suites/suite-presidencial-4.jpg",
+      "/images/suites/suite-presidencial-5.jpg"
+    ]
   }
 }
