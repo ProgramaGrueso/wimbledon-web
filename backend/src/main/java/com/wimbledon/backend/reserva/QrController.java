@@ -50,10 +50,13 @@ public class QrController {
                         "Código QR no reconocido. Verifica el código e inténtalo nuevamente."));
 
         if (reserva.getQrUsado()) {
+            // Alineado con el contrato unificado de credencial no utilizable.
+            // Esta rama local se elimina en U4, cuando QrController delegue
+            // en CheckinService y deje de construir su propia respuesta.
             return ResponseEntity.status(409)
                     .body(new ErrorResponse(
-                            "Este código ya fue utilizado para un check-in previo.",
-                            ErrorResponse.QR_YA_UTILIZADO));
+                            "El pase presentado no se puede utilizar. Verifica el codigo e intentalo de nuevo en recepcion.",
+                            ErrorResponse.QR_NO_UTILIZABLE));
         }
 
         if (reserva.getEstado() == EstadoReserva.CANCELADA) {
