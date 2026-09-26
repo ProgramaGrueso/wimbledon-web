@@ -64,6 +64,15 @@ public class RecepcionService {
                 .toList();
     }
 
+    /**
+     * Lista todas las habitaciones con estado operativo para el Rack de Recepción.
+     */
+    public List<HabitacionRackDTO> obtenerRackOperativo() {
+        return habitacionRepository.findAll().stream()
+                .map(HabitacionRackDTO::from)
+                .toList();
+    }
+
     // ── Check-in con QR ───────────────────────────────────────────────────────
 
     /**

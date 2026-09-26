@@ -77,12 +77,27 @@ public class AdminService {
 
     @Transactional(readOnly = true)
     public KpisResponse obtenerKpis(Integer anio, Integer mes) {
+        return obtenerKpis(anio, mes, null);
+    }
+
+    @Transactional(readOnly = true)
+    public KpisResponse obtenerKpis(Integer anio, Integer mes, String periodo) {
         LocalDate hoy = LocalDate.now();
         int anioFinal = (anio != null && anio > 2000) ? anio : hoy.getYear();
         int mesFinal = (mes != null && mes >= 1 && mes <= 12) ? mes : hoy.getMonthValue();
 
-        LocalDate desde = LocalDate.of(anioFinal, mesFinal, 1);
-        LocalDate hasta = desde.withDayOfMonth(desde.lengthOfMonth());
+        LocalDate desde;
+        LocalDate hasta;
+        if ("dia".equalsIgnoreCase(periodo)) {
+            desde = hoy;
+            hasta = hoy;
+        } else if ("ano".equalsIgnoreCase(periodo) || "año".equalsIgnoreCase(periodo)) {
+            desde = LocalDate.of(anioFinal, 1, 1);
+            hasta = LocalDate.of(anioFinal, 12, 31);
+        } else {
+            desde = LocalDate.of(anioFinal, mesFinal, 1);
+            hasta = desde.withDayOfMonth(desde.lengthOfMonth());
+        }
 
         // 1. Ocupación por franjas
         long madrugada = reservaRepository.countPorFranja(desde, hasta, LocalTime.of(0, 0), LocalTime.of(6, 0));
@@ -90,7 +105,7 @@ public class AdminService {
         long noche = reservaRepository.countPorFranja(desde, hasta, LocalTime.of(18, 0), LocalTime.MAX);
         KpisResponse.OcupacionFranjas ocupacionFranjas = new KpisResponse.OcupacionFranjas(madrugada, dia, noche);
 
-        // 2. Reservas del mes (excluyendo CANCELADA)
+        // 2. Reservas del periodo (excluyendo CANCELADA)
         List<Reserva> reservas = reservaRepository.findByFechaBetween(desde, hasta).stream()
                 .filter(r -> r.getEstado() != EstadoReserva.CANCELADA)
                 .toList();
@@ -119,6 +134,8 @@ public class AdminService {
         double tasaRetencionPct = clientesConReserva == 0 ? 0.0 :
                 Math.round(((double) clientesRepetidos / clientesConReserva * 100.0) * 10.0) / 10.0;
 
+        List<OcupacionReporteItem> ocupacionPorDia = obtenerReporteOcupacion(desde, hasta);
+
         return new KpisResponse(
                 mesFinal,
                 anioFinal,
@@ -126,7 +143,8 @@ public class AdminService {
                 ocupacionFranjas,
                 ticketPromedio,
                 tasaRetencionPct,
-                origenStats
+                origenStats,
+                ocupacionPorDia
         );
     }
 

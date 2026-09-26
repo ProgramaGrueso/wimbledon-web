@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDate;
@@ -39,6 +40,7 @@ public class ReservaService {
     private final HabitacionRepository habitacionRepository;
     private final ReservaRepository reservaRepository;
     private final ReservaConfirmacionService confirmacionService;
+    private final TarifaService tarifaService;
 
     /**
      * Horas mínimas previas al ingreso para poder cancelar o reprogramar.
@@ -197,8 +199,11 @@ public class ReservaService {
             throw new IllegalStateException("La habitación seleccionada se encuentra en mantenimiento y no puede ser reservada.");
         }
 
-        LocalTime horaSalida = request.horaIngreso()
-                .plusHours(habitacion.getDuracionBloqueHoras());
+        int horasEstadia = (request.modalidad() != null)
+                ? request.modalidad().horas
+                : habitacion.getDuracionBloqueHoras();
+
+        LocalTime horaSalida = request.horaIngreso().plusHours(horasEstadia);
 
         long solapadas = reservaRepository.contarReservasSolapadas(
                 habitacion.getId(),
@@ -229,6 +234,8 @@ public class ReservaService {
             expiraEn = expiraVentana.isBefore(expiraMargen) ? expiraVentana : expiraMargen;
         }
 
+        BigDecimal tarifaCalculada = tarifaService.calcularTarifa(habitacion, request.modalidad());
+
         Reserva nuevaReserva = Reserva.builder()
                 .habitacion(habitacion)
                 .cliente(cliente)
@@ -244,7 +251,7 @@ public class ReservaService {
                 .qrToken(qrToken)
                 .qrUsado(false)
                 .expiraEn(expiraEn)
-                .montoTotal(habitacion.getTarifaBase())
+                .montoTotal(tarifaCalculada)
                 .adelanto(java.math.BigDecimal.ZERO)
                 .build();
 

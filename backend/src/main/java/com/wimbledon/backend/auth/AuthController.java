@@ -57,6 +57,18 @@ public class AuthController {
     }
 
     /**
+     * Registro público de personal del hotel (Staff).
+     * La cuenta queda en estado PENDIENTE_APROBACION hasta que un administrador la apruebe.
+     */
+    @PostMapping("/registro")
+    public ResponseEntity<Void> registrarPersonal(
+            @Valid @RequestBody RegistroPersonalRequest request
+    ) {
+        authService.registrarPersonal(request);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    /**
      * Devuelve el usuario autenticado y su rol.
      * El frontend usa este endpoint para:
      *  - Verificar que el token guardado en localStorage sigue siendo válido

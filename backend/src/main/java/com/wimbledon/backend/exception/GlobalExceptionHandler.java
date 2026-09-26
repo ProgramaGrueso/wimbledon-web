@@ -36,6 +36,38 @@ public class GlobalExceptionHandler {
                         ErrorResponse.CREDENCIALES_INVALIDAS));
     }
 
+    @ExceptionHandler(CredencialesInvalidasException.class)
+    public ResponseEntity<ErrorResponse> handleCredencialesInvalidas(CredencialesInvalidasException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        ErrorResponse.CREDENCIALES_INVALIDAS));
+    }
+
+    @ExceptionHandler(CuentaPendienteAprobacionException.class)
+    public ResponseEntity<ErrorResponse> handleCuentaPendienteAprobacion(CuentaPendienteAprobacionException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        "CUENTA_PENDIENTE_APROBACION"));
+    }
+
+    @ExceptionHandler(CuentaDesactivadaException.class)
+    public ResponseEntity<ErrorResponse> handleCuentaDesactivada(CuentaDesactivadaException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        "CUENTA_DESACTIVADA"));
+    }
+
+    @ExceptionHandler(EmailYaRegistradoException.class)
+    public ResponseEntity<ErrorResponse> handleEmailYaRegistrado(EmailYaRegistradoException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        "EMAIL_YA_REGISTRADO"));
+    }
+
     @ExceptionHandler(DisabledException.class)
     public ResponseEntity<ErrorResponse> handleDisabledAccount(DisabledException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -143,6 +175,12 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining(". "));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(mensaje, ErrorResponse.VALIDACION_FALLIDA));
+    }
+
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(org.springframework.http.converter.HttpMessageNotReadableException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse("Cuerpo de solicitud inválido o valor de campo no permitido.", ErrorResponse.VALIDACION_FALLIDA));
     }
 
     @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)

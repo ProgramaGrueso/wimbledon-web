@@ -58,71 +58,26 @@ public class DataInitializer {
 
                 String hash = encoder.encode(PASSWORD_PRUEBA);
 
+                // Cuentas administradoras iniciales de arranque (aprobadores del sistema)
                 usuarioRepo.save(Usuario.builder()
-                        .nombre("Juan Francisco Ganoza")
-                        .email("superadmin@wimbledon.test")
-                        .passwordHash(hash)
-                        .rol(Rol.SUPER_ADMIN)
-                        .build());
-
-                usuarioRepo.save(Usuario.builder()
-                        .nombre("Sebastian Sotelo")
-                        .email("admin@wimbledon.test")
-                        .passwordHash(hash)
-                        .rol(Rol.ADMINISTRADOR)
-                        .build());
-
-                usuarioRepo.save(Usuario.builder()
-                        .nombre("Fabiana La Madrid")
-                        .email("recepcion@wimbledon.test")
-                        .passwordHash(hash)
-                        .rol(Rol.RECEPCIONISTA)
-                        .build());
-
-                usuarioRepo.save(Usuario.builder()
-                        .nombre("Vania Cerron")
-                        .email("limpieza@wimbledon.test")
-                        .passwordHash(hash)
-                        .rol(Rol.LIMPIEZA)
-                        .build());
-
-                usuarioRepo.save(Usuario.builder()
-                        .nombre("Carlos Prueba")
-                        .email("cliente@wimbledon.test")
-                        .passwordHash(hash)
-                        .rol(Rol.CLIENTE)
-                        .build());
-
-                // Cuentas corporativas con dominio .pe
-                usuarioRepo.save(Usuario.builder()
-                        .nombre("Carlos Mendoza (Recepcionista)")
-                        .email("recepcion@wimbledon.pe")
-                        .passwordHash(hash)
-                        .rol(Rol.RECEPCIONISTA)
-                        .build());
-
-                usuarioRepo.save(Usuario.builder()
-                        .nombre("Lic. Vania Cerrón (Gerencia)")
-                        .email("gerencia@wimbledon.pe")
-                        .passwordHash(hash)
-                        .rol(Rol.ADMINISTRADOR)
-                        .build());
-
-                usuarioRepo.save(Usuario.builder()
-                        .nombre("Rosa Quispe (Housekeeping)")
-                        .email("limpieza@wimbledon.pe")
-                        .passwordHash(hash)
-                        .rol(Rol.LIMPIEZA)
-                        .build());
-
-                usuarioRepo.save(Usuario.builder()
-                        .nombre("Juan Francisco Ganoza (Super Admin)")
+                        .nombre("Super Administrador")
                         .email("superadmin@wimbledon.pe")
                         .passwordHash(hash)
                         .rol(Rol.SUPER_ADMIN)
+                        .estado(com.wimbledon.backend.domain.enums.EstadoCuenta.ACTIVO)
+                        .activo(true)
                         .build());
 
-                log.info("  ✓ Usuarios de prueba y corporativos creados");
+                usuarioRepo.save(Usuario.builder()
+                        .nombre("Administrador General")
+                        .email("admin@wimbledon.pe")
+                        .passwordHash(hash)
+                        .rol(Rol.ADMINISTRADOR)
+                        .estado(com.wimbledon.backend.domain.enums.EstadoCuenta.ACTIVO)
+                        .activo(true)
+                        .build());
+
+                log.info("  ✓ Cuentas administradoras iniciales creadas. El resto del personal se registra via /api/auth/registro.");
             } else {
                 log.info("DataInitializer — Usuarios ya existentes, omitiendo seed.");
             }
@@ -131,26 +86,26 @@ public class DataInitializer {
             try {
                 String insertSql = """
                     INSERT INTO habitaciones (id, nombre, tipo, descripcion, tarifa_base, duracion_bloque_horas, capacidad_unidades, estado, imagen_url) VALUES
-                    (860, 'Suite Presidencial', 'Presidencial', 'Cama redonda, Sillón Tántrico de Cuarzo, Cámara Seca, Ducha española, Jacuzzi con Hidromasaje, Pole Dance, Baño privado y Frigobar.', 156.00, 6, 4, 'DISPONIBLE', 'https://wimbledon-hotel.com/wp-content/uploads/2022/12/suite-presidencial-1.jpg'),
-                    (528, 'Tropical Dreams', 'Temática', 'Habitación de lujo diseñada para los clientes exclusivos que desean vivir un momento inolvidable. Cama Queen confort 100%, Pole Dance, Jacuzzi, Ducha Española.', 125.00, 6, 8, 'DISPONIBLE', 'https://wimbledon-hotel.com/wp-content/uploads/2022/08/Tropical-Dreams.jpg'),
-                    (526, 'Riverside Dreams Presidencial', 'Presidencial', 'Vista a un río artificial, Cama King, Jacuzzi, Pole Dance, Sillón Tántrico, Frigobar.', 156.00, 6, 4, 'DISPONIBLE', 'https://wimbledon-hotel.com/wp-content/uploads/2022/08/Riverside-Dreams-Presidencial.jpg'),
-                    (523, 'Suite Presidencial con Cámara Seca', 'Presidencial', 'Cama redonda, Sillón Tántrico de Cuarzo, Cámara Seca, Ducha española, Jacuzzi con Hidromasaje, Pole Dance.', 200.00, 7, 4, 'DISPONIBLE', 'https://wimbledon-hotel.com/wp-content/uploads/2022/08/Suite-Presidencial-Camara-Seca.jpg'),
-                    (227, 'Dark Fantasies', 'Temática', 'Cama King, Cruz de sumisión, Ducha española, Jacuzzi, Pole dance, Sillón Tántrico.', 208.00, 7, 4, 'DISPONIBLE', 'https://wimbledon-hotel.com/wp-content/uploads/2022/08/dark-fantasies.jpg'),
-                    (43, 'Habitación Especial', 'Especial', 'Cama redonda, Jacuzzi con hidromasaje, Sillón Tántrico, Pole dance, Frigobar.', 150.00, 6, 10, 'DISPONIBLE', 'https://wimbledon-hotel.com/wp-content/uploads/2022/07/habitacion-especial.jpg'),
-                    (35, 'Habitación Delux', 'Delux', 'Cama de Dos Plazas, Baño con Agua Fría y Caliente, Frigobar.', 55.00, 6, 20, 'DISPONIBLE', 'https://wimbledon-hotel.com/wp-content/uploads/2022/07/habitacion-delux.jpg'),
-                    (33, 'Hawaian Dreams', 'Temática', 'Cama 2 Plazas confort 100%, Aire acondicionado, Baño agua fría/caliente, Frigobar.', 73.00, 6, 10, 'DISPONIBLE', 'https://wimbledon-hotel.com/wp-content/uploads/2022/08/hawaiam-dreams.jpg'),
-                    (31, 'Simple con Jacuzzi', 'Simple', 'Cama 2 Plazas, Ducha Española, Jacuzzi, Baño agua fría/caliente, Frigobar.', 89.00, 6, 14, 'DISPONIBLE', 'https://wimbledon-hotel.com/wp-content/uploads/2022/07/simple-con-jacuzzi-1.jpg'),
-                    (29, 'Simple Vista al Mar', 'Simple', 'Vista al mar, Cama 2 Plazas, Baño agua fría/caliente, Frigobar.', 73.00, 6, 12, 'DISPONIBLE', 'https://wimbledon-hotel.com/wp-content/uploads/2022/07/simple-vista-al-mar.jpg'),
-                    (27, 'Jacuzzi Deluxe', 'Delux', 'Cama Queen confort 100%, Pole dance, Jacuzzi, Aire acondicionado, Frigobar.', 104.00, 6, 10, 'DISPONIBLE', 'https://wimbledon-hotel.com/wp-content/uploads/2022/07/Jacuzzi-Deluxe.jpg'),
-                    (24, 'Cámara Seca y Jacuzzi', 'Especial', 'Cama redonda confort 100%, Cámara seca, Pole dance, Jacuzzi, Ducha española.', 200.00, 7, 4, 'DISPONIBLE', 'https://wimbledon-hotel.com/wp-content/uploads/2022/07/camara-seca-.jpg'),
-                    (22, 'Riverside Dreams', 'Temática', 'Cama Queen confort 100%, Pole dance, Jacuzzi, Aire acondicionado, Frigobar.', 125.00, 6, 8, 'DISPONIBLE', 'https://wimbledon-hotel.com/wp-content/uploads/2022/07/riverside-dreams.jpg'),
-                    (20, 'Venetian Flowers', 'Temática', 'Cama Queen confort 100%, Pole dance, Jacuzzi, Aire acondicionado, Frigobar.', 100.00, 6, 8, 'DISPONIBLE', 'https://wimbledon-hotel.com/wp-content/uploads/2022/07/venetian-flowers.jpg'),
-                    (16, 'Pacific Dreams', 'Temática', 'Vista al mar, Cama Queen, Sillón tántrico, Jacuzzi, Pole Dance.', 125.00, 6, 8, 'DISPONIBLE', 'https://wimbledon-hotel.com/wp-content/uploads/2022/07/pacific-dreams.jpg'),
-                    (14, 'Pacific Dreams Presidencial', 'Presidencial', 'Vista al mar, Cama King, Sillón tántrico, Ducha española, Jacuzzi, Pole Dance.', 177.00, 6, 4, 'DISPONIBLE', 'https://wimbledon-hotel.com/wp-content/uploads/2022/07/pacific-dreams-presidencial.jpg'),
-                    (1, 'Suite Presidencial (Estándar)', 'Presidencial', 'Jacuzzi hidromasaje, ducha española, pole dance, cámara seca.', 156.00, 6, 1, 'DISPONIBLE', '/img/suite-presidencial.jpg'),
-                    (2, 'Tropical Dreams (Estándar)', 'Temática', 'Jacuzzi, ducha española, pole dance, frigobar.', 125.00, 6, 1, 'DISPONIBLE', '/img/tropical-dreams.jpg'),
-                    (3, 'Riverside Dreams (Estándar)', 'Presidencial', 'Jacuzzi, pole dance, sillón tántrico, cama king.', 156.00, 6, 1, 'DISPONIBLE', '/img/riverside-dreams.jpg')
-                    ON DUPLICATE KEY UPDATE nombre=VALUES(nombre), capacidad_unidades=VALUES(capacidad_unidades);
+                    (860, 'Suite Presidencial', 'Presidencial', 'Cama redonda, Sillón Tántrico de Cuarzo, Cámara Seca, Ducha española, Jacuzzi con Hidromasaje, Pole Dance, Baño privado y Frigobar.', 156.00, 6, 4, 'DISPONIBLE', '/images/suites/suite-presidencial.jpg'),
+                    (528, 'Tropical Dreams', 'Temática', 'Habitación de lujo diseñada para los clientes exclusivos que desean vivir un momento inolvidable. Cama Queen confort 100%, Pole Dance, Jacuzzi, Ducha Española.', 125.00, 6, 8, 'DISPONIBLE', '/images/suites/tropical-dreams.jpg'),
+                    (526, 'Riverside Dreams Presidencial', 'Presidencial', 'Vista a un río artificial, Cama King, Jacuzzi, Pole Dance, Sillón Tántrico, Frigobar.', 156.00, 6, 4, 'DISPONIBLE', '/images/suites/riverside-dreams-presidencial.jpg'),
+                    (523, 'Suite Presidencial con Cámara Seca', 'Presidencial', 'Cama redonda, Sillón Tántrico de Cuarzo, Cámara Seca, Ducha española, Jacuzzi con Hidromasaje, Pole Dance.', 200.00, 7, 4, 'DISPONIBLE', '/images/suites/suite-presidencial-camara-seca.jpg'),
+                    (227, 'Dark Fantasies', 'Temática', 'Cama King, Cruz de sumisión, Ducha española, Jacuzzi, Pole dance, Sillón Tántrico.', 208.00, 7, 4, 'DISPONIBLE', '/images/suites/dark-fantasies.jpg'),
+                    (43, 'Habitación Especial', 'Especial', 'Cama redonda, Jacuzzi con hidromasaje, Sillón Tántrico, Pole dance, Frigobar.', 150.00, 6, 10, 'DISPONIBLE', '/images/suites/habitacion-especial.jpg'),
+                    (35, 'Habitación Delux', 'Delux', 'Cama de Dos Plazas, Baño con Agua Fría y Caliente, Frigobar.', 55.00, 6, 20, 'DISPONIBLE', '/images/suites/habitacion-delux.jpg'),
+                    (33, 'Hawaian Dreams', 'Temática', 'Cama 2 Plazas confort 100%, Aire acondicionado, Baño agua fría/caliente, Frigobar.', 73.00, 6, 10, 'DISPONIBLE', '/images/suites/hawaian-dreams.jpg'),
+                    (31, 'Simple con Jacuzzi', 'Simple', 'Cama 2 Plazas, Ducha Española, Jacuzzi, Baño agua fría/caliente, Frigobar.', 89.00, 6, 14, 'DISPONIBLE', '/images/suites/simple-con-jacuzzi.jpg'),
+                    (29, 'Simple Vista al Mar', 'Simple', 'Vista al mar, Cama 2 Plazas, Baño agua fría/caliente, Frigobar.', 73.00, 6, 12, 'DISPONIBLE', '/images/suites/simple-vista-al-mar.jpg'),
+                    (27, 'Jacuzzi Deluxe', 'Delux', 'Cama Queen confort 100%, Pole dance, Jacuzzi, Aire acondicionado, Frigobar.', 104.00, 6, 10, 'DISPONIBLE', '/images/suites/jacuzzi-deluxe.jpg'),
+                    (24, 'Cámara Seca y Jacuzzi', 'Especial', 'Cama redonda confort 100%, Cámara seca, Pole dance, Jacuzzi, Ducha española.', 200.00, 7, 4, 'DISPONIBLE', '/images/suites/camara-seca-y-jacuzzi.jpg'),
+                    (22, 'Riverside Dreams', 'Temática', 'Cama Queen confort 100%, Pole dance, Jacuzzi, Aire acondicionado, Frigobar.', 125.00, 6, 8, 'DISPONIBLE', '/images/suites/riverside-dreams.jpg'),
+                    (20, 'Venetian Flowers', 'Temática', 'Cama Queen confort 100%, Pole dance, Jacuzzi, Aire acondicionado, Frigobar.', 100.00, 6, 8, 'DISPONIBLE', '/images/suites/venetian-flowers.jpg'),
+                    (16, 'Pacific Dreams', 'Temática', 'Vista al mar, Cama Queen, Sillón tántrico, Jacuzzi, Pole Dance.', 125.00, 6, 8, 'DISPONIBLE', '/images/suites/pacific-dreams.jpg'),
+                    (14, 'Pacific Dreams Presidencial', 'Presidencial', 'Vista al mar, Cama King, Sillón tántrico, Ducha española, Jacuzzi, Pole Dance.', 177.00, 6, 4, 'DISPONIBLE', '/images/suites/pacific-dreams-presidencial.jpg'),
+                    (1, 'Suite Presidencial (Estándar)', 'Presidencial', 'Jacuzzi hidromasaje, ducha española, pole dance, cámara seca.', 156.00, 6, 1, 'DISPONIBLE', '/images/suites/suite-presidencial.jpg'),
+                    (2, 'Tropical Dreams (Estándar)', 'Temática', 'Jacuzzi, ducha española, pole dance, frigobar.', 125.00, 6, 1, 'DISPONIBLE', '/images/suites/tropical-dreams.jpg'),
+                    (3, 'Riverside Dreams (Estándar)', 'Presidencial', 'Jacuzzi, pole dance, sillón tántrico, cama king.', 156.00, 6, 1, 'DISPONIBLE', '/images/suites/riverside-dreams-presidencial.jpg')
+                    ON DUPLICATE KEY UPDATE nombre=VALUES(nombre), capacidad_unidades=VALUES(capacidad_unidades), imagen_url=VALUES(imagen_url);
                     """;
                 jdbcTemplate.execute(insertSql);
                 log.info("  ✓ Catálogo de suites sincronizado con capacidad de 132 habitaciones físicas.");

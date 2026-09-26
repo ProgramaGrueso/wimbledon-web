@@ -1,6 +1,7 @@
 package com.wimbledon.backend.admin;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * KPIs del dashboard de Administración.
@@ -9,8 +10,7 @@ import java.math.BigDecimal;
  *  - Ticket promedio por reserva
  *  - Tasa de retención de clientes
  *  - Porcentaje de reservas online vs. manuales
- *
- * Período de referencia: mes actual (o el mes/año indicados en el request).
+ *  - Ocupación por día / desglose operativo
  */
 public record KpisResponse(
         /** Mes analizado (1-12) */
@@ -26,8 +26,22 @@ public record KpisResponse(
         /** Clientes que han reservado más de una vez / total clientes únicos */
         double tasaRetencionPct,
         /** Distribución por origen de reserva */
-        OrigenStats reservasPorOrigen
+        OrigenStats reservasPorOrigen,
+        /** Desglose de ocupación por habitación / día */
+        List<OcupacionReporteItem> ocupacionPorDia
 ) {
+    public KpisResponse(
+            int mes,
+            int anio,
+            long totalReservas,
+            OcupacionFranjas ocupacionPorFranja,
+            BigDecimal ticketPromedio,
+            double tasaRetencionPct,
+            OrigenStats reservasPorOrigen
+    ) {
+        this(mes, anio, totalReservas, ocupacionPorFranja, ticketPromedio, tasaRetencionPct, reservasPorOrigen, List.of());
+    }
+
     /**
      * Franjas horarias de ocupación.
      * Madrugada: 00:00 – 05:59

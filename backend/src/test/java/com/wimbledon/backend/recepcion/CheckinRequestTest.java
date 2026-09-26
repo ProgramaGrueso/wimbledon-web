@@ -45,9 +45,9 @@ class CheckinRequestTest {
     }
 
     @Test
-    @DisplayName("Un token de 65 caracteres se rechaza en la frontera del DTO")
+    @DisplayName("Un token de 129 caracteres se rechaza en la frontera del DTO")
     void testRechazaTokenDemasiadoLargo() {
-        CheckinRequest request = new CheckinRequest("a".repeat(65));
+        CheckinRequest request = new CheckinRequest("a".repeat(129));
 
         Set<ConstraintViolation<CheckinRequest>> violaciones = validator.validate(request);
 
@@ -56,12 +56,12 @@ class CheckinRequestTest {
     }
 
     @Test
-    @DisplayName("Un token de 64 caracteres se acepta: es exactamente el limite")
+    @DisplayName("Un token de 128 caracteres se acepta: es exactamente el limite")
     void testAceptaElLimiteExacto() {
-        CheckinRequest request = new CheckinRequest("a".repeat(64));
+        CheckinRequest request = new CheckinRequest("a".repeat(128));
 
         assertTrue(validator.validate(request).isEmpty(),
-                "64 es el limite declarado y debe aceptarse, no rechazarse por exceso de uno");
+                "128 es el limite declarado y debe aceptarse, no rechazarse por exceso de uno");
     }
 
     @Test
@@ -111,5 +111,22 @@ class CheckinRequestTest {
 
         assertTrue(CheckinRequest.class.getRecordComponents().length == 1,
                 "El record conserva un unico componente, token");
+    }
+
+    @Test
+    @DisplayName("tokenNormalizado extrae el UUID cuando llega como URL completa")
+    void testTokenNormalizadoDesdeUrlCompleta() {
+        String url = "https://wimbledon-web.vercel.app/checkin/" + TOKEN_EMITIDO;
+        CheckinRequest req = new CheckinRequest(url);
+        assertEquals(TOKEN_EMITIDO, req.tokenNormalizado(),
+                "Debe extraer el UUID de 36 caracteres de la URL del correo");
+    }
+
+    @Test
+    @DisplayName("tokenNormalizado devuelve el UUID puro cuando llega solo el UUID")
+    void testTokenNormalizadoDesdeUuidPuro() {
+        CheckinRequest req = new CheckinRequest(TOKEN_EMITIDO);
+        assertEquals(TOKEN_EMITIDO, req.tokenNormalizado(),
+                "Debe mantener el UUID cuando llega sin prefijo de URL");
     }
 }

@@ -5,11 +5,11 @@
       "titulo_principal": "Nuestras habitaciones",
       "subtitulo": "Planifica tu estadía con nosotros, contamos con habitaciones de lujo, habitaciones temáticas, estacionamiento directo a algunas habitaciones, nuestra carta de comidas y bebidas que complementan tu visita.",
       "imagenes_portada": [
-        "https://wimbledon-hotel.com/wp-content/uploads/2022/08/collage-habitaciones-792x1024.jpg",
-        "https://wimbledon-hotel.com/wp-content/uploads/2022/08/cropped-logo-hwimbledon.png",
-        "https://wimbledon-hotel.com/wp-content/uploads/2022/08/dark-fantasies-800x600.jpg",
-        "https://wimbledon-hotel.com/wp-content/uploads/2022/08/Suite-Presidencial-Camara-Seca-800x600.jpg",
-        "https://wimbledon-hotel.com/wp-content/uploads/2022/07/camara-seca--800x600.jpg"
+        "/images/hero/hero-presidencial.jpg",
+        "/images/suites/dark-fantasies.jpg",
+        "/images/suites/suite-presidencial-camara-seca.jpg",
+        "/images/suites/camara-seca-y-jacuzzi.jpg",
+        "/images/suites/pacific-dreams.jpg"
       ]
     },
     "titulos_secciones": [
