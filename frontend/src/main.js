@@ -1,6 +1,5 @@
 import { initSmoothScroll, initHeroPinAnimation, initServicesHoverAnimation, initHorizontalSuitesScroll, refreshHorizontalSuitesScroll, initMagneticButton } from './smoothScroll.js';
 import { generateQRCodeSVG } from './qrGenerator.js';
-import { supabase } from './supabaseClient.js';
 import { api } from './services/api.js';
 
 let landingData = null;
