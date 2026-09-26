@@ -1,6 +1,6 @@
 import { initSmoothScroll, initHeroPinAnimation, initServicesHoverAnimation, initHorizontalSuitesScroll, refreshHorizontalSuitesScroll, initMagneticButton } from './smoothScroll.js';
 import { generateQRCodeSVG } from './qrGenerator.js';
-import { supabase } from './supabaseClient.js';
+import { api } from './services/api.js';
 
 let landingData = null;
 let roomsData = [];
@@ -1661,7 +1661,10 @@ function openFullTermsModal() {
 }
 
 function renderKeycardHTML(booking) {
-  const qrSvg = generateQRCodeSVG(`${booking.id}|${booking.pin}`, {
+  // El pase codifica SOLO el qrToken emitido por el backend. Sin prefijo de
+  // version, sin firma y sin carga legible: el valor que recepcion envia a
+  // POST /api/recepcion/checkin tiene que ser exactamente este.
+  const qrSvg = generateQRCodeSVG(booking.qrToken, {
     size: 160,
     accentColor: '#fbbf24',
     darkColor: '#0b0f19'
@@ -1696,20 +1699,25 @@ function renderKeycardHTML(booking) {
             </span>
             <h3 class="keycard-suite-title">${booking.habitacionNombre}</h3>
             <p class="keycard-meta-line">
-              ⏱️ ${booking.duracion} • Llegada: ${booking.horarioLlegada}
+              ⏱️ ${booking.duracion} • Llegada: ${booking.horaIngreso ? booking.horaIngreso.slice(0, 5) : booking.horarioLlegada}
               ${extrasText ? `<br/><span style="color: #fbbf24; font-size: 0.75rem;">✦ Extras: ${extrasText}</span>` : ''}
             </p>
 
             <div class="keycard-pin-box">
-              <span class="keycard-pin-label">PIN DE ACCESO DIGITAL (HABITACIÓN / COCHERA)</span>
-              <span class="keycard-pin-code">${booking.pin}</span>
+              <span class="keycard-pin-label">REFERENCIA DE RESERVA</span>
+              <span class="keycard-pin-code">${booking.id}</span>
             </div>
+            <div class="keycard-pin-box">
+              <span class="keycard-pin-label">SALIDA CONFIRMADA POR EL HOTEL</span>
+              <span class="keycard-pin-code">${booking.horaSalida || '--:--'}</span>
+            </div>
+            ${booking.notaDiferencia ? `<div style="margin: 0.6rem 0; padding: 0.5rem 0.75rem; background: rgba(251, 191, 36, 0.10); border: 1px solid rgba(251, 191, 36, 0.35); border-radius: 8px; font-size: 0.75rem; color: #fde68a; line-height: 1.4;">&#9201; ${booking.notaDiferencia}</div>` : ''}
             <div style="margin: 0.6rem 0; padding: 0.5rem 0.75rem; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; font-size: 0.75rem; color: #a7f3d0; line-height: 1.4;">
               💵 <strong>Abono en Efectivo:</strong> S/ ${booking.monto}.00 a cancelar en recepción al ingresar.<br/>
               🛡️ <strong>Sin huella bancaria:</strong> Máxima privacidad y discreción garantizada.
             </div>
             <span style="font-size: 0.72rem; color: #94a3b8; display: block; line-height: 1.4;">
-              Muestra este Pase Digital o ingresa el PIN en el sensor de puerta al llegar al hotel.
+              Presenta este Pase Digital en recepcion al llegar al hotel para completar tu ingreso.
             </span>
           </div>
 
@@ -1720,7 +1728,7 @@ function renderKeycardHTML(booking) {
         </div>
 
         <div class="keycard-countdown-bar">
-          <span class="countdown-label">Vigencia Temporal de la Estadía:</span>
+          <span class="countdown-label">Modalidad solicitada:</span>
           <span class="countdown-time" id="keycardLiveTimer">${booking.duracion}</span>
         </div>
 
@@ -1728,7 +1736,7 @@ function renderKeycardHTML(booking) {
           <button class="btn-keycard-action btn-keycard-save" onclick="window.print()">
             📄 Guardar Pase
           </button>
-          <a href="https://wa.me/51990370681?text=${encodeURIComponent('Hola Hotel Wimbledon, tengo mi Pase Digital ' + booking.id + ' para ' + booking.habitacionNombre + ' (PIN: ' + booking.pin + '). Pago S/ ' + booking.monto + ' en efectivo en recepción.')}" target="_blank" class="btn-keycard-action btn-keycard-whatsapp">
+          <a href="https://wa.me/51990370681?text=${encodeURIComponent('Hola Hotel Wimbledon, tengo mi Pase Digital ' + booking.id + ' para ' + booking.habitacionNombre + '. Pago S/ ' + booking.monto + ' en efectivo en recepción.')}" target="_blank" class="btn-keycard-action btn-keycard-whatsapp">
             💬 Enviar a WhatsApp
           </a>
         </div>
@@ -1751,116 +1759,195 @@ function setupKeycardTilt() {
   });
 }
 
-async function confirmAndSaveBooking(room, totalAmount) {
-  // Limpiar cualquier error previo
-  let errorBox = document.getElementById('checkoutInlineError');
-  if (errorBox) errorBox.style.display = 'none';
-
-  // Formatear horario de ingreso a formato HH:mm:ss
-  let arrTime = checkoutState.arrivalTime || '20:00';
-  if (arrTime.includes('30 min') || arrTime.includes('Inmediato')) {
+/**
+ * Convierte la hora de ingreso elegida a HH:mm:ss, el formato que espera el backend.
+ */
+function formatearHoraIngreso(seleccionada) {
+  let hora = seleccionada || '20:00';
+  if (hora.includes('30 min') || hora.includes('Inmediato')) {
     const d = new Date(Date.now() + 30 * 60000);
-    arrTime = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:00`;
-  } else if (arrTime.length === 5) {
-    arrTime = arrTime + ':00';
+    hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:00`;
+  } else if (hora.length === 5) {
+    hora = hora + ':00';
+  }
+  return hora;
+}
+
+/**
+ * Horas de la modalidad elegida. Es una PISTA DE DISPONIBILIDAD que se envía a
+ * GET /api/publico/habitaciones, no un dato de la reserva: la hora de salida la
+ * calcula el servidor con la duracionBloqueHoras de la habitacion.
+ */
+function duracionElegidaEnHoras(modalidad) {
+  if (modalidad === '3 Horas') return 3;
+  if (modalidad === 'Toda la Noche') return 12;
+  return 6;
+}
+
+/**
+ * Resuelve el habitacionId contra el catálogo del backend.
+ *
+ * El identificador autoritativo es habitaciones.id en MySQL, que es lo que
+ * espera CrearReservaRequest.habitacionId y lo que devuelve
+ * ReservaResponse.habitacion.id. La tarjeta del portal ya trae un id de ese
+ * espacio, pero se CONFIRMA contra el catálogo vivo en vez de suponerlo,
+ * porque el backend sincroniza ese conjunto en cada arranque.
+ *
+ * Primero por id; si no coincide, por tipo de suite, tomando la primera unidad
+ * disponible de ese tipo, porque el huésped eligió un tipo y no una puerta. Si no
+ * hay coincidencia, la reserva no se puede crear y el checkout se cancela con
+ * mensaje para que el huésped vuelva a elegir.
+ */
+async function resolverHabitacionEnCatalogo(room, fecha, horaIngreso, duracionHoras) {
+  const catalogo = await api.obtenerHabitaciones(fecha, horaIngreso, duracionHoras);
+  if (!Array.isArray(catalogo) || catalogo.length === 0) {
+    return null;
   }
 
-  // Calcular duración en horas y hora de salida estimada
-  let durHours = 6;
-  if (checkoutState.duration === '3 Horas') durHours = 3;
-  else if (checkoutState.duration === 'Toda la Noche') durHours = 12;
+  const disponible = catalogo.filter(h => h.disponible !== false);
 
-  const timeParts = arrTime.split(':').map(Number);
-  const exitHour = (timeParts[0] + durHours) % 24;
-  const exitTime = `${String(exitHour).padStart(2, '0')}:${String(timeParts[1] || 0).padStart(2, '0')}:00`;
+  const porId = catalogo.find(h => String(h.id) === String(room.id));
+  if (porId) {
+    return porId;
+  }
 
-  const todayStr = new Date().toISOString().split('T')[0];
-  const randomId = Math.floor(1000 + Math.random() * 9000);
-  const bookingCode = `#WMB-${randomId}`;
-  const pin = Math.floor(100000 + Math.random() * 900000).toString();
+  const tipoBuscado = String(room.categoria_nombre || room.nombre || '').trim().toLowerCase();
+  if (tipoBuscado) {
+    const porTipo = disponible.find(h => {
+      const tipo = String(h.tipo || '').trim().toLowerCase();
+      const nombre = String(h.nombre || '').trim().toLowerCase();
+      return tipo === tipoBuscado || nombre.includes(tipoBuscado) || tipoBuscado.includes(nombre);
+    });
+    if (porTipo) {
+      return porTipo;
+    }
+  }
 
-  // Mapeo de suite a habitación física real en Supabase (Rack 132 habitaciones)
-  const roomPhysMap = {
-    860: 401, 'suite-presidencial': 401, 1: 401, '1': 401,
-    528: 301, 'tropical-dreams': 301, 2: 301, '2': 301,
-    526: 405, 'riverside-dreams-presidencial': 405, 3: 405, '3': 405,
-    523: 409, 227: 413, 43: 101, 35: 111, 33: 211,
-    31: 121, 29: 309, 27: 221, 24: 417, 22: 321, 20: 231, 16: 329, 14: 421
-  };
-  const habFisicaId = roomPhysMap[room.id] || 101;
+  return null;
+}
+
+/**
+ * Registra la reserva en el backend y, solo si el backend la crea, emite el pase.
+ *
+ * ANTES este checkout acuñaba un código y un PIN con Math.random(), componía un
+ * token que el backend nunca emitió y lo guardaba en localStorage y en Supabase.
+ * Recepción no podía resolver ese pase: siempre terminaba en 404.
+ *
+ * AHORA el pase procede del qrToken que devuelve POST /api/reservas. Si la
+ * llamada no responde, el huésped NO recibe pase: se le comunica que la reserva
+ * no pudo registrarse y se le ofrece reintentar, porque un pase fabricado en el
+ * navegador sería irresoluble otra vez.
+ */
+async function confirmAndSaveBooking(room, totalAmount) {
+  const errorBox = document.getElementById('checkoutInlineError');
+  if (errorBox) errorBox.style.display = 'none';
+
+  const horaIngreso = formatearHoraIngreso(checkoutState.arrivalTime);
+  const duracionHoras = duracionElegidaEnHoras(checkoutState.duration);
+  const fecha = new Date().toISOString().split('T')[0];
   const dniVal = checkoutState.customerDni || Math.floor(10000000 + Math.random() * 80000000).toString();
-  const qrTokenVal = `${bookingCode}|${pin}`;
+
+  const fallo = (mensaje) => {
+    if (errorBox) {
+      errorBox.textContent = mensaje;
+      errorBox.style.display = 'block';
+    }
+    showToastNotification(mensaje);
+    return { ok: false, booking: null };
+  };
+
+  // 1. El identificador de habitación es el del catálogo del backend.
+  let habitacion;
+  try {
+    habitacion = await resolverHabitacionEnCatalogo(room, fecha, horaIngreso, duracionHoras);
+  } catch (err) {
+    return fallo('No pudimos verificar la disponibilidad con el hotel. Revisa tu conexion e intentalo de nuevo.');
+  }
+
+  if (!habitacion) {
+    return fallo('La suite que elegiste ya no esta disponible en ese horario. Vuelve a seleccionar una suite e intentalo de nuevo.');
+  }
+
+  // 2. La reserva la crea el backend. Sin excepcion: es la unica autoridad del
+  //    identificador de habitacion, de la hora de salida y del qrToken.
+  const email = checkoutState.customerEmail || 'huesped@wimbledon.pe';
+  const nombreCompleto = checkoutState.customerName || 'Huésped Wimbledon';
+  const telefono = checkoutState.customerPhone || '990370681';
+
+  let reserva;
+  try {
+    reserva = await api.crearReserva({
+      habitacionId: habitacion.id,
+      fecha,
+      horaIngreso,
+      nombreCompleto,
+      telefono,
+      email,
+      notas: ''
+    });
+  } catch (err) {
+    const mensaje = err && err.status === 409
+      ? 'Ese horario acaba de ocuparse. Vuelve a seleccionar el horario e intentalo de nuevo.'
+      : 'No pudimos registrar tu reserva. Intentalo de nuevo en unos momentos.';
+    return fallo(mensaje);
+  }
+
+  if (!reserva || !reserva.qrToken) {
+    return fallo('No pudimos registrar tu reserva. Intentalo de nuevo en unos minutos.');
+  }
+
+  // 3. La hora de salida es la del servidor, sin excepcion. La ventana de
+  //    validez del pase se deriva de ese mismo valor persistido, asi que el pase
+  //    y la ventana que aplicara recepcion no pueden divergir.
+  //
+  //    Si el servidor asigno una hora de salida distinta de la que habria salido
+  //    de la modalidad elegida, la diferencia se le indica al huesped en vez de
+  //    ocultarsela. El servidor manda porque CrearReservaRequest no admite
+  //    duracion ni horaSalida.
+  const horaSalidaServidor = String(reserva.horaSalida || '').slice(0, 5);
+  const modalidadElegida = checkoutState.duration;
+  const [hIn, mIn] = horaIngreso.split(':').map(Number);
+  const salidaEsperada = horaIngreso
+    ? String((hIn + duracionHoras) % 24).padStart(2, '0') + ':' + String(mIn || 0).padStart(2, '0')
+    : '';
+  const notaDiferencia = (horaSalidaServidor && salidaEsperada && horaSalidaServidor !== salidaEsperada)
+    ? `Solicitaste ${modalidadElegida}. El hotel fijo la salida en ${horaSalidaServidor} segun el bloque de la suite.`
+    : '';
 
   const booking = {
-    id: bookingCode,
-    pin: pin,
-    habitacionId: room.id,
-    habitacionFisicaId: habFisicaId,
-    habitacionNombre: room.nombre,
-    duracion: checkoutState.duration,
+    id: reserva.id != null ? String(reserva.id) : String(reserva.qrToken),
+    qrToken: reserva.qrToken,
+    habitacionId: reserva.habitacion ? reserva.habitacion.id : habitacion.id,
+    habitacionNombre: reserva.habitacion ? reserva.habitacion.nombre : habitacion.nombre,
+    duracion: modalidadElegida,
     horarioLlegada: checkoutState.arrivalTime,
-    horaIngreso: arrTime,
-    horaSalida: exitTime,
+    horaIngreso,
+    horaSalida: horaSalidaServidor,
+    notaDiferencia,
     extras: [...checkoutState.selectedExtras],
     monto: totalAmount,
     medioPago: 'Efectivo (En Recepción)',
-    clienteNombre: checkoutState.customerName || 'Huésped Wimbledon',
-    clienteTelefono: checkoutState.customerPhone || '990370681',
-    estado: 'CONFIRMADA',
-    qrToken: qrTokenVal,
+    clienteNombre: nombreCompleto,
+    clienteTelefono: telefono,
+    clienteEmail: email,
+    numeroDocumento: dniVal,
+    estado: reserva.estado || 'CONFIRMADA',
     fechaReserva: new Date().toISOString()
   };
 
-  // 1. Guardar en LocalStorage con control de QuotaExceededError
+  // localStorage queda como CACHÉ DE INTERFAZ, no como copia autoritativa. La
+  // fuente de verdad es la fila que el backend acaba de crear.
   try {
     const existing = JSON.parse(localStorage.getItem('wimbledon_bookings') || '[]');
     existing.unshift(booking);
     localStorage.setItem('wimbledon_bookings', JSON.stringify(existing));
     localStorage.setItem('wimbledon_last_booking', JSON.stringify(booking));
-
     window.dispatchEvent(new CustomEvent('wimbledon:booking-created', { detail: booking }));
   } catch (storageErr) {
     console.warn('Advertencia de almacenamiento local:', storageErr);
   }
 
-  // 2. Persistencia en la Nube con Supabase Cloud
-  try {
-    const { data: supaData, error: supaErr } = await supabase.from('reservas').insert({
-      habitacion_fisica_id: habFisicaId,
-      tipo_documento: 'DNI',
-      numero_documento: dniVal,
-      nombre_huesped: booking.clienteNombre,
-      telefono: booking.clienteTelefono,
-      email: checkoutState.customerEmail || 'huesped@wimbledon.pe',
-      fecha: todayStr,
-      hora_ingreso: arrTime,
-      hora_salida: exitTime,
-      duracion_horas: durHours,
-      monto_total: totalAmount,
-      adelanto: 0.00,
-      metodo_pago: 'efectivo',
-      estado: 'confirmada',
-      origen: 'online',
-      qr_token: qrTokenVal,
-      metadata: {
-        codigo: bookingCode,
-        pin: pin,
-        extras: booking.extras,
-        modalidad: 'pago_efectivo_recepcion'
-      }
-    }).select().single();
-
-    if (supaErr) {
-      console.warn('⚠️ [Supabase Cloud] Advertencia:', supaErr.message);
-    } else if (supaData) {
-      console.log('☁️ [Supabase Cloud] Reserva persistida con ID:', supaData.id);
-      booking.backendId = supaData.id;
-    }
-  } catch (cloudErr) {
-    console.warn('Error al enviar a Supabase Cloud:', cloudErr);
-  }
-
-  // 3. Renderizar el Pase Digital (Keycard) en el modal
+  // 4. El pase se renderiza unicamente con reserva creada.
   const modalBody = document.getElementById('checkoutModalBody');
   if (!modalBody) return { ok: true, booking };
 
@@ -1873,7 +1960,7 @@ async function confirmAndSaveBooking(room, totalAmount) {
         ¡Tu Pase Digital está Listo!
       </h2>
       <p style="color: #94a3b8; font-size: 0.85rem; margin: 0.25rem auto 1rem; max-width: 480px; line-height: 1.5;">
-        Guarda tu tarjeta de acceso o presenta tu código QR al llegar a recepción para ingresar de inmediato.
+        Guarda tu pase o presenta tu código QR al llegar a recepción para ingresar de inmediato.
       </p>
     </div>
 
@@ -2154,6 +2241,35 @@ function setupBookingManageActions(booking) {
       };
 
       document.getElementById('btnExecuteCancel').onclick = async () => {
+        // La cancelacion la registra el backend, no el navegador. Se demuestra
+        // posesion de la credencial con el qrToken, igual que en la creacion.
+        //
+        // DEUDA DECLARADA, NO RESUELTA: ese endpoint solo cubre reservas en
+        // estado PENDIENTE. La cancelacion por el huesped de una reserva ya
+        // CONFIRMADA no tiene cliente en el backend y no puede
+        // completarse desde el portal. Queda registrada para un hito propio.
+        const btnEjecutar = document.getElementById('btnExecuteCancel');
+        if (btnEjecutar) {
+          btnEjecutar.setAttribute('disabled', 'true');
+          btnEjecutar.style.opacity = '0.7';
+          btnEjecutar.style.cursor = 'wait';
+        }
+
+        try {
+          await api.cancelarReservaPendiente(booking.id, booking.qrToken);
+        } catch (err) {
+          const mensaje = err && err.status === 400
+            ? 'El token de la reserva no es valido. Contacta a recepcion para cancelarla.'
+            : 'Solo se pueden cancelar desde el portal las reservas pendientes de confirmacion. Para una reserva confirmada, contacta a recepcion.';
+          showToastNotification(mensaje);
+          if (btnEjecutar) {
+            btnEjecutar.removeAttribute('disabled');
+            btnEjecutar.style.opacity = '1';
+            btnEjecutar.style.cursor = 'pointer';
+          }
+          return;
+        }
+
         booking.estado = 'CANCELADA';
         try {
           const list = JSON.parse(localStorage.getItem('wimbledon_bookings') || '[]');
@@ -2164,16 +2280,7 @@ function setupBookingManageActions(booking) {
           window.dispatchEvent(new CustomEvent('wimbledon:booking-created', { detail: booking }));
         } catch (err) {}
 
-        // Sincronizar cancelación en Supabase Cloud
-        try {
-          await supabase.from('reservas')
-            .update({ estado: 'cancelada', cancelado_en: new Date().toISOString() })
-            .or(`qr_token.ilike.%${booking.id}%,metadata->>codigo.eq.${booking.id}`);
-        } catch (cloudErr) {
-          console.warn('Error al cancelar en Supabase:', cloudErr);
-        }
-
-        showToastNotification(`❌ Reserva ${booking.id} cancelada.`);
+        showToastNotification(`Reserva ${booking.id} cancelada.`);
         renderMyBookingModal(booking);
       };
     };

@@ -68,6 +68,40 @@ public class GlobalExceptionHandler {
                         ErrorResponse.ACCESO_DENEGADO));
     }
 
+    // ── Check-in: un manejador por tipo, nunca por texto del mensaje ─────────
+
+    /**
+     * Credencial no utilizable por cualquiera de sus tres causas: inexistente,
+     * fuera de la ventana de vigencia o ya consumida.
+     *
+     * El mensaje viene del literal unico de la propia excepcion, de modo que
+     * las tres condiciones responden con el mismo cuerpo y son indistinguibles
+     * para quien solo tiene la respuesta.
+     */
+    @ExceptionHandler(CredencialNoUtilizableException.class)
+    public ResponseEntity<ErrorResponse> handleCredencialNoUtilizable(CredencialNoUtilizableException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(ex.getMessage(), ErrorResponse.QR_NO_UTILIZABLE));
+    }
+
+    @ExceptionHandler(ReservaCanceladaException.class)
+    public ResponseEntity<ErrorResponse> handleReservaCancelada(ReservaCanceladaException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(ex.getMessage(), ErrorResponse.RESERVA_CANCELADA));
+    }
+
+    @ExceptionHandler(ReservaFinalizadaException.class)
+    public ResponseEntity<ErrorResponse> handleReservaFinalizada(ReservaFinalizadaException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(ex.getMessage(), ErrorResponse.RESERVA_FINALIZADA));
+    }
+
+    @ExceptionHandler(HabitacionRequiereAseoException.class)
+    public ResponseEntity<ErrorResponse> handleHabitacionRequiereAseo(HabitacionRequiereAseoException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(ex.getMessage(), ErrorResponse.HABITACION_REQUIERE_ASEO));
+    }
+
     // ── Negocio ───────────────────────────────────────────────────────────────
 
     @ExceptionHandler(EntityNotFoundException.class)
@@ -76,13 +110,22 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(ex.getMessage(), ErrorResponse.RECURSO_NO_ENCONTRADO));
     }
 
+    /**
+     * Conflicto de estado generico.
+     *
+     * Antes decidia entre QR_YA_UTILIZADO y ESTADO_CONFLICTO inspeccionando si
+     * el mensaje contenia la palabra "código", con lo que cualquier
+     * IllegalStateException ajeno al check-in se reportaba como problema de QR.
+     * Ahora devuelve siempre 409 con CONFLITO_ESTADO, sin mirar el texto.
+     *
+     * El manejador NO se elimina: lo siguen necesitando ReservaService
+     * (habitacion en mantenimiento, cancelacion fuera de estado) y
+     * RecepcionService (habitacion en mantenimiento, aseo previo).
+     */
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex) {
-        String codigo = (ex.getMessage() != null && ex.getMessage().toLowerCase().contains("código"))
-                ? ErrorResponse.QR_YA_UTILIZADO
-                : "ESTADO_CONFLICTO";
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ErrorResponse(ex.getMessage(), codigo));
+                .body(new ErrorResponse(ex.getMessage(), ErrorResponse.CONFLITO_ESTADO));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

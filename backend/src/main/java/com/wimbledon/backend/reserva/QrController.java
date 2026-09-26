@@ -2,9 +2,7 @@ package com.wimbledon.backend.reserva;
 
 import com.wimbledon.backend.domain.Reserva;
 import com.wimbledon.backend.domain.enums.EstadoReserva;
-import com.wimbledon.backend.exception.ErrorResponse;
-import com.wimbledon.backend.repository.ReservaRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.wimbledon.backend.recepcion.CheckinService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,12 +28,23 @@ import java.time.LocalTime;
 @RequiredArgsConstructor
 public class QrController {
 
-    private final ReservaRepository reservaRepository;
+    private final CheckinService checkinService;
 
     /**
      * Resuelve un token QR y devuelve los datos mínimos para mostrar en recepción.
      *
      * GET /api/checkin/validar/{token}
+     *
+     * Delega en la MISMA clasificacion que la ruta de consumo, y no construye
+     * su propia respuesta de error: antes lo hacía, lo que producía dos
+     * divergencias. La primera era la comprobacion FINALIZADA, ausente aqui y
+     * presente en el check-in, de modo que la misma condicion logica devolvia
+     * 409 en un sitio y 200 OK en el otro. La segunda era que este controlador
+     * reportaba un token inexistente como 404, lo que constituted un oraculo de
+     * existencia de reservas.
+     *
+     * Esta ruta NO consume la credencial: resolverla dos veces deja la reserva
+     * intacta.
      *
      * PRIVACIDAD: devuelve SOLO nombre del huésped, habitación, horario y estado.
      * NUNCA email, teléfono ni historial de reservas anteriores.
@@ -44,26 +53,9 @@ public class QrController {
      */
     @GetMapping("/validar/{token}")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMINISTRADOR','RECEPCIONISTA')")
-    public ResponseEntity<?> resolverToken(@PathVariable String token) {
-        Reserva reserva = reservaRepository.findByQrToken(token)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Código QR no reconocido. Verifica el código e inténtalo nuevamente."));
+    public ResponseEntity<TokenResueltoResponse> resolverToken(@PathVariable String token) {
+        Reserva reserva = checkinService.resolver(token);
 
-        if (reserva.getQrUsado()) {
-            return ResponseEntity.status(409)
-                    .body(new ErrorResponse(
-                            "Este código ya fue utilizado para un check-in previo.",
-                            ErrorResponse.QR_YA_UTILIZADO));
-        }
-
-        if (reserva.getEstado() == EstadoReserva.CANCELADA) {
-            return ResponseEntity.status(409)
-                    .body(new ErrorResponse(
-                            "Esta reserva fue cancelada.",
-                            ErrorResponse.RESERVA_CANCELADA));
-        }
-
-        // Solo datos operativos — sin historial ni datos sensibles completos
         return ResponseEntity.ok(new TokenResueltoResponse(
                 reserva.getId(),
                 reserva.getNombreHuesped(),

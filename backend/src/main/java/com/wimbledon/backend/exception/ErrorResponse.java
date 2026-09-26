@@ -17,8 +17,21 @@ public record ErrorResponse(String mensaje, String codigo) {
     public static final String RECURSO_NO_ENCONTRADO    = "RECURSO_NO_ENCONTRADO";
     public static final String EMAIL_YA_REGISTRADO      = "EMAIL_YA_REGISTRADO";
     public static final String RESERVA_NO_ENCONTRADA    = "RESERVA_NO_ENCONTRADA";
-    public static final String QR_YA_UTILIZADO          = "QR_YA_UTILIZADO";
     public static final String RESERVA_CANCELADA        = "RESERVA_CANCELADA";
+
+    // Códigos de check-in. QR_YA_UTILIZADO y ESTADO_CONFLICTO se RETIRARON:
+    // el primero se derivaba del texto del mensaje y el segundo reutilizaba
+    // un nombre generico ya ocupado. La clasificación es ahora por tipo de
+    // excepción, no por coincidencia de redacción.
+    /** Credencial no utilizable por cualquier causa, sin revelar el motivo. */
+    public static final String QR_NO_UTILIZABLE         = "QR_NO_UTILIZABLE";
+    /** La reserva esta en estado FINALIZADA. */
+    public static final String RESERVA_FINALIZADA       = "RESERVA_FINALIZADA";
+    /** La habitacion requiere aseo antes de ser ocupada. */
+    public static final String HABITACION_REQUIERE_ASEO = "HABITACION_REQUIERE_ASEO";
+    /** Conflicto de estado generico, sin inspeccionar el texto del mensaje. */
+    public static final String CONFLITO_ESTADO          = "CONFLITO_ESTADO";
+
     public static final String HORARIO_NO_DISPONIBLE    = "HORARIO_NO_DISPONIBLE";
     public static final String CANCELACION_FUERA_PLAZO  = "CANCELACION_FUERA_PLAZO";
     public static final String VALIDACION_FALLIDA       = "VALIDACION_FALLIDA";

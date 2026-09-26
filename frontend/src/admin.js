@@ -1493,7 +1493,15 @@ async function processCheckinValidation(code) {
   const fb = document.getElementById('qrValidateFeedback');
   if (!fb) return;
 
-  const cleanCode = code ? code.split('|')[0].trim() : '';
+  // El pase entrega el qrToken completo del backend, de 36 caracteres. Se envia
+  // INTEGRO, tal cual: el recorte por separador existia porque el pase antiguo
+  // componia `codigo|PIN` y el backend solo conocia el codigo. Una vez que el
+  // pase entrega el token del backend, recortar eliminaria parte de un valor que
+  // el backend espera entero.
+  //
+  // Los pases emitidos antes del despliegue quedan NO RESOLUBLES, consecuencia
+  // directa de no haber grandfathering, no un defecto de esta implementacion.
+  const cleanCode = code ? String(code).trim() : '';
   let matchedReserva = null;
   let room = null;
   let backendCheckinResult = null;

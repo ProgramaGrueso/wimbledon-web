@@ -1,0 +1,14 @@
+# Declaracion del artifact store para el dispatcher nativo de Gentle AI.
+#
+# El binario resuelve el store a partir de lo que el workspace DECLARA aqui
+# (sddstatus.declaredArtifactStore) y lo reporta en el campo `artifactStore`
+# de `gentle-ai sdd-status --json`. Un store declarado es autoritativo en
+# ambos sentidos: selecciona el resolver, y un store declarado vacio se
+# reporta como vacio en vez de servir silenciosamente los artefactos del otro.
+#
+# Sin esta declaracion el dispatcher cae en su default repo-local `openspec`
+# y devuelve artifactStore=openspec / artifactPaths vacios, aunque los
+# artefactos existan en Engram. Para el proyecto Hotel Wimbledon el trabajo vive
+# en Engram: ver los topic keys bajo sdd/hito-1-checkin-qr/*.
+sdd:
+  artifact_store: engram
