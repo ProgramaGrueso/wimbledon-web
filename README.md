@@ -14,14 +14,15 @@ wimbledon-web/
 │   ├── index.html          # Landing page principal y catálogo interactivo
 │   ├── admin.html          # Panel de administración y dashboard
 │   ├── src/                # Lógica del cliente, animaciones y componentes
-│   ├── public/             # Datos JSON, medios (videos HD/WebM), favicon e íconos
+│   ├── public/             # Datos JSON, imágenes y medios (videos HD/WebM)
 │   ├── package.json        # Dependencias y scripts de Vite
 │   └── vite.config.js      # Configuración de compilación multi-página (MPA)
 │
 ├── backend/                # API REST (Java 21, Spring Boot 3, Spring Security, JWT, JPA)
-│   ├── bdd/                # Script SQL DDL y datos de prueba para MySQL
 │   ├── pom.xml             # Dependencias Maven
 │   └── src/                # Controladores, servicios, entidades de dominio y seguridad
+│
+├── docs/diagramas/         # Diagrama entidad-relación y diagrama de clases UML
 │
 └── exposicion/             # Documentación técnica, entregables académicos y presentaciones
     ├── avanze1/            # Primer entregable del proyecto
@@ -66,6 +67,6 @@ mvn spring-boot:run # Levanta el servidor backend en http://localhost:8080
 
 La arquitectura de persistencia utiliza exclusivamente **MySQL** (desplegado en Aiven / local) como la única fuente transaccional de verdad para reservas, inventario de suites y cuentas de usuarios. No existen bases de datos paralelas ni persistencias desacopladas.
 
-El script con el esquema y la información de prueba académica se encuentra en:
-- `backend/bdd/hotel_wimbledon_test_db.sql`
-- `exposicion/avanze1/arquitectura/hotel_wimbledon_test_db.sql`
+El esquema lo genera Hibernate a partir de las entidades JPA de `backend/src/main/java/com/wimbledon/backend/domain`
+(`spring.jpa.hibernate.ddl-auto=update`); no hay un script SQL que mantener a mano.
+Los diagramas del modelo están en `docs/diagramas/`.
