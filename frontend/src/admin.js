@@ -26,7 +26,9 @@ try {
   roomsRack = DEFAULT_ROOMS_RACK;
 }
 
-let liveSupabaseReservas = [];
+let liveReservas = [];
+// Reservas online en espera de voucher (cualquier fecha)
+let pendientesPago = [];
 
 function saveRack() {
   try {
@@ -95,19 +97,16 @@ async function syncAdminDataFromBackend() {
       try {
         const agenda = await api.obtenerAgendaHoy(token);
         if (agenda && agenda.length > 0) {
-          liveSupabaseReservas = agenda.map(a => ({
-            id: a.id,
-            qr_token: `#WMB-${a.id}`,
-            nombre_huesped: a.nombreHuesped,
-            habitaciones_fisicas: { numero: a.nombreHabitacion },
-            duracion_horas: 6,
-            hora_ingreso: a.horaIngreso,
-            monto_total: 150,
-            estado: (a.estado || 'CONFIRMADA').toLowerCase()
-          }));
+          liveReservas = agenda.map(mapearAgendaItem);
         }
       } catch (err) {
         console.warn('Agenda no disponible aún:', err);
+      }
+      try {
+        const pendientes = await api.obtenerReservasPendientes(token);
+        pendientesPago = Array.isArray(pendientes) ? pendientes.map(mapearAgendaItem) : [];
+      } catch (err) {
+        console.warn('Reservas pendientes no disponibles:', err);
       }
     }
 
@@ -173,34 +172,34 @@ function renderAdminApp() {
       const savedEmail = localStorage.getItem('wimbledon_last_login_email') || 'admin@wimbledon.pe';
 
       container.innerHTML = `
-        <div style="max-width: 480px; margin: 2rem auto; background: #0b0f19; border: 2px solid rgba(217, 119, 6, 0.4); border-radius: 24px; padding: 2.5rem; color: #fff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);">
+        <div style="max-width: 480px; margin: 2rem auto; background: #111114; border: 2px solid rgba(184, 147, 46, 0.4); border-radius: 24px; padding: 2.5rem; color: #fff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);">
           <!-- PESTAÑAS DE NAVEGACIÓN AUTH -->
-          <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem; background: #0f172a; padding: 0.35rem; border-radius: 14px; border: 1px solid #334155;">
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem; background: #16161B; padding: 0.35rem; border-radius: 14px; border: 1px solid #2E2C33;">
             <button 
               type="button" 
               id="tabAuthLogin" 
-              style="flex: 1; padding: 0.65rem 0.5rem; background: linear-gradient(135deg, #d97706, #fbbf24); color: #000; font-weight: 700; font-size: 0.82rem; border: none; border-radius: 10px; cursor: pointer;"
+              style="flex: 1; padding: 0.65rem 0.5rem; background: linear-gradient(135deg, #B8932E, #D4AF37); color: #000; font-weight: 700; font-size: 0.82rem; border: none; border-radius: 10px; cursor: pointer;"
             >
               Iniciar Sesión
             </button>
             <button 
               type="button" 
               id="tabAuthRegister" 
-              style="flex: 1; padding: 0.65rem 0.5rem; background: transparent; color: #94a3b8; font-weight: 600; font-size: 0.82rem; border: none; border-radius: 10px; cursor: pointer;"
+              style="flex: 1; padding: 0.65rem 0.5rem; background: transparent; color: #A8A29A; font-weight: 600; font-size: 0.82rem; border: none; border-radius: 10px; cursor: pointer;"
             >
               Solicitar Alta
             </button>
           </div>
 
           <div style="text-align: center; margin-bottom: 1.75rem;">
-            <span style="color: #fbbf24; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">ACCESO RESTRINGIDO</span>
+            <span style="color: #D4AF37; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">ACCESO RESTRINGIDO</span>
             <h1 style="font-family: var(--font-serif); font-size: 2.1rem; margin-top: 0.4rem; color: #fff;">Control Interno</h1>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.35rem;">Ingresa con tus credenciales asignadas o aprobadas.</p>
+            <p style="color: #A8A29A; font-size: 0.85rem; margin-top: 0.35rem;">Ingresa con tus credenciales asignadas o aprobadas.</p>
           </div>
 
           <form id="staffLoginForm" style="display: flex; flex-direction: column; gap: 1.25rem;">
             <div>
-              <label for="staffEmailInput" style="display: block; font-size: 0.78rem; color: #cbd5e1; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
+              <label for="staffEmailInput" style="display: block; font-size: 0.78rem; color: #D8D2C6; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
                 CORREO ELECTRÓNICO CORPORATIVO
               </label>
               <input 
@@ -208,13 +207,13 @@ function renderAdminApp() {
                 id="staffEmailInput" 
                 value="${savedEmail}" 
                 placeholder="ej: recepcion@wimbledon.pe" 
-                style="width: 100%; padding: 0.85rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;" 
+                style="width: 100%; padding: 0.85rem 1rem; background: #16161B; border: 1px solid #2E2C33; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;" 
                 required 
               />
             </div>
 
             <div>
-              <label for="staffPassInput" style="display: block; font-size: 0.78rem; color: #cbd5e1; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
+              <label for="staffPassInput" style="display: block; font-size: 0.78rem; color: #D8D2C6; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
                 CONTRASEÑA
               </label>
               <input 
@@ -222,18 +221,18 @@ function renderAdminApp() {
                 id="staffPassInput" 
                 placeholder="••••••••" 
                 value="Admin2024!" 
-                style="width: 100%; padding: 0.85rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;" 
+                style="width: 100%; padding: 0.85rem 1rem; background: #16161B; border: 1px solid #2E2C33; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;" 
                 required 
               />
             </div>
 
-            <div style="background: rgba(217, 119, 6, 0.08); border: 1px solid rgba(217, 119, 6, 0.25); border-radius: 12px; padding: 0.85rem 1rem; font-size: 0.78rem; color: #fef08a; line-height: 1.4;">
+            <div style="background: rgba(184, 147, 46, 0.08); border: 1px solid rgba(184, 147, 46, 0.25); border-radius: 12px; padding: 0.85rem 1rem; font-size: 0.78rem; color: #fef08a; line-height: 1.4;">
               💡 <strong>Acceso del personal:</strong> Las cuentas nuevas requieren aprobación de Gerencia/Admin tras solicitar el alta en la pestaña superior.
             </div>
 
             <div id="loginErrorMsg" style="display: none; color: #f43f5e; font-size: 0.85rem; text-align: center; font-weight: bold; background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.3); border-radius: 8px; padding: 0.6rem;"></div>
 
-            <button type="submit" class="btn-editorial-light" style="width: 100%; text-align: center; justify-content: center; padding: 1.1rem; font-weight: bold; font-size: 1rem; cursor: pointer; background: linear-gradient(135deg, #d97706, #fbbf24); color: #000; border: none; border-radius: 12px; box-shadow: 0 10px 25px rgba(217, 119, 6, 0.3);">
+            <button type="submit" class="btn-editorial-light" style="width: 100%; text-align: center; justify-content: center; padding: 1.1rem; font-weight: bold; font-size: 1rem; cursor: pointer; background: linear-gradient(135deg, #B8932E, #D4AF37); color: #000; border: none; border-radius: 12px; box-shadow: 0 10px 25px rgba(184, 147, 46, 0.3);">
               INGRESAR AL SISTEMA
             </button>
 
@@ -313,13 +312,13 @@ function renderAdminApp() {
     // -------------------------------------------------------------
     else if (currentAdminAuthView === 'register') {
       container.innerHTML = `
-        <div style="max-width: 480px; margin: 2rem auto; background: #0b0f19; border: 2px solid rgba(56, 189, 248, 0.4); border-radius: 24px; padding: 2.5rem; color: #fff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);">
+        <div style="max-width: 480px; margin: 2rem auto; background: #111114; border: 2px solid rgba(56, 189, 248, 0.4); border-radius: 24px; padding: 2.5rem; color: #fff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);">
           <!-- PESTAÑAS DE NAVEGACIÓN AUTH -->
-          <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem; background: #0f172a; padding: 0.35rem; border-radius: 14px; border: 1px solid #334155;">
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem; background: #16161B; padding: 0.35rem; border-radius: 14px; border: 1px solid #2E2C33;">
             <button 
               type="button" 
               id="tabAuthLoginFromReg" 
-              style="flex: 1; padding: 0.65rem 0.5rem; background: transparent; color: #94a3b8; font-weight: 600; font-size: 0.82rem; border: none; border-radius: 10px; cursor: pointer;"
+              style="flex: 1; padding: 0.65rem 0.5rem; background: transparent; color: #A8A29A; font-weight: 600; font-size: 0.82rem; border: none; border-radius: 10px; cursor: pointer;"
             >
               Iniciar Sesión
             </button>
@@ -335,7 +334,7 @@ function renderAdminApp() {
           <div style="text-align: center; margin-bottom: 1.75rem;">
             <span style="color: #38bdf8; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">ALTA DE COLABORADOR</span>
             <h1 style="font-family: var(--font-serif); font-size: 2rem; margin-top: 0.4rem; color: #fff;">Crear Cuenta Staff</h1>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.35rem;">Tu solicitud quedará pendiente de aprobación por el Administrador.</p>
+            <p style="color: #A8A29A; font-size: 0.85rem; margin-top: 0.35rem;">Tu solicitud quedará pendiente de aprobación por el Administrador.</p>
           </div>
 
           <div id="registerSuccessMsg" style="display: none; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 1.25rem; color: #6ee7b7; font-size: 0.9rem; line-height: 1.5; margin-bottom: 1rem; text-align: center;">
@@ -355,26 +354,26 @@ function renderAdminApp() {
 
           <form id="staffRegisterForm" style="display: flex; flex-direction: column; gap: 1.15rem;">
             <div>
-              <label for="regEmailInput" style="display: block; font-size: 0.78rem; color: #cbd5e1; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
+              <label for="regEmailInput" style="display: block; font-size: 0.78rem; color: #D8D2C6; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
                 CORREO ELECTRÓNICO CORPORATIVO
               </label>
               <input 
                 type="email" 
                 id="regEmailInput" 
                 placeholder="ej: nuevo.recepcionista@wimbledon.pe" 
-                style="width: 100%; padding: 0.85rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;" 
+                style="width: 100%; padding: 0.85rem 1rem; background: #16161B; border: 1px solid #2E2C33; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;" 
                 required 
               />
             </div>
 
             <div>
-              <label for="regRolSelect" style="display: block; font-size: 0.78rem; color: #cbd5e1; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
+              <label for="regRolSelect" style="display: block; font-size: 0.78rem; color: #D8D2C6; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
                 ROL OPERATIVO SOLICITADO
               </label>
               <select 
                 id="regRolSelect" 
                 required 
-                style="width: 100%; padding: 0.85rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;"
+                style="width: 100%; padding: 0.85rem 1rem; background: #16161B; border: 1px solid #2E2C33; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;"
               >
                 <option value="RECEPCIONISTA">🛎️ Recepcionista</option>
                 <option value="GERENTE">📊 Gerencia / Administración</option>
@@ -383,7 +382,7 @@ function renderAdminApp() {
             </div>
 
             <div>
-              <label for="regPassInput" style="display: block; font-size: 0.78rem; color: #cbd5e1; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
+              <label for="regPassInput" style="display: block; font-size: 0.78rem; color: #D8D2C6; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
                 CONTRASEÑA (MÍNIMO 8 CARACTERES)
               </label>
               <input 
@@ -391,13 +390,13 @@ function renderAdminApp() {
                 id="regPassInput" 
                 placeholder="Mínimo 8 caracteres" 
                 minlength="8" 
-                style="width: 100%; padding: 0.85rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;" 
+                style="width: 100%; padding: 0.85rem 1rem; background: #16161B; border: 1px solid #2E2C33; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;" 
                 required 
               />
             </div>
 
             <div>
-              <label for="regPassConfirmInput" style="display: block; font-size: 0.78rem; color: #cbd5e1; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
+              <label for="regPassConfirmInput" style="display: block; font-size: 0.78rem; color: #D8D2C6; font-weight: 700; margin-bottom: 0.45rem; letter-spacing: 0.5px;">
                 CONFIRMAR CONTRASEÑA
               </label>
               <input 
@@ -405,7 +404,7 @@ function renderAdminApp() {
                 id="regPassConfirmInput" 
                 placeholder="Repite la contraseña" 
                 minlength="8" 
-                style="width: 100%; padding: 0.85rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;" 
+                style="width: 100%; padding: 0.85rem 1rem; background: #16161B; border: 1px solid #2E2C33; border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none;" 
                 required 
               />
             </div>
@@ -420,7 +419,7 @@ function renderAdminApp() {
               <button 
                 type="button" 
                 id="btnBackToLoginFromReg" 
-                style="background: none; border: none; padding: 0; color: #94a3b8; font-size: 0.82rem; cursor: pointer; text-decoration: underline;"
+                style="background: none; border: none; padding: 0; color: #A8A29A; font-size: 0.82rem; cursor: pointer; text-decoration: underline;"
               >
                 ← Ya tengo cuenta, ir a Iniciar Sesión
               </button>
@@ -488,17 +487,17 @@ function renderAdminApp() {
     const { role, name } = currentStaffSession;
 
     container.innerHTML = `
-      <div style="background: #0b0f19; border: 2px solid rgba(217, 119, 6, 0.4); border-radius: 24px; padding: 2.25rem; color: #fff; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.85);">
+      <div style="background: #111114; border: 2px solid rgba(184, 147, 46, 0.4); border-radius: 24px; padding: 2.25rem; color: #fff; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.85);">
         <!-- BARRA SUPERIOR DEL PANEL -->
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1.5rem; margin-bottom: 2rem;">
           <div>
-            <span style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">PANEL HOTEL WIMBLEDON EN VIVO</span>
+            <span style="font-size: 0.72rem; color: #A8A29A; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">PANEL HOTEL WIMBLEDON EN VIVO</span>
             <h2 style="font-family: var(--font-serif); font-size: 2rem; color: #fff; margin-top: 0.2rem;">
               ${role === 'gerente' ? (currentGerenteSubView === 'solicitudes' ? '👥 Aprobación de Altas de Personal' : '📊 Gerencia & Indicadores de Negocio') : (role === 'recepcion' ? '🛎️ Recepción, Check-in & Rack Operativo' : '🧹 Gestión de Limpieza & Mantenimiento')}
             </h2>
             <div style="display: flex; align-items: center; gap: 0.6rem; margin-top: 0.35rem;">
               <span class="avail-dot"></span>
-              <span style="font-size: 0.85rem; color: #fbbf24; font-weight: 600;">
+              <span style="font-size: 0.85rem; color: #D4AF37; font-weight: 600;">
                 SESIÓN ACTIVA: ${role.toUpperCase()} — ${name}
               </span>
             </div>
@@ -507,13 +506,13 @@ function renderAdminApp() {
               <div style="display: flex; gap: 0.5rem; margin-top: 0.85rem;">
                 <button 
                   id="btnSubViewDashboard" 
-                  style="padding: 0.45rem 1rem; font-size: 0.8rem; font-weight: 600; border-radius: 8px; cursor: pointer; border: 1px solid ${currentGerenteSubView === 'dashboard' ? '#fbbf24' : '#334155'}; background: ${currentGerenteSubView === 'dashboard' ? 'rgba(251, 191, 36, 0.15)' : '#0f172a'}; color: ${currentGerenteSubView === 'dashboard' ? '#fbbf24' : '#94a3b8'};"
+                  style="padding: 0.45rem 1rem; font-size: 0.8rem; font-weight: 600; border-radius: 8px; cursor: pointer; border: 1px solid ${currentGerenteSubView === 'dashboard' ? '#D4AF37' : '#2E2C33'}; background: ${currentGerenteSubView === 'dashboard' ? 'rgba(212, 175, 55, 0.15)' : '#16161B'}; color: ${currentGerenteSubView === 'dashboard' ? '#D4AF37' : '#A8A29A'};"
                 >
                   📊 Indicadores & KPIs
                 </button>
                 <button 
                   id="btnSubViewSolicitudes" 
-                  style="padding: 0.45rem 1rem; font-size: 0.8rem; font-weight: 600; border-radius: 8px; cursor: pointer; border: 1px solid ${currentGerenteSubView === 'solicitudes' ? '#38bdf8' : '#334155'}; background: ${currentGerenteSubView === 'solicitudes' ? 'rgba(56, 189, 248, 0.15)' : '#0f172a'}; color: ${currentGerenteSubView === 'solicitudes' ? '#38bdf8' : '#94a3b8'};"
+                  style="padding: 0.45rem 1rem; font-size: 0.8rem; font-weight: 600; border-radius: 8px; cursor: pointer; border: 1px solid ${currentGerenteSubView === 'solicitudes' ? '#38bdf8' : '#2E2C33'}; background: ${currentGerenteSubView === 'solicitudes' ? 'rgba(56, 189, 248, 0.15)' : '#16161B'}; color: ${currentGerenteSubView === 'solicitudes' ? '#38bdf8' : '#A8A29A'};"
                 >
                   👥 Solicitudes de Acceso (Personal)
                 </button>
@@ -521,7 +520,7 @@ function renderAdminApp() {
             ` : ''}
           </div>
           <div style="display: flex; gap: 0.75rem;">
-            <button id="btnSwitchRole" class="btn-editorial-outline" style="padding: 0.6rem 1.25rem; font-size: 0.8rem; border-color: #fbbf24; color: #fbbf24; cursor: pointer; border-radius: 8px;">
+            <button id="btnSwitchRole" class="btn-editorial-outline" style="padding: 0.6rem 1.25rem; font-size: 0.8rem; border-color: #D4AF37; color: #D4AF37; cursor: pointer; border-radius: 8px;">
               Cambiar de Rol
             </button>
             <button id="btnLogout" class="btn-editorial-light" style="padding: 0.6rem 1.25rem; font-size: 0.8rem; background: #be123c; border-color: #f43f5e; color: #fff; cursor: pointer; border-radius: 8px;">
@@ -542,7 +541,7 @@ function renderAdminApp() {
       localStorage.removeItem('wimbledon_jwt_token');
       currentStaffSession = null;
       roomsRack = [];
-      liveSupabaseReservas = [];
+      liveReservas = [];
       liveGerenteKpis = null;
       renderAdminApp();
     };
@@ -722,14 +721,14 @@ function openRecepcionCheckinModal(preset = {}) {
         <h2 style="font-family: var(--font-serif); font-size: 1.6rem; color: #fff; margin-top: 0.25rem;">
           Registro de Huésped & Cobro en Efectivo
         </h2>
-        <p style="color: #94a3b8; font-size: 0.8rem; margin-top: 0.2rem;">
+        <p style="color: #A8A29A; font-size: 0.8rem; margin-top: 0.2rem;">
           Ingresa el DNI para consultar la API de la RENIEC y registra el cobro presencial en efectivo (sin huella digital bancaria).
         </p>
       </div>
 
       <form id="recepcionCheckinForm" style="display: flex; flex-direction: column; gap: 1.15rem;">
         <!-- SECCIÓN 1: CONSULTA RENIEC -->
-        <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 14px; padding: 1.1rem;">
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid #2E2C33; border-radius: 14px; padding: 1.1rem;">
           <label for="chkDniInput" style="display: block; font-size: 0.75rem; color: #38bdf8; font-weight: bold; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px;">
             1. DNI DEL HUÉSPED (CONSULTA GET A API RENIEC)
           </label>
@@ -740,7 +739,7 @@ function openRecepcionCheckinModal(preset = {}) {
               maxlength="8" 
               placeholder="Ingrese 8 dígitos de DNI" 
               value="${preset.dni || ''}" 
-              style="flex: 1; padding: 0.75rem 0.9rem; background: #060911; border: 1px solid #334155; border-radius: 8px; color: #fff; font-family: monospace; font-size: 1.05rem; letter-spacing: 2px;" 
+              style="flex: 1; padding: 0.75rem 0.9rem; background: #0B0B0D; border: 1px solid #2E2C33; border-radius: 8px; color: #fff; font-family: monospace; font-size: 1.05rem; letter-spacing: 2px;" 
               required 
             />
             <button 
@@ -757,7 +756,7 @@ function openRecepcionCheckinModal(preset = {}) {
           </div>
 
           <div style="margin-top: 0.85rem;">
-            <label for="chkNombreInput" style="display: block; font-size: 0.72rem; color: #cbd5e1; font-weight: 600; margin-bottom: 0.3rem;">
+            <label for="chkNombreInput" style="display: block; font-size: 0.72rem; color: #D8D2C6; font-weight: 600; margin-bottom: 0.3rem;">
               NOMBRES Y APELLIDOS COMPLETOS (OBTENIDOS DE RENIEC)
             </label>
             <input 
@@ -765,7 +764,7 @@ function openRecepcionCheckinModal(preset = {}) {
               id="chkNombreInput" 
               value="${preset.huespedNombre || ''}" 
               placeholder="Los datos se autocompletarán con la API de RENIEC..." 
-              style="width: 100%; padding: 0.75rem; background: #060911; border: 1px solid #334155; border-radius: 8px; color: #fbbf24; font-weight: 600; font-size: 0.92rem;" 
+              style="width: 100%; padding: 0.75rem; background: #0B0B0D; border: 1px solid #2E2C33; border-radius: 8px; color: #D4AF37; font-weight: 600; font-size: 0.92rem;" 
               required 
             />
           </div>
@@ -774,10 +773,10 @@ function openRecepcionCheckinModal(preset = {}) {
         <!-- SECCIÓN 2: ASIGNACIÓN DE HABITACIÓN & DURACIÓN -->
         <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 1rem;">
           <div>
-            <label for="chkHabSelect" style="display: block; font-size: 0.75rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.35rem; text-transform: uppercase;">
+            <label for="chkHabSelect" style="display: block; font-size: 0.75rem; color: #D8D2C6; font-weight: bold; margin-bottom: 0.35rem; text-transform: uppercase;">
               2. HABITACIÓN ASIGNADA
             </label>
-            <select id="chkHabSelect" style="width: 100%; padding: 0.75rem; background: #060911; border: 1px solid #334155; border-radius: 8px; color: #fff; font-size: 0.9rem; cursor: pointer;">
+            <select id="chkHabSelect" style="width: 100%; padding: 0.75rem; background: #0B0B0D; border: 1px solid #2E2C33; border-radius: 8px; color: #fff; font-size: 0.9rem; cursor: pointer;">
               ${allRooms.map(r => `
                 <option value="${r.numero}" data-tarifa="${r.tarifa || 150}" ${String(r.numero) === String(preset.habitacionNumero) ? 'selected' : ''}>
                   Hab. ${r.numero} — ${r.nombre} (${r.estado})
@@ -786,10 +785,10 @@ function openRecepcionCheckinModal(preset = {}) {
             </select>
           </div>
           <div>
-            <label for="chkDurSelect" style="display: block; font-size: 0.75rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.35rem; text-transform: uppercase;">
+            <label for="chkDurSelect" style="display: block; font-size: 0.75rem; color: #D8D2C6; font-weight: bold; margin-bottom: 0.35rem; text-transform: uppercase;">
               3. DURACIÓN
             </label>
-            <select id="chkDurSelect" style="width: 100%; padding: 0.75rem; background: #060911; border: 1px solid #334155; border-radius: 8px; color: #fff; font-size: 0.9rem; cursor: pointer;">
+            <select id="chkDurSelect" style="width: 100%; padding: 0.75rem; background: #0B0B0D; border: 1px solid #2E2C33; border-radius: 8px; color: #fff; font-size: 0.9rem; cursor: pointer;">
               <option value="3 Horas" ${preset.duracion === '3 Horas' ? 'selected' : ''}>3 Horas (-30%)</option>
               <option value="6 Horas" ${preset.duracion === '6 Horas' || !preset.duracion ? 'selected' : ''}>6 Horas (Estándar)</option>
               <option value="Toda la Noche" ${preset.duracion === 'Toda la Noche' ? 'selected' : ''}>Toda la Noche</option>
@@ -807,12 +806,12 @@ function openRecepcionCheckinModal(preset = {}) {
               CERO HUELLA DIGITAL
             </span>
           </div>
-          <p style="font-size: 0.75rem; color: #94a3b8; margin: 0 0 0.85rem 0; line-height: 1.4;">
+          <p style="font-size: 0.75rem; color: #A8A29A; margin: 0 0 0.85rem 0; line-height: 1.4;">
             El huésped abona en <strong>efectivo</strong> para evitar registros digitales vulnerables. Es obligatorio apuntar el importe cancelado para el arqueo y balance contable del turno.
           </p>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
             <div>
-              <label for="chkMontoInput" style="display: block; font-size: 0.72rem; color: #cbd5e1; margin-bottom: 0.3rem; font-weight: bold;">
+              <label for="chkMontoInput" style="display: block; font-size: 0.72rem; color: #D8D2C6; margin-bottom: 0.3rem; font-weight: bold;">
                 MONTO CANCELADO EN EFECTIVO (S/)
               </label>
               <input 
@@ -821,12 +820,12 @@ function openRecepcionCheckinModal(preset = {}) {
                 min="0" 
                 step="1" 
                 value="${initialMonto}" 
-                style="width: 100%; padding: 0.75rem; background: #060911; border: 1px solid #10b981; border-radius: 8px; color: #10b981; font-family: monospace; font-size: 1.15rem; font-weight: bold;" 
+                style="width: 100%; padding: 0.75rem; background: #0B0B0D; border: 1px solid #10b981; border-radius: 8px; color: #10b981; font-family: monospace; font-size: 1.15rem; font-weight: bold;" 
                 required 
               />
             </div>
             <div>
-              <label for="chkBilleteInput" style="display: block; font-size: 0.72rem; color: #cbd5e1; margin-bottom: 0.3rem; font-weight: bold;">
+              <label for="chkBilleteInput" style="display: block; font-size: 0.72rem; color: #D8D2C6; margin-bottom: 0.3rem; font-weight: bold;">
                 BILLETE RECIBIDO (S/ CALCULAR VUELTO)
               </label>
               <input 
@@ -835,9 +834,9 @@ function openRecepcionCheckinModal(preset = {}) {
                 min="0" 
                 step="1" 
                 placeholder="Ej: 200" 
-                style="width: 100%; padding: 0.75rem; background: #060911; border: 1px solid #334155; border-radius: 8px; color: #fff; font-size: 0.95rem;" 
+                style="width: 100%; padding: 0.75rem; background: #0B0B0D; border: 1px solid #2E2C33; border-radius: 8px; color: #fff; font-size: 0.95rem;" 
               />
-              <div id="chkVueltoDisplay" style="margin-top: 0.35rem; font-size: 0.75rem; color: #fbbf24; font-weight: bold;">
+              <div id="chkVueltoDisplay" style="margin-top: 0.35rem; font-size: 0.75rem; color: #D4AF37; font-weight: bold;">
                 Vuelto a entregar: S/ 0.00
               </div>
             </div>
@@ -922,7 +921,7 @@ function openRecepcionCheckinModal(preset = {}) {
       vueltoDisplay.textContent = `⚠️ Faltan S/ ${(monto - billete).toFixed(2)}`;
       vueltoDisplay.style.color = '#ef4444';
     } else {
-      vueltoDisplay.style.color = '#fbbf24';
+      vueltoDisplay.style.color = '#D4AF37';
     }
   }
   if (billeteInput && montoInput) {
@@ -998,13 +997,13 @@ function openCierreCajaModal() {
 
       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1rem;">
         <div>
-          <span style="color: #fbbf24; font-size: 0.72rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">
+          <span style="color: #D4AF37; font-size: 0.72rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">
             CONTABILIDAD & GESTIÓN DE NEGOCIO
           </span>
           <h2 style="font-family: var(--font-serif); font-size: 1.65rem; color: #fff; margin-top: 0.25rem;">
             Arqueo y Cierre de Caja del Turno
           </h2>
-          <p style="color: #94a3b8; font-size: 0.8rem; margin-top: 0.2rem;">
+          <p style="color: #A8A29A; font-size: 0.8rem; margin-top: 0.2rem;">
             Turno actual iniciado: ${new Date(caja.turnoIniciado).toLocaleDateString()} ${new Date(caja.turnoIniciado).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Recepción: ${caja.recepcionista}
           </p>
         </div>
@@ -1028,9 +1027,9 @@ function openCierreCajaModal() {
           <span style="font-size: 0.68rem; color: #bae6fd;">Suites Liquidadas</span>
         </div>
 
-        <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 12px; padding: 1rem; text-align: center;">
+        <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 12px; padding: 1rem; text-align: center;">
           <span style="font-size: 0.72rem; color: #fde68a; font-weight: bold; text-transform: uppercase;">DISCRECIÓN CLIENTE</span>
-          <div style="font-size: 1.6rem; font-weight: bold; color: #fbbf24; margin-top: 0.3rem;">
+          <div style="font-size: 1.6rem; font-weight: bold; color: #D4AF37; margin-top: 0.3rem;">
             100%
           </div>
           <span style="font-size: 0.68rem; color: #fef08a;">Sin Huella Bancaria</span>
@@ -1038,14 +1037,14 @@ function openCierreCajaModal() {
       </div>
 
       <!-- TABLA DETALLADA DE COBROS DEL TURNO -->
-      <div style="background: #060911; border: 1px solid #334155; border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem;">
-        <div style="padding: 0.75rem 1rem; background: #0f172a; border-bottom: 1px solid #334155; font-size: 0.78rem; font-weight: bold; color: #cbd5e1;">
+      <div style="background: #0B0B0D; border: 1px solid #2E2C33; border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem;">
+        <div style="padding: 0.75rem 1rem; background: #16161B; border-bottom: 1px solid #2E2C33; font-size: 0.78rem; font-weight: bold; color: #D8D2C6;">
           DETALLE DE MOVIMIENTOS EN EFECTIVO REGISTRADOS EN EL TURNO
         </div>
         <div style="max-height: 240px; overflow-y: auto;">
           <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem; text-align: left;">
             <thead>
-              <tr style="border-bottom: 1px solid #334155; color: #94a3b8; font-size: 0.75rem;">
+              <tr style="border-bottom: 1px solid #2E2C33; color: #A8A29A; font-size: 0.75rem;">
                 <th style="padding: 0.6rem 0.85rem;">Hora</th>
                 <th style="padding: 0.6rem 0.85rem;">Hab.</th>
                 <th style="padding: 0.6rem 0.85rem;">DNI</th>
@@ -1055,13 +1054,13 @@ function openCierreCajaModal() {
             </thead>
             <tbody>
               ${caja.cobros.length === 0 ? `
-                <tr><td colspan="5" style="padding: 1.5rem; text-align: center; color: #64748b;">No hay cobros registrados en este turno aún.</td></tr>
+                <tr><td colspan="5" style="padding: 1.5rem; text-align: center; color: #7C766D;">No hay cobros registrados en este turno aún.</td></tr>
               ` : caja.cobros.map(c => `
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
-                  <td style="padding: 0.6rem 0.85rem; color: #94a3b8;">${c.fechaHora}</td>
+                  <td style="padding: 0.6rem 0.85rem; color: #A8A29A;">${c.fechaHora}</td>
                   <td style="padding: 0.6rem 0.85rem; font-weight: bold; color: #fff;">Hab. ${c.habitacionNumero}</td>
                   <td style="padding: 0.6rem 0.85rem; font-family: monospace; color: #38bdf8;">${c.dni}</td>
-                  <td style="padding: 0.6rem 0.85rem; color: #cbd5e1;">${c.huespedNombre}</td>
+                  <td style="padding: 0.6rem 0.85rem; color: #D8D2C6;">${c.huespedNombre}</td>
                   <td style="padding: 0.6rem 0.85rem; text-align: right; color: #10b981; font-weight: bold; font-family: monospace;">S/ ${Number(c.monto).toFixed(2)}</td>
                 </tr>
               `).join('')}
@@ -1075,7 +1074,7 @@ function openCierreCajaModal() {
         <button id="btnPrintArqueo" class="btn-editorial-light" style="padding: 0.75rem 1.25rem; font-size: 0.85rem; cursor: pointer; background: #fff; color: #000; font-weight: bold; border-radius: 8px;">
           🖨️ Imprimir Hoja de Arqueo
         </button>
-        <button id="btnResetTurnoCaja" class="btn-editorial-outline" style="padding: 0.75rem 1.25rem; font-size: 0.85rem; cursor: pointer; border-color: #f59e0b; color: #fbbf24; border-radius: 8px;">
+        <button id="btnResetTurnoCaja" class="btn-editorial-outline" style="padding: 0.75rem 1.25rem; font-size: 0.85rem; cursor: pointer; border-color: #f59e0b; color: #D4AF37; border-radius: 8px;">
           🔄 Cerrar e Iniciar Nuevo Turno
         </button>
       </div>
@@ -1109,87 +1108,117 @@ function openCierreCajaModal() {
 // ==========================================
 // 1. ESPACIO DE TRABAJO: RECEPCIÓN
 // ==========================================
+/** AgendaItemResponse del backend -> fila de la tabla de recepción. */
+function mapearAgendaItem(a) {
+  const ingreso = String(a.horaIngreso || '').slice(0, 5);
+  const salida = String(a.horaSalida || '').slice(0, 5);
+  const [hi, mi] = ingreso.split(':').map(Number);
+  const [hs, ms] = salida.split(':').map(Number);
+  const minutos = ((hs * 60 + ms) - (hi * 60 + mi) + 1440) % 1440 || 1440;
+  return {
+    id: a.reservaId,
+    codigo: a.codigo || `#${a.reservaId}`,
+    nombre_huesped: a.nombreHuesped,
+    habitacion: a.habitacion,
+    fecha: a.fecha,
+    duracion_horas: Math.round(minutos / 60),
+    hora_ingreso: ingreso,
+    monto_total: a.montoTotal != null ? Number(a.montoTotal).toFixed(2) : '—',
+    expira_en: a.expiraEn,
+    estado: (a.estado || 'CONFIRMADA').toLowerCase()
+  };
+}
+
+function minutosParaVencer(expiraEn) {
+  if (!expiraEn) return '—';
+  const ms = new Date(expiraEn).getTime() - Date.now();
+  if (ms <= 0) return 'vencida';
+  const m = Math.floor(ms / 60000);
+  const sgs = Math.floor((ms % 60000) / 1000);
+  return `${String(m).padStart(2, '0')}:${String(sgs).padStart(2, '0')}`;
+}
+
+function renderVouchersPendientesHTML() {
+  return `
+    <div style="background: #16161B; border: 1px solid rgba(212, 175, 55, 0.35); border-radius: 18px; padding: 1.75rem; margin-bottom: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+        <div>
+          <h4 style="font-family: var(--font-serif); font-size: 1.35rem; color: #ffffff; margin: 0;">Vouchers por validar (${pendientesPago.length})</h4>
+          <p style="color: #A8A29A; font-size: 0.8rem; margin-top: 0.25rem;">Reservas retenidas 15 min. Confirma cuando el comprobante de WhatsApp coincida con código y monto.</p>
+        </div>
+        <input id="buscarCodigoReserva" type="search" placeholder="Buscar código WMB-…" style="padding: 0.6rem 0.85rem; background: #0B0B0D; border: 1px solid #2E2C33; border-radius: 8px; color: #fff; min-width: 220px;" />
+      </div>
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 1px solid #2E2C33; color: #A8A29A;">
+              <th style="padding: 0.75rem;">Código</th>
+              <th style="padding: 0.75rem;">Huésped</th>
+              <th style="padding: 0.75rem;">Suite</th>
+              <th style="padding: 0.75rem;">Fecha y hora</th>
+              <th style="padding: 0.75rem;">Monto</th>
+              <th style="padding: 0.75rem;">Vence en</th>
+              <th style="padding: 0.75rem;">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pendientesPago.length === 0 ? `
+              <tr><td colspan="7" style="padding: 1.5rem; text-align: center; color: #7C766D;">No hay reservas esperando voucher.</td></tr>
+            ` : pendientesPago.map(b => `
+              <tr class="js-fila-pendiente" data-codigo="${b.codigo}" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 0.75rem; font-family: monospace; color: #D4AF37; font-weight: bold;">${b.codigo}</td>
+                <td style="padding: 0.75rem; color: #fff;">${b.nombre_huesped}</td>
+                <td style="padding: 0.75rem;">${b.habitacion}</td>
+                <td style="padding: 0.75rem;">${b.fecha || ''} ${b.hora_ingreso}</td>
+                <td style="padding: 0.75rem; color: #10b981; font-weight: bold;">S/ ${b.monto_total}</td>
+                <td style="padding: 0.75rem; font-variant-numeric: tabular-nums;">${minutosParaVencer(b.expira_en)}</td>
+                <td style="padding: 0.75rem;">
+                  <button class="js-confirmar-pago" data-id="${b.id}" data-codigo="${b.codigo}" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; background: #D4AF37; color: #000; border: none; font-weight: bold; border-radius: 6px; cursor: pointer;">
+                    Confirmar pago
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
 function renderRecepcionWorkspace() {
   const occupiedCount = roomsRack.filter(r => r.estado === 'OCUPADA').length;
   const freeCount = roomsRack.filter(r => r.estado === 'LIBRE').length;
   const cleaningCount = roomsRack.filter(r => r.estado === 'LIMPIEZA' || r.estado === 'EN_PROCESO').length;
 
-  let bookings = [];
-  try {
-    bookings = JSON.parse(localStorage.getItem('wimbledon_bookings') || '[]');
-  } catch (e) {}
+  const bookings = [];
 
   return `
-    <!-- SIMULADOR DE LECTOR DE CÓDIGO QR / PIN DIGITAL (HU.03 & HU.05) -->
-    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 18px; padding: 1.75rem; margin-bottom: 2rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-        <div>
-          <span style="font-size: 0.72rem; color: #38bdf8; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase;">
-            MECANISMO DE ACCESO DIGITAL (CERRADURA INTELIGENTE & QR)
-          </span>
-          <h3 style="font-family: var(--font-serif); font-size: 1.4rem; color: #fff; margin-top: 0.2rem;">
-            Validador de Check-in Express
-          </h3>
-          <p style="font-size: 0.8rem; color: #94a3b8;">
-            Escanea el código QR del cliente o ingresa el código/PIN de 6 dígitos para abrir la puerta y marcar check-in.
-          </p>
-        </div>
-        <button id="btnQuickSimulateQR" class="btn-editorial-light" style="background: linear-gradient(135deg, #d97706, #fbbf24); color: #000; font-size: 0.8rem; padding: 0.6rem 1.1rem; border-radius: 8px; font-weight: bold; cursor: pointer;">
-          ⚡ Simular Lectura de Pase Digital
-        </button>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 1.5rem; align-items: center; margin-top: 1.5rem;">
-        <!-- Visor del Escáner Láser -->
-        <div class="qr-scanner-viewport">
-          <div class="laser-scan-line"></div>
-          <div class="scanner-frame-reticle">
-            <span>COLOCAR CÓDIGO QR O PASE FRENTE AL LECTOR</span>
-          </div>
-        </div>
-
-        <!-- Formulario Manual de Validación de PIN -->
-        <div>
-          <form id="validatePinForm" style="display: flex; flex-direction: column; gap: 1rem;">
-            <div>
-              <label style="display: block; font-size: 0.75rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.35rem;">
-                CÓDIGO DE RESERVA (#WMB-XXXX) O PIN DE 6 DÍGITOS
-              </label>
-              <input type="text" id="inputScanCode" placeholder="Ej: #WMB-1024 o 748291" style="width: 100%; padding: 0.85rem 1rem; background: #060911; border: 1px solid #334155; border-radius: 10px; color: #fbbf24; font-family: monospace; font-size: 1.1rem; letter-spacing: 2px;" required />
-            </div>
-            <button type="submit" class="btn-editorial-light" style="padding: 0.9rem; background: #10b981; border: none; color: #fff; font-weight: bold; border-radius: 10px; cursor: pointer;">
-              VALIDAR ACCESO & DESBLOQUEAR HABITACIÓN
-            </button>
-          </form>
-          <div id="qrValidateFeedback" style="margin-top: 0.85rem; display: none;"></div>
-        </div>
-      </div>
-    </div>
-
+    ${renderVouchersPendientesHTML()}
     <!-- ACCIONES RÁPIDAS DE RECEPCIÓN: REGISTRO RENIEC & CAJA EFECTIVO -->
     <div style="display: flex; gap: 0.75rem; margin-bottom: 1.75rem; flex-wrap: wrap; align-items: center;">
       <button id="btnOpenWalkIn" class="btn-editorial-light" style="padding: 0.75rem 1.35rem; font-size: 0.85rem; cursor: pointer; background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: bold; border-radius: 10px; border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35); display: flex; align-items: center; gap: 0.5rem;">
         <span>🚗</span>
         <span>+ Registrar Huésped / Walk-In (RENIEC & Efectivo)</span>
       </button>
-      <button id="btnCierreCajaTurno" class="btn-editorial-outline" style="padding: 0.75rem 1.35rem; font-size: 0.85rem; cursor: pointer; border-radius: 10px; border-color: #fbbf24; color: #fbbf24; font-weight: 600; background: rgba(251, 191, 36, 0.05); display: flex; align-items: center; gap: 0.5rem;">
+      <button id="btnCierreCajaTurno" class="btn-editorial-outline" style="padding: 0.75rem 1.35rem; font-size: 0.85rem; cursor: pointer; border-radius: 10px; border-color: #D4AF37; color: #D4AF37; font-weight: 600; background: rgba(212, 175, 55, 0.05); display: flex; align-items: center; gap: 0.5rem;">
         <span>💵</span>
         <span>Cierre de Caja del Turno (Efectivo)</span>
       </button>
-      <div style="margin-left: auto; font-size: 0.82rem; color: #cbd5e1; background: #060911; border: 1px solid #334155; padding: 0.6rem 1.1rem; border-radius: 10px; display: flex; align-items: center; gap: 0.5rem;">
-        <span style="color: #94a3b8;">Recaudado en Turno (Efectivo):</span>
+      <div style="margin-left: auto; font-size: 0.82rem; color: #D8D2C6; background: #0B0B0D; border: 1px solid #2E2C33; padding: 0.6rem 1.1rem; border-radius: 10px; display: flex; align-items: center; gap: 0.5rem;">
+        <span style="color: #A8A29A;">Recaudado en Turno (Efectivo):</span>
         <strong id="turnoEfectivoTotalHeader" style="color: #10b981; font-size: 1rem;">S/ ${calcularTotalCajaEfectivo()}.00</strong>
       </div>
     </div>
 
     <!-- RACK DE HABITACIONES EN VIVO (HU.06) -->
-    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 18px; padding: 1.75rem; margin-bottom: 2rem;">
+    <div style="background: #16161B; border: 1px solid #2E2C33; border-radius: 18px; padding: 1.75rem; margin-bottom: 2rem;">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-          <h4 style="font-family: var(--font-serif); font-size: 1.35rem; color: #fbbf24;">
+          <h4 style="font-family: var(--font-serif); font-size: 1.35rem; color: #D4AF37;">
             Rack Operativo en Vivo (16 Suites)
           </h4>
-          <span style="font-size: 0.8rem; color: #94a3b8;">
+          <span style="font-size: 0.8rem; color: #A8A29A;">
             🟢 ${freeCount} Libres • 🔴 ${occupiedCount} Ocupadas • 🟡 ${cleaningCount} En Aseo
           </span>
         </div>
@@ -1210,19 +1239,19 @@ function renderRecepcionWorkspace() {
     </div>
 
     <!-- AGENDA DE RESERVAS DE HOY -->
-    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 18px; padding: 1.75rem;">
+    <div style="background: #16161B; border: 1px solid #2E2C33; border-radius: 18px; padding: 1.75rem;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h4 style="font-family: var(--font-serif); font-size: 1.35rem; color: #ffffff; margin: 0;">
-          Agenda de Reservas en la Nube (${(liveSupabaseReservas.length || bookings.length)})
+          Agenda de Reservas (${(liveReservas.length || bookings.length)})
         </h4>
         <span style="font-size: 0.75rem; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: bold;">
-          ● Supabase Cloud Conectado
+          ● Backend conectado
         </span>
       </div>
       <div style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
           <thead>
-            <tr style="border-bottom: 1px solid #334155; color: #94a3b8;">
+            <tr style="border-bottom: 1px solid #2E2C33; color: #A8A29A;">
               <th style="padding: 0.75rem;">Código / QR</th>
               <th style="padding: 0.75rem;">Huésped</th>
               <th style="padding: 0.75rem;">Habitación</th>
@@ -1234,13 +1263,13 @@ function renderRecepcionWorkspace() {
             </tr>
           </thead>
           <tbody>
-            ${(liveSupabaseReservas.length > 0 ? liveSupabaseReservas : bookings).length === 0 ? `
-              <tr><td colspan="8" style="padding: 1.5rem; text-align: center; color: #64748b;">No hay reservas registradas aún.</td></tr>
-            ` : (liveSupabaseReservas.length > 0 ? liveSupabaseReservas.map(b => `
+            ${(liveReservas.length > 0 ? liveReservas : bookings).length === 0 ? `
+              <tr><td colspan="8" style="padding: 1.5rem; text-align: center; color: #7C766D;">No hay reservas registradas aún.</td></tr>
+            ` : (liveReservas.length > 0 ? liveReservas.map(b => `
               <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                <td style="padding: 0.75rem; font-family: monospace; color: #fbbf24; font-weight: bold;">${b.qr_token || `#WMB-${b.id}`}</td>
+                <td style="padding: 0.75rem; font-family: monospace; color: #D4AF37; font-weight: bold;">${b.codigo}</td>
                 <td style="padding: 0.75rem; color: #fff;">${b.nombre_huesped}</td>
-                <td style="padding: 0.75rem;">Hab. ${b.habitaciones_fisicas?.numero || b.habitacion_fisica_id}</td>
+                <td style="padding: 0.75rem;">${b.habitacion}</td>
                 <td style="padding: 0.75rem;">${b.duracion_horas}h</td>
                 <td style="padding: 0.75rem;">${b.hora_ingreso ? b.hora_ingreso.slice(0, 5) : '14:00'}</td>
                 <td style="padding: 0.75rem; color: #10b981; font-weight: bold;">S/ ${b.monto_total}</td>
@@ -1250,14 +1279,14 @@ function renderRecepcionWorkspace() {
                   </span>
                 </td>
                 <td style="padding: 0.75rem;">
-                  <button class="btn-editorial-light js-checkin-booking" data-code="${b.qr_token || b.id}" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; background: #fbbf24; color: #000; border: none; font-weight: bold; border-radius: 6px; cursor: pointer;">
+                  <button class="btn-editorial-light js-checkin-booking" data-code="${b.id}" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; background: #D4AF37; color: #000; border: none; font-weight: bold; border-radius: 6px; cursor: pointer;">
                     ${b.estado === 'checkin' ? 'Activo' : 'Check-in'}
                   </button>
                 </td>
               </tr>
             `).join('') : bookings.map(b => `
               <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                <td style="padding: 0.75rem; font-family: monospace; color: #fbbf24; font-weight: bold;">${b.id}</td>
+                <td style="padding: 0.75rem; font-family: monospace; color: #D4AF37; font-weight: bold;">${b.id}</td>
                 <td style="padding: 0.75rem; color: #fff;">${b.clienteNombre}</td>
                 <td style="padding: 0.75rem;">${b.habitacionNombre}</td>
                 <td style="padding: 0.75rem;">${b.duracion}</td>
@@ -1269,7 +1298,7 @@ function renderRecepcionWorkspace() {
                   </span>
                 </td>
                 <td style="padding: 0.75rem;">
-                  <button class="btn-editorial-light js-checkin-booking" data-code="${b.id}" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; background: #fbbf24; color: #000; border: none; font-weight: bold; border-radius: 6px; cursor: pointer;">
+                  <button class="btn-editorial-light js-checkin-booking" data-code="${b.id}" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; background: #D4AF37; color: #000; border: none; font-weight: bold; border-radius: 6px; cursor: pointer;">
                     Check-in
                   </button>
                 </td>
@@ -1305,9 +1334,9 @@ function renderRackCardsHTML() {
 
     return `
       <div class="rack-room-card ${stateClass} js-rack-card" data-room-id="${room.id}">
-        <span style="font-size: 0.7rem; color: #94a3b8; display: block;">PISO ${room.piso} • ${room.tipo}</span>
+        <span style="font-size: 0.7rem; color: #A8A29A; display: block;">PISO ${room.piso} • ${room.tipo}</span>
         <strong style="font-size: 1.6rem; color: #fff; display: block; margin: 0.2rem 0; font-family: monospace;">${room.numero}</strong>
-        <span style="font-size: 0.75rem; color: #cbd5e1; display: block; margin-bottom: 0.5rem; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">${room.nombre}</span>
+        <span style="font-size: 0.75rem; color: #D8D2C6; display: block; margin-bottom: 0.5rem; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">${room.nombre}</span>
         <span style="font-size: 0.65rem; background: ${badgeColor}; color: #000; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold; text-transform: uppercase;">
           ${badgeText}
         </span>
@@ -1326,30 +1355,6 @@ function setupRecepcionEvents() {
       setupCardClickEvents();
     };
   });
-
-  // Validacion de Formulario QR / PIN
-  const form = document.getElementById('validatePinForm');
-  if (form) {
-    form.onsubmit = (e) => {
-      e.preventDefault();
-      const code = document.getElementById('inputScanCode').value.trim();
-      processCheckinValidation(code);
-    };
-  }
-
-  // Simulacion rapida
-  const btnSim = document.getElementById('btnQuickSimulateQR');
-  if (btnSim) {
-    btnSim.onclick = () => {
-      let bookings = [];
-      try { bookings = JSON.parse(localStorage.getItem('wimbledon_bookings') || '[]'); } catch (e) {}
-      if (bookings.length > 0) {
-        processCheckinValidation(bookings[0].id);
-      } else {
-        processCheckinValidation('101');
-      }
-    };
-  }
 
   // Walk-in modal con consulta RENIEC y Cobro en Efectivo
   const btnWalkIn = document.getElementById('btnOpenWalkIn');
@@ -1374,11 +1379,11 @@ function setupRecepcionEvents() {
       let bookings = [];
       try { bookings = JSON.parse(localStorage.getItem('wimbledon_bookings') || '[]'); } catch (err) {}
       const resLocal = bookings.find(b => b.id === code || b.pin === code);
-      const resCloud = liveSupabaseReservas.find(b => String(b.id) === String(code) || b.qr_token === code);
+      const resCloud = liveReservas.find(b => String(b.id) === String(code));
 
       const preset = {
         reservaId: resCloud?.id || resLocal?.id || null,
-        habitacionNumero: resCloud?.habitaciones_fisicas?.numero || '401',
+        habitacionNumero: resCloud?.habitacion || '401',
         huespedNombre: resCloud?.nombre_huesped || resLocal?.clienteNombre || '',
         dni: resCloud?.numero_documento || '',
         monto: resCloud?.monto_total || resLocal?.monto || 150,
@@ -1387,6 +1392,33 @@ function setupRecepcionEvents() {
       openRecepcionCheckinModal(preset);
     };
   });
+
+  document.querySelectorAll('.js-confirmar-pago').forEach(btn => {
+    btn.onclick = async () => {
+      const codigo = btn.getAttribute('data-codigo');
+      if (!confirm(`¿Confirmar el pago de la reserva ${codigo}?\nVerifica que el comprobante coincida con el monto.`)) return;
+      btn.disabled = true;
+      btn.textContent = 'Confirmando…';
+      try {
+        await api.confirmarReservaRecepcion(btn.getAttribute('data-id'), currentStaffSession?.jwtToken);
+        await syncAdminDataFromBackend();
+      } catch (err) {
+        alert(`No se pudo confirmar ${codigo}:\n${err.message}`);
+        btn.disabled = false;
+        btn.textContent = 'Confirmar pago';
+      }
+    };
+  });
+
+  const buscador = document.getElementById('buscarCodigoReserva');
+  if (buscador) {
+    buscador.oninput = () => {
+      const q = buscador.value.trim().toUpperCase();
+      document.querySelectorAll('.js-fila-pendiente').forEach(fila => {
+        fila.style.display = !q || fila.getAttribute('data-codigo').includes(q) ? '' : 'none';
+      });
+    };
+  }
 
   setupCardClickEvents();
 }
@@ -1431,83 +1463,6 @@ function setupCardClickEvents() {
   });
 }
 
-const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-
-function normalizarTokenQr(textoEscaneado) {
-  if (!textoEscaneado) return '';
-  const match = String(textoEscaneado).match(UUID_RE);
-  return match ? match[0] : String(textoEscaneado).trim();
-}
-
-async function processCheckinValidation(code) {
-  const fb = document.getElementById('qrValidateFeedback');
-  if (!fb) return;
-
-  // Extrae el UUID puro si llega la URL completa o el token escaneado
-  const cleanCode = normalizarTokenQr(code);
-  let matchedReserva = null;
-  let room = null;
-  let backendCheckinResult = null;
-
-  fb.style.display = 'block';
-  fb.innerHTML = `
-    <div style="background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; border-radius: 12px; padding: 1rem; color: #7dd3fc; display: flex; align-items: center; gap: 0.5rem;">
-      <span style="animation: spin 1s linear infinite;">⏳</span>
-      <span>Validando QR en el Servidor Spring Boot y autorizando ingreso...</span>
-    </div>
-  `;
-
-  try {
-    const token = currentStaffSession?.jwtToken;
-    backendCheckinResult = await api.checkinRecepcion(cleanCode, token);
-
-    const habNombre = backendCheckinResult.habitacion || backendCheckinResult.habitacionNombre || 'Suite Asignada';
-    const huesped = backendCheckinResult.nombreHuesped || backendCheckinResult.huespedNombre || 'Huésped';
-
-    // Buscar habitación en el Rack local
-    room = roomsRack.find(r => r.nombre === habNombre) || roomsRack.find(r => r.estado === 'LIBRE') || roomsRack[0];
-    if (room) {
-      room.estado = 'OCUPADA';
-      room.duracionRestante = '06h:00m';
-      room.cliente = huesped;
-      saveRack();
-    }
-
-    fb.innerHTML = `
-      <div style="background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; border-radius: 12px; padding: 1.25rem; color: #a7f3d0; animation: pulseDot 1s;">
-        <div style="font-weight: bold; font-size: 1.1rem; color: #10b981; display: flex; align-items: center; gap: 0.5rem;">
-          🔓 ¡ACCESO CONCEDIDO • CHECK-IN OFICIAL CONFIRMADO!
-        </div>
-        <p style="font-size: 0.85rem; margin-top: 0.35rem; color: #fff;">
-          Pase <strong>${cleanCode}</strong> validado exitosamente ante la Base de Datos.
-        </p>
-        <div style="margin-top: 0.6rem; padding: 0.6rem 0.85rem; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 0.8rem; color: #cbd5e1;">
-          🚪 <strong>Habitación Oficial:</strong> ${habNombre}<br/>
-          👤 <strong>Huésped Verificado:</strong> ${huesped}<br/>
-          ⏰ <strong>Horario Asignado:</strong> ${backendCheckinResult.horaIngreso} - ${backendCheckinResult.horaSalida}
-        </div>
-      </div>
-    `;
-
-    setTimeout(() => {
-      syncAdminDataFromBackend();
-    }, 2000);
-    return;
-  } catch (err) {
-    console.warn('Fallo en checkin Spring Boot, evaluando fallback:', err);
-    fb.innerHTML = `
-      <div style="background: rgba(239, 68, 68, 0.15); border: 2px solid #ef4444; border-radius: 12px; padding: 1.25rem; color: #fca5a5;">
-        <div style="font-weight: bold; font-size: 1rem; color: #f87171; display: flex; align-items: center; gap: 0.5rem;">
-          ❌ Pase Inválido o Error de Validación
-        </div>
-        <p style="font-size: 0.85rem; margin-top: 0.35rem; color: #fff;">
-          ${err.message || 'Código QR no reconocido o ya utilizado previamente.'}
-        </p>
-      </div>
-    `;
-  }
-}
-
 // ==========================================
 // 2. ESPACIO DE TRABAJO: LIMPIEZA (HOUSEKEEPING)
 // CERO ACCESO A DATOS DE CLIENTES
@@ -1516,7 +1471,7 @@ function renderLimpiezaWorkspace() {
   const pendingCleaning = roomsRack.filter(r => r.estado === 'LIMPIEZA' || r.estado === 'EN_PROCESO');
 
   return `
-    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 18px; padding: 1.75rem; margin-bottom: 2rem;">
+    <div style="background: #16161B; border: 1px solid #2E2C33; border-radius: 18px; padding: 1.75rem; margin-bottom: 2rem;">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
         <div>
           <span style="font-size: 0.72rem; color: #f59e0b; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase;">
@@ -1525,7 +1480,7 @@ function renderLimpiezaWorkspace() {
           <h3 style="font-family: var(--font-serif); font-size: 1.5rem; color: #fff; margin-top: 0.2rem;">
             Habitaciones Pendientes de Aseo (${pendingCleaning.length})
           </h3>
-          <p style="font-size: 0.8rem; color: #94a3b8;">
+          <p style="font-size: 0.8rem; color: #A8A29A;">
             Por discreción del hotel, este panel no contiene datos personales ni nombres de huéspedes.
           </p>
         </div>
@@ -1541,16 +1496,16 @@ function renderLimpiezaWorkspace() {
             <strong>¡Excelente! Todas las habitaciones están limpias y listas para servicio.</strong>
           </div>
         ` : pendingCleaning.map(r => `
-          <div style="background: #060911; border: 1px solid ${r.estado === 'EN_PROCESO' ? '#38bdf8' : '#f59e0b'}; border-radius: 14px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+          <div style="background: #0B0B0D; border: 1px solid ${r.estado === 'EN_PROCESO' ? '#38bdf8' : '#f59e0b'}; border-radius: 14px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
             <div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <span style="font-size: 0.7rem; color: #94a3b8;">PISO ${r.piso}</span>
+                <span style="font-size: 0.7rem; color: #A8A29A;">PISO ${r.piso}</span>
                 <span style="font-size: 0.65rem; background: ${r.estado === 'EN_PROCESO' ? '#0369a1' : '#b45309'}; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold;">
                   ${r.estado === 'EN_PROCESO' ? 'EN PROCESO' : 'PENDIENTE'}
                 </span>
               </div>
               <h4 style="font-family: monospace; font-size: 1.75rem; color: #fff; margin-bottom: 0.25rem;">Hab. ${r.numero}</h4>
-              <p style="font-size: 0.8rem; color: #cbd5e1;">${r.nombre}</p>
+              <p style="font-size: 0.8rem; color: #D8D2C6;">${r.nombre}</p>
             </div>
             <div style="margin-top: 1.25rem;">
               ${r.estado === 'LIMPIEZA' ? `
@@ -1634,23 +1589,23 @@ const gerenteAnalyticsData = {
     badge: 'En tiempo real',
     kpis: {
       ocupacion: { label: 'Tasa de Ocupación', val: '68.8%', num: 68.8, sub: '11 de 16 suites ocupadas', trend: '+12.5% vs ayer', trendUp: true, color: '#10b981' },
-      ingresos: { label: 'Ingresos Proyectados', val: 'S/ 4,820', num: 92, sub: 'Ticket prom: S/ 175.00', trend: '+14.2% vs meta diaria', trendUp: true, color: '#fbbf24' },
+      ingresos: { label: 'Ingresos Proyectados', val: 'S/ 4,820', num: 92, sub: 'Ticket prom: S/ 175.00', trend: '+14.2% vs meta diaria', trendUp: true, color: '#D4AF37' },
       rotacion: { label: 'Índice de Rotación', val: '2.8x', num: 70, sub: 'Rotación por suite / día', trend: '+0.4x vs prom.', trendUp: true, color: '#38bdf8' },
       checkinQr: { label: 'Check-in Digital / QR', val: '84%', num: 84, sub: 'Cerradura Inteligente & PIN', trend: '+6% adopción', trendUp: true, color: '#a855f7' },
     },
     chartTitle: 'Flujo de Ocupación por Intervalos Horarios (Hoy)',
     chartSubtitle: 'Pico de afluencia registrado entre las 20:00 y las 03:00 hrs',
     bars: [
-      { label: '00:00', val: '85%', heightPct: 85, color: 'linear-gradient(180deg, #fbbf24, #d97706)', highlight: true },
+      { label: '00:00', val: '85%', heightPct: 85, color: 'linear-gradient(180deg, #D4AF37, #B8932E)', highlight: true },
       { label: '04:00', val: '60%', heightPct: 60, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: '08:00', val: '30%', heightPct: 30, color: 'linear-gradient(180deg, #64748b, #334155)', highlight: false },
+      { label: '08:00', val: '30%', heightPct: 30, color: 'linear-gradient(180deg, #7C766D, #2E2C33)', highlight: false },
       { label: '12:00', val: '55%', heightPct: 55, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
       { label: '16:00', val: '75%', heightPct: 75, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: '20:00', val: '95%', heightPct: 95, color: 'linear-gradient(180deg, #fbbf24, #d97706)', highlight: true },
-      { label: '23:00', val: '90%', heightPct: 90, color: 'linear-gradient(180deg, #fbbf24, #d97706)', highlight: true }
+      { label: '20:00', val: '95%', heightPct: 95, color: 'linear-gradient(180deg, #D4AF37, #B8932E)', highlight: true },
+      { label: '23:00', val: '90%', heightPct: 90, color: 'linear-gradient(180deg, #D4AF37, #B8932E)', highlight: true }
     ],
     breakdown: [
-      { name: 'Alquiler de Suites & Jacuzzis', amount: 'S/ 3,615.00', pct: '75%', color: '#fbbf24' },
+      { name: 'Alquiler de Suites & Jacuzzis', amount: 'S/ 3,615.00', pct: '75%', color: '#D4AF37' },
       { name: 'Coctelería & Bar de Autor', amount: 'S/ 820.00', pct: '17%', color: '#38bdf8' },
       { name: 'Minibar & Room Service Exprés', amount: 'S/ 385.00', pct: '8%', color: '#a855f7' }
     ],
@@ -1667,7 +1622,7 @@ const gerenteAnalyticsData = {
     badge: 'Cierre Proyectado',
     kpis: {
       ocupacion: { label: 'Tasa de Ocupación', val: '76.5%', num: 76.5, sub: 'Promedio mensual acumulado', trend: '+8.1% vs agosto', trendUp: true, color: '#10b981' },
-      ingresos: { label: 'Ingresos Proyectados', val: 'S/ 124,580', num: 96, sub: 'Ticket prom: S/ 188.00', trend: '+18.5% vs meta mes', trendUp: true, color: '#fbbf24' },
+      ingresos: { label: 'Ingresos Proyectados', val: 'S/ 124,580', num: 96, sub: 'Ticket prom: S/ 188.00', trend: '+18.5% vs meta mes', trendUp: true, color: '#D4AF37' },
       rotacion: { label: 'Índice de Rotación', val: '3.1x', num: 78, sub: 'Rotación media por suite', trend: '+0.5x crecimiento', trendUp: true, color: '#38bdf8' },
       checkinQr: { label: 'Check-in Digital / QR', val: '88%', num: 88, sub: 'Ingresos con llave digital QR', trend: '+11% vs mes ant.', trendUp: true, color: '#a855f7' },
     },
@@ -1676,11 +1631,11 @@ const gerenteAnalyticsData = {
     bars: [
       { label: 'Semana 1', val: 'S/ 28.5k', heightPct: 70, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
       { label: 'Semana 2', val: 'S/ 32.2k', heightPct: 82, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: 'Semana 3', val: 'S/ 34.8k', heightPct: 90, color: 'linear-gradient(180deg, #fbbf24, #d97706)', highlight: true },
+      { label: 'Semana 3', val: 'S/ 34.8k', heightPct: 90, color: 'linear-gradient(180deg, #D4AF37, #B8932E)', highlight: true },
       { label: 'Semana 4 (Proj)', val: 'S/ 29.0k', heightPct: 74, color: 'linear-gradient(180deg, #a855f7, #7e22ce)', highlight: false }
     ],
     breakdown: [
-      { name: 'Alquiler de Suites & Jacuzzis', amount: 'S/ 90,940.00', pct: '73%', color: '#fbbf24' },
+      { name: 'Alquiler de Suites & Jacuzzis', amount: 'S/ 90,940.00', pct: '73%', color: '#D4AF37' },
       { name: 'Coctelería & Bar de Autor', amount: 'S/ 22,420.00', pct: '18%', color: '#38bdf8' },
       { name: 'Minibar & Room Service Exprés', amount: 'S/ 11,220.00', pct: '9%', color: '#a855f7' }
     ],
@@ -1697,7 +1652,7 @@ const gerenteAnalyticsData = {
     badge: 'Consolidado Anual',
     kpis: {
       ocupacion: { label: 'Tasa de Ocupación', val: '79.2%', num: 79.2, sub: 'Ocupación anual promedio', trend: '+12.4% vs 2025', trendUp: true, color: '#10b981' },
-      ingresos: { label: 'Ingresos Proyectados', val: 'S/ 1,385,400', num: 100, sub: 'Ticket prom: S/ 192.00', trend: '+22.8% récord anual', trendUp: true, color: '#fbbf24' },
+      ingresos: { label: 'Ingresos Proyectados', val: 'S/ 1,385,400', num: 100, sub: 'Ticket prom: S/ 192.00', trend: '+22.8% récord anual', trendUp: true, color: '#D4AF37' },
       rotacion: { label: 'Índice de Rotación', val: '3.4x', num: 85, sub: 'Promedio anual de rotación', trend: '+0.7x vs año ant.', trendUp: true, color: '#38bdf8' },
       checkinQr: { label: 'Check-in Digital / QR', val: '91%', num: 91, sub: 'Adopción consolidada QR/PIN', trend: '+24% modernización', trendUp: true, color: '#a855f7' },
     },
@@ -1706,19 +1661,19 @@ const gerenteAnalyticsData = {
     bars: [
       { label: 'Ene', val: '85%', heightPct: 85, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
       { label: 'Feb (♥)', val: '98%', heightPct: 98, color: 'linear-gradient(180deg, #f43f5e, #be123c)', highlight: true },
-      { label: 'Mar', val: '70%', heightPct: 70, color: 'linear-gradient(180deg, #64748b, #334155)', highlight: false },
+      { label: 'Mar', val: '70%', heightPct: 70, color: 'linear-gradient(180deg, #7C766D, #2E2C33)', highlight: false },
       { label: 'Abr', val: '72%', heightPct: 72, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
       { label: 'May', val: '78%', heightPct: 78, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
       { label: 'Jun', val: '80%', heightPct: 80, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: 'Jul (★)', val: '95%', heightPct: 95, color: 'linear-gradient(180deg, #fbbf24, #d97706)', highlight: true },
+      { label: 'Jul (★)', val: '95%', heightPct: 95, color: 'linear-gradient(180deg, #D4AF37, #B8932E)', highlight: true },
       { label: 'Ago', val: '82%', heightPct: 82, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
       { label: 'Set', val: '76%', heightPct: 76, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
       { label: 'Oct', val: '74%', heightPct: 74, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
       { label: 'Nov', val: '80%', heightPct: 80, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: 'Dic', val: '92%', heightPct: 92, color: 'linear-gradient(180deg, #fbbf24, #d97706)', highlight: true }
+      { label: 'Dic', val: '92%', heightPct: 92, color: 'linear-gradient(180deg, #D4AF37, #B8932E)', highlight: true }
     ],
     breakdown: [
-      { name: 'Alquiler de Suites & Jacuzzis', amount: 'S/ 1,025,196.00', pct: '74%', color: '#fbbf24' },
+      { name: 'Alquiler de Suites & Jacuzzis', amount: 'S/ 1,025,196.00', pct: '74%', color: '#D4AF37' },
       { name: 'Coctelería & Bar de Autor', amount: 'S/ 235,518.00', pct: '17%', color: '#38bdf8' },
       { name: 'Minibar & Room Service Exprés', amount: 'S/ 124,686.00', pct: '9%', color: '#a855f7' }
     ],
@@ -1811,7 +1766,7 @@ function renderGerenteWorkspace() {
         label: d.dia,
         val: `${(d.ocupacionPct || 0).toFixed(0)}%`,
         heightPct: Math.min(100, Math.max(10, Math.round(d.ocupacionPct || 0))),
-        color: (d.ocupacionPct || 0) >= 70 ? 'linear-gradient(180deg, #fbbf24, #d97706)' : 'linear-gradient(180deg, #38bdf8, #0284c7)',
+        color: (d.ocupacionPct || 0) >= 70 ? 'linear-gradient(180deg, #D4AF37, #B8932E)' : 'linear-gradient(180deg, #38bdf8, #0284c7)',
         highlight: (d.ocupacionPct || 0) >= 70
       }));
     }
@@ -1837,10 +1792,10 @@ function renderGerenteWorkspace() {
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1.25rem;">
         <div>
           <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;">
-            <span style="font-size: 0.72rem; color: #fbbf24; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase;">
+            <span style="font-size: 0.72rem; color: #D4AF37; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase;">
               BUSINESS INTELLIGENCE & ANALYTICS EXECUTIVE
             </span>
-            <span style="font-size: 0.65rem; background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); padding: 0.2rem 0.6rem; border-radius: var(--radius-pill); font-weight: 700;">
+            <span style="font-size: 0.65rem; background: rgba(212, 175, 55, 0.15); color: #D4AF37; border: 1px solid rgba(212, 175, 55, 0.3); padding: 0.2rem 0.6rem; border-radius: var(--radius-pill); font-weight: 700;">
               ${liveGerenteKpis ? '🟢 Conectado a Spring Boot' : data.badge}
             </span>
           </div>
@@ -1882,7 +1837,7 @@ function renderGerenteWorkspace() {
           <div class="kpi-luxe-info">
             <span class="kpi-luxe-label">${kpis.ocupacion.label}</span>
             <div class="kpi-luxe-val" style="color: ${kpis.ocupacion.color};">${kpis.ocupacion.val}</div>
-            <span style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">${kpis.ocupacion.sub}</span>
+            <span style="font-size: 0.75rem; color: #A8A29A; margin-bottom: 0.5rem;">${kpis.ocupacion.sub}</span>
             <span class="kpi-luxe-trend" style="color: #10b981;">▲ ${kpis.ocupacion.trend}</span>
           </div>
           ${renderGauge(kpis.ocupacion.num, kpis.ocupacion.color)}
@@ -1893,8 +1848,8 @@ function renderGerenteWorkspace() {
           <div class="kpi-luxe-info">
             <span class="kpi-luxe-label">${kpis.ingresos.label}</span>
             <div class="kpi-luxe-val" style="color: ${kpis.ingresos.color};">${kpis.ingresos.val}</div>
-            <span style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">${kpis.ingresos.sub}</span>
-            <span class="kpi-luxe-trend" style="color: #fbbf24;">★ ${kpis.ingresos.trend}</span>
+            <span style="font-size: 0.75rem; color: #A8A29A; margin-bottom: 0.5rem;">${kpis.ingresos.sub}</span>
+            <span class="kpi-luxe-trend" style="color: #D4AF37;">★ ${kpis.ingresos.trend}</span>
           </div>
           ${renderGauge(kpis.ingresos.num, kpis.ingresos.color)}
         </div>
@@ -1904,7 +1859,7 @@ function renderGerenteWorkspace() {
           <div class="kpi-luxe-info">
             <span class="kpi-luxe-label">${kpis.rotacion.label}</span>
             <div class="kpi-luxe-val" style="color: ${kpis.rotacion.color};">${kpis.rotacion.val}</div>
-            <span style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">${kpis.rotacion.sub}</span>
+            <span style="font-size: 0.75rem; color: #A8A29A; margin-bottom: 0.5rem;">${kpis.rotacion.sub}</span>
             <span class="kpi-luxe-trend" style="color: #38bdf8;">▲ ${kpis.rotacion.trend}</span>
           </div>
           ${renderGauge(kpis.rotacion.num, kpis.rotacion.color)}
@@ -1915,7 +1870,7 @@ function renderGerenteWorkspace() {
           <div class="kpi-luxe-info">
             <span class="kpi-luxe-label">${kpis.checkinQr.label}</span>
             <div class="kpi-luxe-val" style="color: ${kpis.checkinQr.color};">${kpis.checkinQr.val}</div>
-            <span style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">${kpis.checkinQr.sub}</span>
+            <span style="font-size: 0.75rem; color: #A8A29A; margin-bottom: 0.5rem;">${kpis.checkinQr.sub}</span>
             <span class="kpi-luxe-trend" style="color: #a855f7;">▲ ${kpis.checkinQr.trend}</span>
           </div>
           ${renderGauge(kpis.checkinQr.num, kpis.checkinQr.color)}
@@ -1929,9 +1884,9 @@ function renderGerenteWorkspace() {
           <div class="panel-header-row">
             <div>
               <h4 class="panel-title">${data.chartTitle}</h4>
-              <p style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.25rem;">${data.chartSubtitle}</p>
+              <p style="font-size: 0.78rem; color: #A8A29A; margin-top: 0.25rem;">${data.chartSubtitle}</p>
             </div>
-            <span style="font-size: 0.75rem; color: #fbbf24; font-weight: 700; background: rgba(251, 191, 36, 0.1); padding: 0.3rem 0.75rem; border-radius: 8px;">
+            <span style="font-size: 0.75rem; color: #D4AF37; font-weight: 700; background: rgba(212, 175, 55, 0.1); padding: 0.3rem 0.75rem; border-radius: 8px;">
               Período: ${data.label}
             </span>
           </div>
@@ -1948,7 +1903,7 @@ function renderGerenteWorkspace() {
             <div class="bar-chart-bars">
               ${bars.map(b => `
                 <div class="bar-col-item" style="flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative;">
-                  <span class="bar-val-badge" style="position: absolute; top: -24px; font-size: 0.65rem; font-family: monospace; font-weight: 800; color: ${b.highlight ? '#fbbf24' : '#94a3b8'};">${b.val}</span>
+                  <span class="bar-val-badge" style="position: absolute; top: -24px; font-size: 0.65rem; font-family: monospace; font-weight: 800; color: ${b.highlight ? '#D4AF37' : '#A8A29A'};">${b.val}</span>
                   <div class="bar-fill-track" style="width: 100%; max-width: 38px; height: 100%; background: rgba(255, 255, 255, 0.04); border-radius: 8px 8px 0 0; display: flex; align-items: flex-end; overflow: hidden;">
                     <div class="bar-fill" style="width: 100%; height: ${b.heightPct}%; background: ${b.color}; border-radius: 8px 8px 0 0; transition: height 0.8s ease;" title="${b.label}: ${b.val}"></div>
                   </div>
@@ -1957,14 +1912,14 @@ function renderGerenteWorkspace() {
             </div>
             <div class="chart-x-labels">
               ${bars.map(b => `
-                <span style="flex: 1; text-align: center; font-size: 0.72rem; color: ${b.highlight ? '#fff' : '#94a3b8'}; font-weight: ${b.highlight ? '700' : '400'};">${b.label}</span>
+                <span style="flex: 1; text-align: center; font-size: 0.72rem; color: ${b.highlight ? '#fff' : '#A8A29A'}; font-weight: ${b.highlight ? '700' : '400'};">${b.label}</span>
               `).join('')}
             </div>
           </div>
 
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; font-size: 0.75rem; color: #64748b;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; font-size: 0.75rem; color: #7C766D;">
             <span>⚡ Actualizado automáticamente según registros del sistema</span>
-            <span style="color: #fbbf24;">■ Barras resaltadas indican franjas de máxima ocupación</span>
+            <span style="color: #D4AF37;">■ Barras resaltadas indican franjas de máxima ocupación</span>
           </div>
         </div>
 
@@ -1972,11 +1927,11 @@ function renderGerenteWorkspace() {
         <div class="analytics-panel-card">
           <div class="panel-header-row">
             <h4 class="panel-title">Ingresos por Concepto</h4>
-            <span style="font-size: 0.75rem; color: #94a3b8;">100% Total</span>
+            <span style="font-size: 0.75rem; color: #A8A29A;">100% Total</span>
           </div>
 
           <!-- Barra segmentada horizontal -->
-          <div style="display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: #1e293b; margin-bottom: 1.5rem;">
+          <div style="display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: #1F1F26; margin-bottom: 1.5rem;">
             ${breakdown.map(item => `
               <div style="width: ${item.pct}; background: ${item.color}; height: 100%; transition: width 0.6s ease;" title="${item.name}: ${item.pct}"></div>
             `).join('')}
@@ -1988,7 +1943,7 @@ function renderGerenteWorkspace() {
               <div class="concept-legend-item">
                 <div style="display: flex; align-items: center;">
                   <span class="legend-dot" style="background: ${item.color};"></span>
-                  <span style="color: #cbd5e1; font-size: 0.8rem;">${item.name}</span>
+                  <span style="color: #D8D2C6; font-size: 0.8rem;">${item.name}</span>
                 </div>
                 <div style="text-align: right;">
                   <strong style="color: #fff; font-family: monospace; font-size: 0.85rem; display: block;">${item.amount}</strong>
@@ -1999,7 +1954,7 @@ function renderGerenteWorkspace() {
           </div>
 
           <div style="margin-top: 1.75rem; padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; text-align: center;">
-            <span style="font-size: 0.75rem; color: #94a3b8; display: block; margin-bottom: 0.25rem;">Meta Financiera del Período</span>
+            <span style="font-size: 0.75rem; color: #A8A29A; display: block; margin-bottom: 0.25rem;">Meta Financiera del Período</span>
             <strong style="color: #10b981; font-size: 1.1rem; font-family: monospace;">104.2% CUMPLIDA</strong>
           </div>
         </div>
@@ -2010,7 +1965,7 @@ function renderGerenteWorkspace() {
         <div class="panel-header-row">
           <div>
             <h4 class="panel-title">Top 5 Suites con Mayor Rentabilidad (${data.label})</h4>
-            <p style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.25rem;">
+            <p style="font-size: 0.78rem; color: #A8A29A; margin-top: 0.25rem;">
               Desempeño según rotación de turnos, consumos adicionales y recaudación total
             </p>
           </div>
@@ -2020,7 +1975,7 @@ function renderGerenteWorkspace() {
         <div style="overflow-x: auto;">
           <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
             <thead>
-              <tr style="border-bottom: 1px solid #334155; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase;">
+              <tr style="border-bottom: 1px solid #2E2C33; color: #A8A29A; font-size: 0.75rem; text-transform: uppercase;">
                 <th style="padding: 0.75rem;">Posición</th>
                 <th style="padding: 0.75rem;">Habitación</th>
                 <th style="padding: 0.75rem;">Categoría</th>
@@ -2033,15 +1988,15 @@ function renderGerenteWorkspace() {
               ${ranking.map((r, idx) => `
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
                   <td style="padding: 0.85rem 0.75rem;">
-                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-weight: 800; font-size: 0.75rem; background: ${idx === 0 ? 'rgba(251, 191, 36, 0.2)' : (idx === 1 ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)')}; color: ${idx === 0 ? '#fbbf24' : (idx === 1 ? '#38bdf8' : '#cbd5e1')};">
+                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-weight: 800; font-size: 0.75rem; background: ${idx === 0 ? 'rgba(212, 175, 55, 0.2)' : (idx === 1 ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)')}; color: ${idx === 0 ? '#D4AF37' : (idx === 1 ? '#38bdf8' : '#D8D2C6')};">
                       #${idx + 1}
                     </span>
                   </td>
                   <td style="padding: 0.85rem 0.75rem;">
                     <strong style="color: #fff; font-family: monospace; font-size: 1rem;">Hab. ${r.num}</strong>
-                    <div style="font-size: 0.75rem; color: #cbd5e1;">${r.name}</div>
+                    <div style="font-size: 0.75rem; color: #D8D2C6;">${r.name}</div>
                   </td>
-                  <td style="padding: 0.85rem 0.75rem; color: #94a3b8;">${r.cat}</td>
+                  <td style="padding: 0.85rem 0.75rem; color: #A8A29A;">${r.cat}</td>
                   <td style="padding: 0.85rem 0.75rem;">
                     <span style="display: inline-block; padding: 0.25rem 0.6rem; border-radius: 6px; background: rgba(56, 189, 248, 0.1); color: #38bdf8; font-weight: 600; font-size: 0.75rem;">
                       ${r.metric}
@@ -2051,7 +2006,7 @@ function renderGerenteWorkspace() {
                     <strong style="color: #10b981; font-family: monospace; font-size: 1rem;">${r.rev}</strong>
                   </td>
                   <td style="padding: 0.85rem 0.75rem; text-align: center;">
-                    <span style="font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: var(--radius-pill); font-weight: bold; background: ${idx === 0 ? 'linear-gradient(135deg, rgba(217, 119, 6, 0.3), rgba(251, 191, 36, 0.3))' : 'rgba(255,255,255,0.06)'}; color: ${idx === 0 ? '#fbbf24' : '#cbd5e1'}; border: 1px solid ${idx === 0 ? '#fbbf24' : 'rgba(255,255,255,0.1)'};">
+                    <span style="font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: var(--radius-pill); font-weight: bold; background: ${idx === 0 ? 'linear-gradient(135deg, rgba(184, 147, 46, 0.3), rgba(212, 175, 55, 0.3))' : 'rgba(255,255,255,0.06)'}; color: ${idx === 0 ? '#D4AF37' : '#D8D2C6'}; border: 1px solid ${idx === 0 ? '#D4AF37' : 'rgba(255,255,255,0.1)'};">
                       ${r.badge}
                     </span>
                   </td>
@@ -2118,7 +2073,7 @@ function renderSolicitudesAccesoWorkspace() {
           <h3 style="font-family: var(--font-serif); font-size: 1.75rem; color: #fff; margin: 0.2rem 0 0 0;">
             Solicitudes de Alta de Personal
           </h3>
-          <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
+          <p style="color: #A8A29A; font-size: 0.85rem; margin-top: 0.25rem;">
             Colaboradores que crearon cuenta en la pantalla de login y esperan activación de rol.
           </p>
         </div>
@@ -2136,7 +2091,7 @@ function renderSolicitudesAccesoWorkspace() {
         <div style="overflow-x: auto;">
           <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
             <thead>
-              <tr style="border-bottom: 1px solid #334155; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase;">
+              <tr style="border-bottom: 1px solid #2E2C33; color: #A8A29A; font-size: 0.75rem; text-transform: uppercase;">
                 <th style="padding: 0.75rem;">ID</th>
                 <th style="padding: 0.75rem;">Correo Corporativo</th>
                 <th style="padding: 0.75rem;">Rol Solicitado</th>
@@ -2148,7 +2103,7 @@ function renderSolicitudesAccesoWorkspace() {
             <tbody>
               ${usuariosPendientesCache.length === 0 ? `
                 <tr>
-                  <td colspan="6" style="padding: 3rem 1rem; text-align: center; color: #94a3b8;">
+                  <td colspan="6" style="padding: 3rem 1rem; text-align: center; color: #A8A29A;">
                     <div style="font-size: 2rem; margin-bottom: 0.5rem;">✅</div>
                     <strong style="color: #fff; display: block; font-size: 1rem;">No hay solicitudes de acceso pendientes</strong>
                     Todas las cuentas del personal han sido evaluadas y autorizadas.
@@ -2156,21 +2111,21 @@ function renderSolicitudesAccesoWorkspace() {
                 </tr>
               ` : usuariosPendientesCache.map(u => `
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
-                  <td style="padding: 0.85rem 0.75rem; font-family: monospace; color: #cbd5e1;">#${u.id}</td>
+                  <td style="padding: 0.85rem 0.75rem; font-family: monospace; color: #D8D2C6;">#${u.id}</td>
                   <td style="padding: 0.85rem 0.75rem;">
                     <strong style="color: #fff;">${u.email}</strong>
                   </td>
                   <td style="padding: 0.85rem 0.75rem;">
-                    <span style="display: inline-block; padding: 0.25rem 0.65rem; border-radius: 6px; font-weight: 700; font-size: 0.75rem; background: ${u.rolSolicitado === 'RECEPCIONISTA' ? 'rgba(56, 189, 248, 0.15)' : (u.rolSolicitado === 'GERENTE' ? 'rgba(251, 191, 36, 0.15)' : 'rgba(16, 185, 129, 0.15)')}; color: ${u.rolSolicitado === 'RECEPCIONISTA' ? '#38bdf8' : (u.rolSolicitado === 'GERENTE' ? '#fbbf24' : '#34d399')}; border: 1px solid ${u.rolSolicitado === 'RECEPCIONISTA' ? 'rgba(56, 189, 248, 0.3)' : (u.rolSolicitado === 'GERENTE' ? 'rgba(251, 191, 36, 0.3)' : 'rgba(16, 185, 129, 0.3)')};">
+                    <span style="display: inline-block; padding: 0.25rem 0.65rem; border-radius: 6px; font-weight: 700; font-size: 0.75rem; background: ${u.rolSolicitado === 'RECEPCIONISTA' ? 'rgba(56, 189, 248, 0.15)' : (u.rolSolicitado === 'GERENTE' ? 'rgba(212, 175, 55, 0.15)' : 'rgba(16, 185, 129, 0.15)')}; color: ${u.rolSolicitado === 'RECEPCIONISTA' ? '#38bdf8' : (u.rolSolicitado === 'GERENTE' ? '#D4AF37' : '#34d399')}; border: 1px solid ${u.rolSolicitado === 'RECEPCIONISTA' ? 'rgba(56, 189, 248, 0.3)' : (u.rolSolicitado === 'GERENTE' ? 'rgba(212, 175, 55, 0.3)' : 'rgba(16, 185, 129, 0.3)')};">
                       ${u.rolSolicitado}
                     </span>
                   </td>
                   <td style="padding: 0.85rem 0.75rem;">
-                    <span style="font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: var(--radius-pill); font-weight: 700; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">
+                    <span style="font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: var(--radius-pill); font-weight: 700; background: rgba(245, 158, 11, 0.15); color: #D4AF37; border: 1px solid rgba(245, 158, 11, 0.3);">
                       PENDIENTE
                     </span>
                   </td>
-                  <td style="padding: 0.85rem 0.75rem; color: #94a3b8; font-size: 0.8rem;">
+                  <td style="padding: 0.85rem 0.75rem; color: #A8A29A; font-size: 0.8rem;">
                     ${u.fechaCreacion ? new Date(u.fechaCreacion).toLocaleString() : 'Reciente'}
                   </td>
                   <td style="padding: 0.85rem 0.75rem; text-align: right;">

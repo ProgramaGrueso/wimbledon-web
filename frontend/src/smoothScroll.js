@@ -3,6 +3,16 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import 'lenis/dist/lenis.css';
 gsap.registerPlugin(ScrollTrigger);
+let activeLenis = null;
+
+/** Desplaza a una sección respetando Lenis (un scrollIntoView nativo pelea con él). */
+export function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (activeLenis) activeLenis.scrollTo(el, { offset: -70 });
+  else el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 export function initSmoothScroll(options = {}) {
   const lenis = new Lenis({
     duration: 1.2,
@@ -15,6 +25,7 @@ export function initSmoothScroll(options = {}) {
     infinite: false,
     ...options,
   });
+  activeLenis = lenis;
   lenis.on('scroll', ScrollTrigger.update);
   const updateRaf = (time) => {
     lenis.raf(time * 1000);
@@ -25,6 +36,7 @@ export function initSmoothScroll(options = {}) {
     gsap.ticker.remove(updateRaf);
     lenis.off('scroll', ScrollTrigger.update);
     lenis.destroy();
+    activeLenis = null;
   };
 }
 export function initHeroPinAnimation() {

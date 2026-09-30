@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hotel Wimbledon — Experiencia Editorial & Discreción</title>
+  <title>Hotel Wimbledon — Suites Privadas frente al Mar</title>
   <meta name="description" content="Hotel Wimbledon. Suites de lujo y estadía por horas en San Miguel, Lima. Discreción absoluta, jacuzzi, cámara seca y atención 24 horas frente al mar." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body class="editorial-body">
@@ -22,12 +22,6 @@
       </a>
       <!-- ACCIONES DE CABECERA ELEGANTE Y LIMPIA -->
       <div class="header-actions">
-        <button id="btnHeaderMyBooking" class="nav-key-badge" title="Consultar mi Pase Digital">
-          🔑 MI RESERVA
-        </button>
-        <button id="btnHeaderReserve" class="btn-editorial-text" style="background: linear-gradient(135deg, #d97706, #fbbf24); color: #060911; font-weight: 800; border: none; border-radius: 9999px; padding: 0.5rem 1.25rem; font-size: 0.8rem; cursor: pointer; letter-spacing: 1px;">
-          RESERVAR
-        </button>
         <button id="btnSandwichToggle" class="sandwich-menu-btn" aria-label="Abrir Menú Principal">
           <div class="sandwich-bars">
             <span class="sandwich-bar"></span>
@@ -55,24 +49,17 @@
 
     <nav class="drawer-nav-list" id="luxuryDrawerNav">
       <a href="#concepto" class="drawer-nav-link"><span class="drawer-nav-num">01</span> EL CONCEPTO</a>
-      <a href="#promocion" class="drawer-nav-link"><span class="drawer-nav-num">02</span> PROMOCIÓN EXCLUSIVA</a>
+      <a href="#promocion" class="drawer-nav-link"><span class="drawer-nav-num">02</span> PROMOCIÓN HALLOWEEN</a>
       <a href="#habitaciones" class="drawer-nav-link"><span class="drawer-nav-num">03</span> NUESTRAS HABITACIONES</a>
       <a href="#parking" class="drawer-nav-link"><span class="drawer-nav-num">04</span> PARKING DIRECTO</a>
       <a href="#decoraciones" class="drawer-nav-link"><span class="drawer-nav-num">05</span> DECORACIONES ESPECIALES</a>
-      <a href="#experiencia" class="drawer-nav-link"><span class="drawer-nav-num">06</span> SERVICIOS & EXPERIENCIA</a>
+      <a href="#experiencia" class="drawer-nav-link"><span class="drawer-nav-num">06</span> SERVICIOS & AMENIDADES</a>
       <a href="#gastronomia" class="drawer-nav-link"><span class="drawer-nav-num">07</span> CARTA GASTRONÓMICA</a>
-      <a href="#testimonios" class="drawer-nav-link"><span class="drawer-nav-num">08</span> EXPERIENCIAS & TESTIMONIOS</a>
+      <a href="#testimonios" class="drawer-nav-link"><span class="drawer-nav-num">08</span> TESTIMONIOS</a>
       <a href="#ubicacion" class="drawer-nav-link"><span class="drawer-nav-num">09</span> UBICACIÓN & CONTACTO</a>
     </nav>
 
     <div class="drawer-bottom-actions">
-      <div class="drawer-action-card" id="btnDrawerMyBooking">
-        <span style="font-size: 1.6rem;">🔑</span>
-        <div>
-          <strong style="color: #fbbf24; display: block; font-size: 0.95rem;">Mi Llave Digital / PIN de Acceso</strong>
-          <span style="font-size: 0.75rem; color: #94a3b8;">Consulta tu reserva, código QR o extiende tu tiempo de estadía</span>
-        </div>
-      </div>
       <a href="admin.html" class="drawer-action-card" style="text-decoration: none;">
         <span style="font-size: 1.6rem;">⚙️</span>
         <div>
@@ -94,24 +81,16 @@
     </div>
   </main>
   <div id="roomDrawer" class="drawer-overlay" aria-hidden="true">
-    <div class="drawer-panel">
+    <div class="drawer-panel" data-lenis-prevent>
       <button class="drawer-close" id="drawerClose" aria-label="Cerrar">&times;</button>
       <div class="drawer-body" id="drawerBody">
       </div>
     </div>
   </div>
   <div id="checkoutModal" class="checkout-modal-overlay" aria-hidden="true">
-    <div class="checkout-modal-panel">
+    <div class="checkout-modal-panel" data-lenis-prevent>
       <button class="checkout-modal-close" id="checkoutCloseBtn" aria-label="Cerrar Checkout">&times;</button>
       <div id="checkoutModalBody">
-      </div>
-    </div>
-  </div>
-  <!-- MODAL: MI LLAVE DIGITAL & CONSULTA / EXTENSIÓN DE ESTADÍA (HU.03, HU.04, HU.07) -->
-  <div id="myBookingModal" class="mybooking-modal-overlay" aria-hidden="true">
-    <div class="mybooking-modal-panel">
-      <button class="mybooking-close-btn" id="myBookingCloseBtn" aria-label="Cerrar">&times;</button>
-      <div id="myBookingModalBody">
       </div>
     </div>
   </div>

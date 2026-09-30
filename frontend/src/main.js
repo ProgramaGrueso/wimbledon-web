@@ -1,6 +1,7 @@
-import { initSmoothScroll, initHeroPinAnimation, initServicesHoverAnimation, initHorizontalSuitesScroll, refreshHorizontalSuitesScroll, initMagneticButton } from './smoothScroll.js';
-import { generateQRCodeSVG } from './qrGenerator.js';
-import { api } from './services/api.js';
+import { initSmoothScroll, scrollToSection, initHeroPinAnimation, initServicesHoverAnimation, initHorizontalSuitesScroll, refreshHorizontalSuitesScroll, initMagneticButton } from './smoothScroll.js';
+import { abrirGaleria } from './galeria.js';
+import { initCursorGato } from './cursorGato.js';
+import { initReserva, openCheckoutModal, getDecoSeleccionado, setDecoSeleccionado, EXTRAS } from './reserva.js';
 
 let landingData = null;
 let roomsData = [];
@@ -13,13 +14,6 @@ let horizontalSuitesMatchMedia = null;
 let catalogViewMode = 'cinematic'; // 'cinematic' or 'grid'
 let currentAmenityFilter = 'all';
 let currentGastroTab = 'gourmet';
-
-const AVAILABLE_EXTRAS = [
-  { id: 'deco', name: 'Pack Romántico Exclusivo', price: 60, desc: 'Pétalos de rosa, velas LED, bombones & bouquet' },
-  { id: 'champagne', name: 'Cava Helada / Champagne', price: 75, desc: 'Botella servida en hielera de acero con 2 copas' },
-  { id: 'piqueo', name: 'Piqueo Gourmet Wimbledon', price: 42, desc: 'Tequeños crocantes, alitas barbecue & salsas' },
-  { id: 'spa-kit', name: 'Kit Spa & Aromaterapia', price: 35, desc: 'Sales de jacuzzi, esencias relajantes & batas de lujo' }
-];
 
 const GASTRO_CATEGORIES = {
   gourmet: [
@@ -49,16 +43,6 @@ const GASTRO_CATEGORIES = {
   ]
 };
 
-let checkoutState = {
-  roomId: null,
-  duration: '6 Horas', 
-  arrivalTime: 'En 30 min', 
-  customTime: '',
-  paymentMethod: 'efectivo', 
-  customerName: '',
-  customerPhone: '',
-  selectedExtras: []
-};
 function parseAmenitiesText(desc) {
   const text = (desc || '').toLowerCase();
   const amenities = [];
@@ -100,33 +84,15 @@ function roomMatchesFilter(room, filterKey) {
   if (filterKey === 'jacuzzi') {
     return desc.includes('jacuzzi') || title.includes('jacuzzi');
   }
+  if (filterKey === 'cochera') {
+    return desc.includes('parking') || desc.includes('cochera') || title.includes('cochera');
+  }
   if (filterKey === 'vista-mar') {
     return desc.includes('vista al mar') || title.includes('vista al mar') || desc.includes('mar');
   }
   return true;
 }
 
-function calculateTotalWithExtras(basePrice, duration, selectedExtras = []) {
-  let subtotal = calculateDynamicPrice(basePrice, duration);
-  selectedExtras.forEach(extraId => {
-    const extra = AVAILABLE_EXTRAS.find(e => e.id === extraId);
-    if (extra) subtotal += extra.price;
-  });
-  return subtotal;
-}
-function parseBasePrice(priceStr) {
-  if (!priceStr) return 150;
-  const num = parseInt(priceStr.replace(/[^0-9]/g, ''), 10);
-  return isNaN(num) || num <= 0 ? 150 : num;
-}
-function calculateDynamicPrice(basePrice, duration) {
-  if (duration === '3 Horas') {
-    return Math.round(basePrice * 0.70);
-  } else if (duration === 'Toda la Noche') {
-    return Math.round(basePrice * 1.60);
-  }
-  return basePrice; 
-}
 async function initApp() {
   try {
     const [resLanding, resRooms, resFigma, resSpecs] = await Promise.all([
@@ -144,14 +110,13 @@ async function initApp() {
     heroMatchMedia = initHeroPinAnimation();
     initServicesHoverAnimation();
     horizontalSuitesMatchMedia = initHorizontalSuitesScroll();
-    initMagneticButton('#btnHeaderReserve');
     initMagneticButton('#btnHeroReserve');
     setupIntersectionObserver();
     setupHeaderScroll();
     setupMobileNav();
     setupDrawerModalStaticListeners();
+    initReserva({ getRooms: () => roomsData, toast: showToastNotification, openTerms: openFullTermsModal });
     setupCheckoutModalListeners();
-    setupMyBookingListeners();
     setupCatalogControls();
     setupGastroTabs();
     setupHeroSlider();
@@ -159,6 +124,7 @@ async function initApp() {
     setupLargeServicesCarousel();
     setupTestimonialsInteractions();
     setupDecoracionesListeners();
+    initCursorGato();
   } catch (error) {
     console.error('Error al cargar datos:', error);
     document.getElementById('app').innerHTML = `
@@ -206,7 +172,7 @@ function renderEditorialApp() {
           <img src="/images/hero/hero-hawaian.jpg" alt="Hawaian Dreams - Hotel Wimbledon" class="hero-slide-bg" />
           <div class="hero-slide-overlay"></div>
           <div class="hero-slide-content">
-            <span class="hero-editorial-tag">NUEVAS EXPERIENCIAS</span>
+            <span class="hero-editorial-tag">SUITES TEMÁTICAS</span>
             <h1 class="hero-editorial-title">
               Suites Temáticas <span class="hero-title-sub">& Confort de Alta Gama</span>
             </h1>
@@ -322,7 +288,7 @@ function renderEditorialApp() {
       <div class="editorial-container relative-z">
         <div class="concepto-video-content reveal">
           <span class="editorial-tag text-gold">EL CONCEPTO WIMBLEDON</span>
-          <h2 class="concepto-editorial-text text-white">
+          <h2 class="concepto-editorial-text lux-gradient-text">
             "Hotel Wimbledon fusiona lo tradicional y lo imaginativo a través de sus más de 130 habitaciones preparadas para el máximo placer e intimidad."
           </h2>
           <p class="concepto-body-text text-light">
@@ -340,19 +306,19 @@ function renderEditorialApp() {
         <div class="promo-grid">
           <!-- Columna Información de Promoción -->
           <div class="promo-info-col reveal">
-            <span class="editorial-tag text-gold">PROMOCIÓN ESPECIAL</span>
-            <h2 class="editorial-headline text-white promo-title">
-              Momentos Inolvidables, <br/><span class="promo-title-sub">Tarifas Exclusivas</span>
+            <span class="editorial-tag text-gold">CAMPAÑA HALLOWEEN • 31 DE OCTUBRE</span>
+            <h2 class="editorial-headline text-white promo-title lux-heading">
+              Una Noche de Disfraces, <br/><span class="promo-title-sub">Tu Disfraz Corre por Nuestra Cuenta</span>
             </h2>
             <p class="promo-editorial-desc text-light">
-              Aprovecha nuestras promociones y tarifas preferenciales de temporada en Hotel Wimbledon. Diseñadas para brindarte privacidad absoluta, confort superior y el mejor equipamiento en San Miguel, frente al mar.
+              Reserva cualquier suite para la noche del <strong>31 de octubre</strong> y recibe <strong>un disfraz temático de cortesía</strong> esperándote en la habitación. Elige tu fantasía; nosotros preparamos el escenario.
             </p>
             <div class="promo-perks-list">
               <div class="promo-perk-item">
                 <span class="promo-perk-bullet">✦</span>
                 <div>
-                  <h4 class="promo-perk-title">Estadías por Horas o Noche Completa</h4>
-                  <p class="promo-perk-desc">Flexibilidad total de 3 horas, 6 horas o pernocte con servicio privado 24/7.</p>
+                  <h4 class="promo-perk-title">1 Disfraz Temático de Cortesía</h4>
+                  <p class="promo-perk-desc">Válido para toda reserva con ingreso el 31 de octubre, en cualquier suite y duración.</p>
                 </div>
               </div>
               <div class="promo-perk-item">
@@ -371,7 +337,7 @@ function renderEditorialApp() {
               </div>
             </div>
             <div class="promo-actions-row">
-              <button type="button" id="btnPromoReserve" class="btn-hero-primary" style="cursor: pointer; border: none;">RESERVAR PROMOCIÓN</button>
+              <button type="button" id="btnPromoReserve" class="btn-hero-primary" style="cursor: pointer; border: none;" aria-label="Reservar promoción de Halloween por WhatsApp">RESERVAR PROMOCIÓN</button>
               <a href="#habitaciones" class="btn-hero-secondary">EXPLORAR SUITES</a>
             </div>
           </div>
@@ -382,7 +348,7 @@ function renderEditorialApp() {
               <div class="promo-video-header">
                 <div class="promo-tag-pill">
                   <span class="promo-pulse-dot"></span>
-                  <span>SPOT PROMOCIONAL</span>
+                  <span>SPOT HALLOWEEN</span>
                 </div>
                 <span class="promo-badge-tag">HOTEL WIMBLEDON</span>
               </div>
@@ -391,7 +357,8 @@ function renderEditorialApp() {
                   id="promoVideo" 
                   class="promo-video-media" 
                   width="608" 
-                  height="352" 
+                  height="342" 
+                  poster="/video/spot-halloween-poster.jpg" 
                   controls 
                   autoplay 
                   muted 
@@ -399,7 +366,8 @@ function renderEditorialApp() {
                   playsinline 
                   preload="metadata"
                 >
-                  <source src="/video/promo.mp4" type="video/mp4" />
+                  <source src="/video/spot-halloween.webm" type="video/webm" />
+                  <source src="/video/spot-halloween.mp4" type="video/mp4" />
                   Tu navegador no soporta la reproducción de video.
                 </video>
               </div>
@@ -419,12 +387,12 @@ function renderEditorialApp() {
       </div>
     </section>
     <!-- SECCIÓN NUESTRAS HABITACIONES (CARRUSEL COMPACTO QUE NO SECUESTRA LA PÁGINA) -->
-    <section id="habitaciones" class="section-editorial" style="background: #060911; padding-top: 5rem; padding-bottom: 4rem; border-top: 1px solid rgba(255,255,255,0.08); position: relative;">
+    <section id="habitaciones" class="section-editorial" style="background: #0B0B0D; padding-top: 5rem; padding-bottom: 4rem; border-top: 1px solid rgba(255,255,255,0.08); position: relative;">
       <div class="editorial-container" style="padding-bottom: 0.5rem;">
         <div class="suites-horizontal-header" style="text-align: center; margin-bottom: 1.5rem;">
           <span class="editorial-tag text-gold">COLECCIÓN EXCLUSIVA DE SUITES</span>
           <h2 class="editorial-headline" style="color: var(--color-white); margin-top: 0.5rem;">Nuestras habitaciones</h2>
-          <p style="color: #94a3b8; max-width: 760px; margin: 0.75rem auto 0; font-size: 1rem; line-height: 1.6;">
+          <p style="color: #A8A29A; max-width: 760px; margin: 0.75rem auto 0; font-size: 1rem; line-height: 1.6;">
             Planifica tu estadía con nosotros, contamos con habitaciones de lujo, habitaciones temáticas, estacionamiento directo a algunas habitaciones, nuestra carta de comidas y bebidas que complementan tu visita.
           </p>
         </div>
@@ -436,11 +404,12 @@ function renderEditorialApp() {
             <button id="btnViewGrid" class="view-toggle-btn">⊞ Mosaico Grid</button>
           </div>
           <div class="amenity-filters-row" id="amenityFiltersRow">
-            <button class="amenity-chip-btn active" data-filter="all">Todas (16)</button>
-            <button class="amenity-chip-btn" data-filter="presidencial">Presidenciales (4)</button>
-            <button class="amenity-chip-btn" data-filter="jacuzzi">Jacuzzi Privado (13)</button>
-            <button class="amenity-chip-btn" data-filter="camara-seca">Cámara Seca (3)</button>
-            <button class="amenity-chip-btn" data-filter="vista-mar">Vista al Mar (6)</button>
+            <button class="amenity-chip-btn active" data-filter="all">Todas</button>
+            <button class="amenity-chip-btn" data-filter="presidencial">Presidenciales</button>
+            <button class="amenity-chip-btn" data-filter="jacuzzi">Jacuzzi privado</button>
+            <button class="amenity-chip-btn" data-filter="cochera">Cochera directa</button>
+            <button class="amenity-chip-btn" data-filter="camara-seca">Cámara seca</button>
+            <button class="amenity-chip-btn" data-filter="vista-mar">Vista al mar</button>
           </div>
         </div>
       </div>
@@ -448,7 +417,7 @@ function renderEditorialApp() {
       <!-- CARRUSEL COMPACTO DE HABITACIONES (SIN PIN NI SCROLLJACKING FORZADO) -->
       <div id="suitesCarouselWrapper" class="editorial-container suites-carousel-wrapper">
         <div class="suites-carousel-controls">
-          <span style="font-size: 0.85rem; color: #94a3b8; letter-spacing: 0.05em;">Desliza horizontalmente o usa las flechas:</span>
+          <span style="font-size: 0.85rem; color: #A8A29A; letter-spacing: 0.05em;">Desliza horizontalmente o usa las flechas:</span>
           <div style="display: flex; gap: 0.6rem;">
             <button id="btnCarouselPrev" class="carousel-nav-btn" aria-label="Habitaciones anteriores">❮</button>
             <button id="btnCarouselNext" class="carousel-nav-btn" aria-label="Habitaciones siguientes">❯</button>
@@ -474,19 +443,19 @@ function renderEditorialApp() {
           <div>
             <span class="editorial-tag text-gold">DISCRECIÓN Y PRIVACIDAD ABSOLUTA</span>
             <h2 class="editorial-headline" style="color: #ffffff; margin-top: 0.5rem;">Parking Directo a la Habitación</h2>
-            <p style="color: #cbd5e1; font-size: 1.05rem; line-height: 1.7; margin-top: 1.25rem;">
+            <p style="color: #D8D2C6; font-size: 1.05rem; line-height: 1.7; margin-top: 1.25rem;">
               Pensando en tu privacidad y hermetismo, contamos con <strong>Parking Directo a la habitación</strong>. Ingresas con tu vehículo a una cochera privada individual con portón automatizado cerrado, conectada directamente al interior de tu suite.
             </p>
             <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.85rem;">
-              <div style="display: flex; align-items: center; gap: 0.75rem; color: #fbbf24;">
+              <div style="display: flex; align-items: center; gap: 0.75rem; color: #D4AF37;">
                 <span style="font-size: 1.2rem;">✓</span>
                 <span style="color: #e2e8f0; font-size: 0.95rem;">Cero contacto con recepción física ni zonas comunes.</span>
               </div>
-              <div style="display: flex; align-items: center; gap: 0.75rem; color: #fbbf24;">
+              <div style="display: flex; align-items: center; gap: 0.75rem; color: #D4AF37;">
                 <span style="font-size: 1.2rem;">✓</span>
                 <span style="color: #e2e8f0; font-size: 0.95rem;">Portón cerrado individual exclusivo para tu habitación.</span>
               </div>
-              <div style="display: flex; align-items: center; gap: 0.75rem; color: #fbbf24;">
+              <div style="display: flex; align-items: center; gap: 0.75rem; color: #D4AF37;">
                 <span style="font-size: 1.2rem;">✓</span>
                 <span style="color: #e2e8f0; font-size: 0.95rem;">Atención y custodia perimetral discreta las 24 horas.</span>
               </div>
@@ -511,7 +480,7 @@ function renderEditorialApp() {
         <div class="editorial-header-block reveal" style="text-align: center; max-width: 820px; margin: 0 auto;">
           <span class="editorial-tag text-gold">OCASIONES INOLVIDABLES & ANIVERSARIOS</span>
           <h2 class="editorial-headline" style="color: #ffffff; margin-top: 0.5rem;">Decoraciones Románticas Especiales</h2>
-          <p style="color: #94a3b8; margin-top: 0.75rem; font-size: 1.05rem; line-height: 1.6;">
+          <p style="color: #A8A29A; margin-top: 0.75rem; font-size: 1.05rem; line-height: 1.6;">
             Enamórate de nuestras decoraciones que tenemos para ti; encontrarás diseños sencillos pero hermosos, y también ambientaciones modernas y elegantes para celebrar aniversarios, cumpleaños o noches especiales.
           </p>
         </div>
@@ -529,7 +498,7 @@ function renderEditorialApp() {
                 Arreglo temático con globos metalizados en tonos rojos y dorados, letrero luminoso LED, pétalos de rosa sobre la cama y copas de champaña para brindar.
               </p>
               <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #fbbf24; font-weight: 700; font-size: 1.1rem;">S/ 60.00</span>
+                <span style="color: #D4AF37; font-weight: 700; font-size: 1.1rem;">S/ 60.00</span>
                 <button class="btn-compact-reserve js-add-deco" data-deco="1" style="padding: 0.55rem 1rem;">Solicitar con Reserva</button>
               </div>
             </div>
@@ -547,7 +516,7 @@ function renderEditorialApp() {
                 Ambientación sensorial con velas aromáticas LED alrededor de la tina de hidromasaje, sales minerales relajantes, pétalos y espumante helado en hielera.
               </p>
               <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #fbbf24; font-weight: 700; font-size: 1.1rem;">S/ 75.00</span>
+                <span style="color: #D4AF37; font-weight: 700; font-size: 1.1rem;">S/ 75.00</span>
                 <button class="btn-compact-reserve js-add-deco" data-deco="2" style="padding: 0.55rem 1rem;">Solicitar con Reserva</button>
               </div>
             </div>
@@ -560,12 +529,12 @@ function renderEditorialApp() {
               <span class="deco-badge">Pack Luxury Aniversario</span>
             </div>
             <div class="deco-info">
-              <h3 class="deco-title">Decoración 3 — Experiencia Completa</h3>
+              <h3 class="deco-title">Decoración 3 — Aniversario de Lujo</h3>
               <p class="deco-desc">
                 Decoración premium integral en suite con bouquet de flores naturales, caja de bombones finos Ferrero Rocher, iluminación tenue y botella de espumante Riccadonna.
               </p>
               <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #fbbf24; font-weight: 700; font-size: 1.1rem;">S/ 95.00</span>
+                <span style="color: #D4AF37; font-weight: 700; font-size: 1.1rem;">S/ 95.00</span>
                 <button class="btn-compact-reserve js-add-deco" data-deco="3" style="padding: 0.55rem 1rem;">Solicitar con Reserva</button>
               </div>
             </div>
@@ -578,9 +547,9 @@ function renderEditorialApp() {
     <section id="experiencia" class="services-carousel-section" aria-labelledby="experienciaTitle">
       <div class="editorial-container">
         <div class="editorial-header-block reveal">
-          <span class="editorial-tag">INSTALACIONES & EXPERIENCIA</span>
+          <span class="editorial-tag">INSTALACIONES SENSORIALES</span>
           <h2 id="experienciaTitle" class="editorial-headline" style="color: var(--color-white);">Servicios & Amenidades Exclusivas</h2>
-          <p style="color: #cbd5e1; margin-top: 0.75rem; font-size: 1.05rem; line-height: 1.6; max-width: 720px;">
+          <p style="color: #D8D2C6; margin-top: 0.75rem; font-size: 1.05rem; line-height: 1.6; max-width: 720px;">
             Instalaciones privadas de alto confort: jacuzzis climatizados, sauna finlandés, cochera directa y servicio gourmet las 24 horas.
           </p>
         </div>
@@ -630,7 +599,7 @@ function renderEditorialApp() {
                 <div class="service-slide-pill"><span>✓</span><span>Desinfección UV Sanitaria</span></div>
               </div>
               <div class="service-slide-actions">
-                <a href="#habitaciones" class="service-cta-btn">Ver suites con jacuzzi →</a>
+                <a href="#habitaciones?filtro=jacuzzi" class="service-cta-btn js-filtro-suites" data-filtro="jacuzzi">Ver suites con jacuzzi →</a>
               </div>
             </div>
           </article>
@@ -656,7 +625,7 @@ function renderEditorialApp() {
                 <div class="service-slide-pill"><span>✓</span><span>100% Cero Contacto</span></div>
               </div>
               <div class="service-slide-actions">
-                <a href="#habitaciones" class="service-cta-btn">Ver suites con cochera →</a>
+                <a href="#habitaciones?filtro=cochera" class="service-cta-btn js-filtro-suites" data-filtro="cochera">Ver suites con cochera →</a>
               </div>
             </div>
           </article>
@@ -682,7 +651,7 @@ function renderEditorialApp() {
                 <div class="service-slide-pill"><span>✓</span><span>Servicio Continuo 24 Horas</span></div>
               </div>
               <div class="service-slide-actions">
-                <a href="#gastronomia" class="service-cta-btn">Explorar carta del bar →</a>
+                <a href="#gastronomia" class="service-cta-btn js-filtro-carta" data-tab="bar">Explorar carta del bar →</a>
               </div>
             </div>
           </article>
@@ -708,7 +677,7 @@ function renderEditorialApp() {
                 <div class="service-slide-pill"><span>✓</span><span>Aromaterapia Eucalipto Puro</span></div>
               </div>
               <div class="service-slide-actions">
-                <a href="#habitaciones" class="service-cta-btn">Ver suites con sauna →</a>
+                <a href="#habitaciones?filtro=camara-seca" class="service-cta-btn js-filtro-suites" data-filtro="camara-seca">Ver suites con sauna →</a>
               </div>
             </div>
           </article>
@@ -734,7 +703,7 @@ function renderEditorialApp() {
                 <div class="service-slide-pill"><span>✓</span><span>Empaque Térmico de Alta Higiene</span></div>
               </div>
               <div class="service-slide-actions">
-                <a href="#gastronomia" class="service-cta-btn">Ver carta de comidas →</a>
+                <a href="#gastronomia" class="service-cta-btn js-filtro-carta" data-tab="gourmet">Ver carta de comidas →</a>
               </div>
             </div>
           </article>
@@ -760,7 +729,7 @@ function renderEditorialApp() {
                 <div class="service-slide-pill"><span>✓</span><span>Atardeceres Panorámicos</span></div>
               </div>
               <div class="service-slide-actions">
-                <a href="#habitaciones" class="service-cta-btn">Ver suites frente al mar →</a>
+                <a href="#habitaciones?filtro=vista-mar" class="service-cta-btn js-filtro-suites" data-filtro="vista-mar">Ver suites frente al mar →</a>
               </div>
             </div>
           </article>
@@ -786,12 +755,12 @@ function renderEditorialApp() {
       </div>
     </section>
     <!-- GASTRONOMÍA EDITORIAL DE LUJO (4 CATEGORÍAS EN VIVO) -->
-    <section id="gastronomia" class="section-editorial" style="background: #060911; border-top: 1px solid rgba(255,255,255,0.08); padding: 6rem 0;">
+    <section id="gastronomia" class="section-editorial" style="background: #0B0B0D; border-top: 1px solid rgba(255,255,255,0.08); padding: 6rem 0;">
       <div class="editorial-container">
         <div class="editorial-header-block reveal" style="text-align: center; margin-bottom: 2.5rem;">
           <span class="editorial-tag text-gold">ROOM SERVICE 24 HORAS CON MÁXIMA DISCRECIÓN</span>
           <h2 class="editorial-headline" style="color: #ffffff; margin-top: 0.5rem;">Gastronomía, Coctelería & Minibar</h2>
-          <p style="color: #94a3b8; max-width: 650px; margin: 0.75rem auto 0; font-size: 0.95rem; line-height: 1.6;">
+          <p style="color: #A8A29A; max-width: 650px; margin: 0.75rem auto 0; font-size: 0.95rem; line-height: 1.6;">
             Disfruta de platos a la carta preparados al instante por nuestros chefs, selecta coctelería y servicio de bar directo a tu suite sin interrumpir tu intimidad.
           </p>
         </div>
@@ -810,29 +779,29 @@ function renderEditorialApp() {
       </div>
     </section>
 
-    <!-- TESTIMONIOS & EXPERIENCIAS REALES DE PAREJAS (SUGERENTES & DISCRETAS) -->
+    <!-- TESTIMONIOS REALES DE PAREJAS (SUGERENTES & DISCRETAS) -->
     <section id="testimonios" class="section-testimonials" aria-labelledby="testimoniosHeading">
       <div class="editorial-container">
         <div class="editorial-header-block reveal" style="text-align: center; max-width: 820px; margin-left: auto; margin-right: auto;">
-          <span class="editorial-tag">CONFIDENCIAL & EXCLUSIVO • EXPERIENCIAS DE HUÉSPEDES</span>
+          <span class="editorial-tag">CONFIDENCIAL & EXCLUSIVO • VOCES DE HUÉSPEDES</span>
           <h2 id="testimoniosHeading" class="editorial-headline" style="color: var(--color-white);">Historias de Pasión & Confort Absoluto</h2>
-          <p style="color: #cbd5e1; margin-top: 1rem; font-size: 1.05rem; line-height: 1.6;">
-            Voces y vivencias de parejas que convirtieron una noche cualquiera en una experiencia ardiente e inolvidable. Cero miradas, máxima complicidad y discreción garantizada las 24 horas.
+          <p style="color: #D8D2C6; margin-top: 1rem; font-size: 1.05rem; line-height: 1.6;">
+            Voces y vivencias de parejas que convirtieron una noche cualquiera en una velada ardiente e inolvidable. Cero miradas, máxima complicidad y discreción garantizada las 24 horas.
           </p>
         </div>
 
         <!-- BARRA DE MÉTRICAS & SOCIAL PROOF -->
         <div class="testimonials-stat-bar reveal">
           <div class="stat-pill">
-            <span style="color: #fbbf24; font-size: 1.1rem;">★</span>
+            <span style="color: #D4AF37; font-size: 1.1rem;">★</span>
             <span><strong>4.9 / 5.0</strong> en Satisfacción de Parejas</span>
           </div>
           <div class="stat-pill">
-            <span style="color: #fbbf24; font-size: 1.1rem;">🔒</span>
+            <span style="color: #D4AF37; font-size: 1.1rem;">🔒</span>
             <span><strong>100% Discreción</strong> y Cero Contacto</span>
           </div>
           <div class="stat-pill">
-            <span style="color: #fbbf24; font-size: 1.1rem;">✨</span>
+            <span style="color: #D4AF37; font-size: 1.1rem;">✨</span>
             <span><strong>+14,200</strong> Noches de Pasión Verificadas</span>
           </div>
         </div>
@@ -840,7 +809,7 @@ function renderEditorialApp() {
         <!-- SELECTORES / FILTROS DE CATEGORÍA -->
         <div class="testimonials-filter-chips reveal" id="testimonialsFilterChips" role="tablist" aria-label="Filtrar testimonios">
           <button type="button" class="testimonial-filter-btn active" data-filter="all" role="tab" aria-selected="true">
-            🔥 Todas las Experiencias (6)
+            🔥 Todos los testimonios (6)
           </button>
           <button type="button" class="testimonial-filter-btn" data-filter="jacuzzi" role="tab" aria-selected="false">
             🛁 Jacuzzis & Hidromasaje
@@ -1004,8 +973,15 @@ function renderEditorialApp() {
         </div>
 
         <!-- BANNER DE LLAMADO A LA ACCIÓN SEDUCTOR -->
-        <div class="testimonials-cta-box reveal">
-          <h3 class="testimonials-cta-title">Atrévete a Romper la Rutina Esta Noche</h3>
+        <div class="testimonials-cta-box cta-cinematic reveal">
+          <video class="cta-cinematic-media" autoplay muted loop playsinline preload="metadata"
+                 poster="/video/cta-loop-poster.jpg" aria-hidden="true">
+            <source src="/video/cta-loop.webm" type="video/webm" />
+            <source src="/video/cta-loop.mp4" type="video/mp4" />
+          </video>
+          <div class="cta-cinematic-glass">
+          <span class="editorial-tag text-gold">ESTA NOCHE</span>
+          <h3 class="testimonials-cta-title lux-heading">Atrévete a Romper la Rutina Esta Noche</h3>
           <p class="testimonials-cta-desc">
             Elige tu suite privada con jacuzzi climatizado, cámara seca, pole dance o vista al mar. Acceso confidencial 24 horas y total privacidad garantizada.
           </p>
@@ -1016,6 +992,7 @@ function renderEditorialApp() {
             <a href="https://wa.me/51990370681?text=Hola%20Hotel%20Wimbledon,%20deseo%20consultar%20disponibilidad%20de%20suites%20con%20jacuzzi%20para%20hoy" target="_blank" rel="noopener noreferrer" class="btn-hero-secondary" style="text-decoration: none;">
               💬 WhatsApp Confidencial 24/7
             </a>
+          </div>
           </div>
         </div>
       </div>
@@ -1028,7 +1005,7 @@ function renderEditorialApp() {
         <div class="editorial-header-block reveal" style="text-align: center; max-width: 800px; margin-left: auto; margin-right: auto;">
           <span class="editorial-tag">LOCALIZACIÓN PRIVADA & ACCESO DIRECTO</span>
           <h2 id="ubicacionHeading" class="editorial-headline" style="color: var(--color-white);">Nuestra Ubicación & Cómo Llegar</h2>
-          <p style="color: #cbd5e1; margin-top: 1rem; font-size: 1.05rem; line-height: 1.6;">
+          <p style="color: #D8D2C6; margin-top: 1rem; font-size: 1.05rem; line-height: 1.6;">
             Ubicados estratégicamente frente al mar en la Costa Verde de San Miguel. Discreción total con ingreso vehicular individual y estacionamiento privado directo a la habitación las 24 horas.
           </p>
         </div>
@@ -1074,14 +1051,6 @@ function renderEditorialApp() {
               >
                 🗺️ Abrir en Google Maps / Waze
               </a>
-              <a 
-                href="https://wa.me/51990370681?text=Hola%20Hotel%20Wimbledon,%20deseo%20consultar%20disponibilidad%20y%20cómo%20llegar." 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                class="btn-ubicacion-wsp"
-              >
-                💬 Consultar por WhatsApp
-              </a>
             </div>
           </div>
 
@@ -1122,7 +1091,7 @@ function renderEditorialApp() {
           <a href="#promocion">PROMOCIÓN</a>
           <a href="#habitaciones">HABITACIONES</a>
           <a href="#experiencia">SERVICIOS</a>
-          <a href="#testimonios">EXPERIENCIAS</a>
+          <a href="#testimonios">TESTIMONIOS</a>
           <a href="#ubicacion">UBICACIÓN</a>
           <a href="https://wimbledon-hotel.com/politicas-y-restricciones/" target="_blank">POLÍTICAS Y RESTRICCIONES</a>
           <a href="https://wimbledon-hotel.com/codigo-etico/" target="_blank">CÓDIGO ÉTICO</a>
@@ -1202,7 +1171,7 @@ function renderSuitesList(filterCategory = 'all') {
   // 1. Render Carrusel Compacto de Suites (Foto real 800x600, tarjeta elegante, no secuestra la pantalla)
   if (trackContainer) {
     if (filtered.length === 0) {
-      trackContainer.innerHTML = `<div style="padding: 3rem; text-align: center; color: #94a3b8; width: 100%;">No hay suites disponibles con este filtro.</div>`;
+      trackContainer.innerHTML = `<div style="padding: 3rem; text-align: center; color: #A8A29A; width: 100%;">No hay suites disponibles con este filtro.</div>`;
     } else {
       trackContainer.innerHTML = filtered.map((room, index) => {
         const amenities = parseAmenitiesText(room.descripcion);
@@ -1238,7 +1207,7 @@ function renderSuitesList(filterCategory = 'all') {
   // 2. Render Grid View Responsivo Alternativo
   if (gridContainer) {
     if (filtered.length === 0) {
-      gridContainer.innerHTML = `<div style="padding: 3rem; text-align: center; color: #94a3b8; grid-column: 1 / -1;">No hay suites disponibles con este filtro.</div>`;
+      gridContainer.innerHTML = `<div style="padding: 3rem; text-align: center; color: #A8A29A; grid-column: 1 / -1;">No hay suites disponibles con este filtro.</div>`;
     } else {
       gridContainer.innerHTML = filtered.map((room) => {
         const amenities = parseAmenitiesText(room.descripcion);
@@ -1301,7 +1270,7 @@ function renderGastronomiaList(categoryKey = 'gourmet') {
       <p class="gastro-item-desc">${item.desc}</p>
       <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
         <span style="font-size: 0.7rem; color: #10b981;">● Disponible 24 Horas</span>
-        <button class="btn-editorial-outline js-order-gastro" data-name="${item.nombre}" data-price="${item.precio}" style="padding: 0.35rem 0.8rem; font-size: 0.75rem; cursor: pointer; border-color: rgba(251,191,36,0.4); color: #fbbf24; border-radius: 9999px;">
+        <button class="btn-editorial-outline js-order-gastro" data-name="${item.nombre}" data-price="${item.precio}" style="padding: 0.35rem 0.8rem; font-size: 0.75rem; cursor: pointer; border-color: rgba(212, 175, 55,0.4); color: #D4AF37; border-radius: 9999px;">
           + Pre-ordenar
         </button>
       </div>
@@ -1322,7 +1291,7 @@ function showToastNotification(message, duration = 3500) {
   if (!toast) {
     toast = document.createElement('div');
     toast.id = 'wimbledonGlobalToast';
-    toast.style.cssText = 'position: fixed; bottom: 2rem; right: 2rem; z-index: 99999; background: #0f172a; color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); padding: 0.85rem 1.25rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.8); transition: all 0.3s ease; opacity: 0; transform: translateY(10px); pointer-events: none; max-width: 380px;';
+    toast.style.cssText = 'position: fixed; bottom: 2rem; right: 2rem; z-index: 99999; background: #16161B; color: #D4AF37; border: 1px solid rgba(212, 175, 55, 0.4); padding: 0.85rem 1.25rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.8); transition: all 0.3s ease; opacity: 0; transform: translateY(10px); pointer-events: none; max-width: 380px;';
     document.body.appendChild(toast);
   }
   toast.textContent = message;
@@ -1337,34 +1306,15 @@ function showToastNotification(message, duration = 3500) {
 
 function preorderGastroItem(item) {
   const cleanName = (item.name || '').replace(/[\r\n]+/g, ' ').trim();
-  const lastBookingStr = localStorage.getItem('wimbledon_last_booking');
-  if (lastBookingStr) {
-    try {
-      const booking = JSON.parse(lastBookingStr);
-      booking.gastroOrders = booking.gastroOrders || [];
-      const existing = booking.gastroOrders.find(o => o.name === cleanName);
-      if (existing) {
-        existing.qty += 1;
-      } else {
-        booking.gastroOrders.push({ name: cleanName, price: item.price, qty: 1 });
-      }
-      localStorage.setItem('wimbledon_last_booking', JSON.stringify(booking));
-      const list = JSON.parse(localStorage.getItem('wimbledon_bookings') || '[]');
-      const idx = list.findIndex(b => b.id === booking.id);
-      if (idx !== -1) {
-        list[idx] = booking;
-        localStorage.setItem('wimbledon_bookings', JSON.stringify(list));
-      }
-      showToastNotification(`🛎️ Añadido a tu habitación (${booking.id}): ${cleanName} (x${existing ? existing.qty : 1})`);
-      return;
-    } catch (e) {}
-  }
-  const msg = encodeURIComponent(`Pedido: ${cleanName} (${item.price}) — Habitación pendiente de check-in`);
-  window.open(`https://wa.me/51990370681?text=${msg}`, '_blank');
+  const msg = encodeURIComponent(`Hola Hotel Wimbledon, quiero pre-ordenar: ${cleanName} (${item.price}) para mi estadía.`);
+  window.open(`https://wa.me/51990370681?text=${msg}`, '_blank', 'noopener');
 }
+
 function openDrawer(roomId) {
   const room = roomsData.find(r => r.id === parseInt(roomId));
   if (!room) return;
+  suiteElegida = room.id;
+  renderDecoState();
   const spec = specsData[roomId] || {
     nombre: room.nombre,
     precio_exacto: room.precio || 'S/ 150.00',
@@ -1374,13 +1324,21 @@ function openDrawer(roomId) {
     impuestos: 'En nuestras tarifas está incluido el IGV de 18%+ 5% recargo al consumo.'
   };
   const titleFormatted = spec.nombre.startsWith('Habitación') ? spec.nombre : `Habitación ${spec.nombre}`;
+  const galeria = (spec.galeria && spec.galeria.length) ? spec.galeria : [room.imagen_url || '/images/suites/suite-presidencial.jpg'];
   const drawerBody = document.getElementById('drawerBody');
   drawerBody.innerHTML = `
     <div class="drawer-spec-layout">
       <h2 class="drawer-spec-title">${titleFormatted}</h2>
       <div class="drawer-spec-price">| ${spec.precio_exacto}</div>
       <p class="drawer-spec-intro">${spec.intro}</p>
-      <img src="${room.imagen_url || '/images/suites/suite-presidencial.jpg'}" onerror="this.onerror=null; this.src='/images/suites/suite-presidencial.jpg';" alt="${spec.nombre}" class="drawer-spec-img" />
+      <button type="button" class="drawer-gallery-main js-galeria" data-index="0" aria-label="Ver galería a pantalla completa">
+        <img src="${galeria[0]}" onerror="this.onerror=null; this.src='/images/suites/suite-presidencial.jpg';" alt="${spec.nombre}" class="drawer-spec-img" />
+        ${galeria.length > 1 ? `<span class="drawer-gallery-badge">⤢ ${galeria.length} fotos</span>` : ''}
+      </button>
+      ${galeria.length > 1 ? `<div class="drawer-gallery-thumbs">${galeria.map((src, i) => `
+        <button type="button" class="drawer-gallery-thumb js-galeria" data-index="${i}" aria-label="Foto ${i + 1}">
+          <img src="${src}" alt="" loading="lazy" onerror="this.closest('button').remove()" />
+        </button>`).join('')}</div>` : ''}
       <h4 class="drawer-spec-heading">Habitación equipada con:</h4>
       <ul class="drawer-spec-bullets">
         ${spec.equipamiento.map(item => `<li>${item}</li>`).join('')}
@@ -1397,6 +1355,12 @@ function openDrawer(roomId) {
   const drawer = document.getElementById('roomDrawer');
   drawer.classList.add('open');
   drawer.setAttribute('aria-hidden', 'false');
+  drawerBody.querySelectorAll('.js-galeria').forEach(btn => {
+    btn.onclick = () => abrirGaleria(
+      galeria.map((src, i) => ({ src, alt: `${spec.nombre} — foto ${i + 1}` })),
+      Number(btn.getAttribute('data-index'))
+    );
+  });
   const drawerBtn = document.getElementById('btnDrawerReserve');
   if (drawerBtn) {
     drawerBtn.onclick = () => {
@@ -1437,30 +1401,14 @@ function setupDrawerModalStaticListeners() {
     };
   }
 }
+const WHATSAPP_HALLOWEEN = 'https://wa.me/51990370681?text=' + encodeURIComponent(
+  'Hola Hotel Wimbledon, deseo reservar mi suite para este 31 de Octubre y acceder a la promoción de Halloween (Disfraz de cortesía).'
+);
+
 function setupCheckoutModalListeners() {
-  const headerBtn = document.getElementById('btnHeaderReserve');
-  const heroReserveBtn = document.getElementById('btnHeroReserve');
   const promoReserveBtn = document.getElementById('btnPromoReserve');
-  const openDefaultCheckout = () => {
-    const defaultRoomId = roomsData.length > 0 ? roomsData[0].id : 860;
-    openCheckoutModal(defaultRoomId);
-  };
-  if (headerBtn) headerBtn.onclick = openDefaultCheckout;
-  if (heroReserveBtn) heroReserveBtn.onclick = openDefaultCheckout;
-  if (promoReserveBtn) promoReserveBtn.onclick = openDefaultCheckout;
-  const closeBtn = document.getElementById('checkoutCloseBtn');
-  const modal = document.getElementById('checkoutModal');
-  if (closeBtn && modal) {
-    closeBtn.onclick = () => {
-      modal.classList.remove('open');
-      modal.setAttribute('aria-hidden', 'true');
-    };
-    modal.onclick = (e) => {
-      if (e.target === modal) {
-        modal.classList.remove('open');
-        modal.setAttribute('aria-hidden', 'true');
-      }
-    };
+  if (promoReserveBtn) {
+    promoReserveBtn.onclick = () => window.open(WHATSAPP_HALLOWEEN, '_blank', 'noopener');
   }
 }
 function setupDirectCheckoutListeners() {
@@ -1470,452 +1418,6 @@ function setupDirectCheckoutListeners() {
       if (id) openCheckoutModal(id);
     };
   });
-}
-
-let checkoutDelegationBound = false;
-
-function bindCheckoutModalDelegationOnce() {
-  if (checkoutDelegationBound) return;
-  const modalBody = document.getElementById('checkoutModalBody');
-  if (!modalBody) return;
-
-  // Delegación de clic para chips, métodos de pago y extras
-  modalBody.addEventListener('click', (e) => {
-    // 1. Selector de chip (duración u horario)
-    const chip = e.target.closest('.chip-option');
-    if (chip) {
-      const group = chip.getAttribute('data-group');
-      const val = chip.getAttribute('data-value');
-      if (group && val) selectChip(group, val);
-      return;
-    }
-
-    // 2. Tarjeta de medio de pago
-    const payCard = e.target.closest('.payment-card');
-    if (payCard) {
-      const group = payCard.getAttribute('data-group');
-      const val = payCard.getAttribute('data-value');
-      if (group && val) selectChip(group, val);
-      return;
-    }
-
-    // 3. Tarjeta de extra
-    const extraCard = e.target.closest('.extra-option-card');
-    if (extraCard) {
-      const extraId = extraCard.getAttribute('data-extra');
-      if (extraId) toggleExtra(extraId);
-      return;
-    }
-  });
-
-  // Delegación de cambio en selector de suite y horario
-  modalBody.addEventListener('change', (e) => {
-    if (e.target.id === 'roomSwitcher') {
-      checkoutState.roomId = String(e.target.value);
-      updateRoomSummaryOnly(); // No destruye los inputs del formulario
-    } else if (e.target.id === 'checkoutArrivalTime') {
-      checkoutState.arrivalTime = e.target.value;
-    }
-  });
-
-  // Accesibilidad de teclado (Enter / Space activa chips)
-  modalBody.addEventListener('keydown', (e) => {
-    if (e.key !== 'Enter' && e.key !== ' ') return;
-    const interactive = e.target.closest('.chip-option, .payment-card, .extra-option-card');
-    if (interactive) {
-      e.preventDefault();
-      interactive.click();
-    }
-  });
-
-  checkoutDelegationBound = true;
-}
-
-function selectChip(group, value) {
-  document.querySelectorAll(`[data-group="${group}"]`).forEach(chip => {
-    const isSelected = chip.getAttribute('data-value') === value;
-    chip.classList.toggle('active', isSelected);
-    chip.setAttribute('aria-checked', String(isSelected));
-  });
-  checkoutState[group] = value;
-
-  updateSummaryTotal();
-}
-
-function toggleExtra(extraId) {
-  if (checkoutState.selectedExtras.includes(extraId)) {
-    checkoutState.selectedExtras = checkoutState.selectedExtras.filter(id => id !== extraId);
-  } else {
-    checkoutState.selectedExtras.push(extraId);
-  }
-  const card = document.querySelector(`[data-extra="${extraId}"]`);
-  if (card) {
-    const isSelected = checkoutState.selectedExtras.includes(extraId);
-    card.classList.toggle('selected', isSelected);
-    card.setAttribute('aria-pressed', String(isSelected));
-    const statusText = card.querySelector('.extra-status-text');
-    if (statusText) {
-      statusText.textContent = isSelected ? '✓ Incluido' : '+ Agregar';
-      statusText.style.color = isSelected ? '#fbbf24' : '#64748b';
-    }
-  }
-  updateSummaryTotal();
-}
-
-function updateRoomSummaryOnly() {
-  const room = roomsData.find(r => String(r.id) === String(checkoutState.roomId));
-  if (!room) return; // Guard clause defensivo (Solución #1 - v4)
-
-  const titleEl = document.getElementById('checkoutRoomTitle');
-  if (titleEl) titleEl.textContent = `Reservar ${room.nombre}`;
-
-  const metaEl = document.getElementById('checkoutRoomMeta');
-  if (metaEl) {
-    metaEl.textContent = `${room.categoria_nombre || 'Suite de Lujo'} • Tarifa Base: ${room.precio || 'S/ 150'} • Cochera Privada Directa`;
-  }
-
-  // Actualizar subtítulos dinámicos de duración según la tarifa base de la nueva suite
-  const basePrice = parseBasePrice(room.precio);
-  const dur3Sub = document.querySelector('[data-group="duration"][data-value="3 Horas"] .chip-sub');
-  if (dur3Sub) dur3Sub.textContent = `S/ ${calculateDynamicPrice(basePrice, '3 Horas')} (-30%)`;
-  const dur6Sub = document.querySelector('[data-group="duration"][data-value="6 Horas"] .chip-sub');
-  if (dur6Sub) dur6Sub.textContent = `S/ ${calculateDynamicPrice(basePrice, '6 Horas')} (Estándar)`;
-  const durNocheSub = document.querySelector('[data-group="duration"][data-value="Toda la Noche"] .chip-sub');
-  if (durNocheSub) durNocheSub.textContent = `S/ ${calculateDynamicPrice(basePrice, 'Toda la Noche')} (hasta 12 PM)`;
-
-  updateSummaryTotal();
-}
-
-function updateSummaryTotal() {
-  const room = roomsData.find(r => String(r.id) === String(checkoutState.roomId)) || roomsData[0];
-  if (!room) return;
-  const basePrice = parseBasePrice(room.precio);
-  const totalPrice = calculateTotalWithExtras(basePrice, checkoutState.duration, checkoutState.selectedExtras);
-
-  const totalEl = document.getElementById('summaryTotalVal');
-  if (totalEl) totalEl.textContent = `S/ ${totalPrice}.00`;
-
-  const btnSubmit = document.getElementById('btnSubmitBooking');
-  if (btnSubmit) btnSubmit.textContent = `CONFIRMAR RESERVA Y EMITIR PASE (S/ ${totalPrice}.00 en Recepción)`;
-
-  const summaryDesc = document.getElementById('summaryDetailsDesc');
-  if (summaryDesc) {
-    summaryDesc.textContent = `${checkoutState.duration} ${checkoutState.selectedExtras.length > 0 ? `+ ${checkoutState.selectedExtras.length} Extras` : ''} • Sin cobros en línea`;
-  }
-}
-
-function openCheckoutModal(roomId, initialOptions = {}) {
-  const defaultId = roomsData.length > 0 ? roomsData[0].id : 860;
-  const selectedId = roomId ? String(roomId) : String(defaultId);
-  const room = roomsData.find(r => String(r.id) === selectedId) || roomsData[0];
-  if (!room) return;
-
-  checkoutState = {
-    roomId: String(room.id),
-    duration: initialOptions.duration || '6 Horas',
-    arrivalTime: initialOptions.arrivalTime || 'En 30 min',
-    customTime: '',
-    paymentMethod: 'efectivo',
-    customerName: initialOptions.customerName || '',
-    customerPhone: initialOptions.customerPhone || '',
-    selectedExtras: []
-  };
-
-  renderCheckoutModalContent();
-  bindCheckoutModalDelegationOnce();
-
-  const modal = document.getElementById('checkoutModal');
-  if (modal) {
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden', 'false');
-  }
-}
-
-function renderCheckoutModalContent() {
-  const modalBody = document.getElementById('checkoutModalBody');
-  if (!modalBody) return;
-  const room = roomsData.find(r => String(r.id) === String(checkoutState.roomId)) || roomsData[0];
-  const basePrice = parseBasePrice(room.precio);
-  const totalPrice = calculateTotalWithExtras(basePrice, checkoutState.duration, checkoutState.selectedExtras);
-
-  modalBody.innerHTML = `
-    <div style="text-align: center; margin-bottom: 1.25rem;">
-      <span style="color: #fbbf24; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">RESERVA DISCRETA • HOTEL DE PASO</span>
-      <h2 id="checkoutRoomTitle" style="font-family: var(--font-serif); font-size: 1.85rem; color: #fff; margin-top: 0.25rem;">
-        Reservar ${room.nombre}
-      </h2>
-      <p id="checkoutRoomMeta" style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.2rem;">
-        ${room.categoria_nombre || 'Suite de Lujo'} • Tarifa Base: ${room.precio || 'S/ 150'} • Cochera Privada Directa
-      </p>
-    </div>
-
-    <!-- COMBO BOX: HABITACIONES DISPONIBLES -->
-    <div style="margin-bottom: 1.25rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 12px; padding: 0.85rem 1rem;">
-      <label for="roomSwitcher" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #fbbf24; font-weight: bold; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em;">
-        <span>HABITACIÓN / SUITE (COMBO BOX)</span>
-        <span style="color: #34d399; font-size: 0.7rem; font-weight: 600;">● SELECCIONA TU SUITE</span>
-      </label>
-      <select id="roomSwitcher" class="room-switcher" style="width: 100%; padding: 0.75rem 0.9rem; background: #0b0f19; border: 1px solid #334155; border-radius: 8px; color: #fff; font-family: var(--font-sans); font-size: 0.95rem; cursor: pointer; outline: none;">
-        ${roomsData.map(r => `
-          <option value="${String(r.id)}" ${String(r.id) === String(checkoutState.roomId) ? 'selected' : ''}>
-            🟢 ${r.nombre} — ${r.precio || 'S/ 150'} (${r.categoria_nombre || 'Suite'}) • DISPONIBLE
-          </option>
-        `).join('')}
-      </select>
-    </div>
-
-    <!-- COMBO BOX: HORARIO ESTIMADO DE LLEGADA (DISPONIBLE) -->
-    <div style="margin-bottom: 1.25rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 0.85rem 1rem;">
-      <label for="checkoutArrivalTime" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #38bdf8; font-weight: bold; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em;">
-        <span>HORA DE LLEGADA (COMBO BOX DISPONIBILIDAD)</span>
-        <span style="color: #38bdf8; font-size: 0.7rem; font-weight: 600;">⏱️ HORARIO DISPONIBLE</span>
-      </label>
-      <select id="checkoutArrivalTime" class="room-switcher" style="width: 100%; padding: 0.75rem 0.9rem; background: #0b0f19; border: 1px solid #334155; border-radius: 8px; color: #fff; font-family: var(--font-sans); font-size: 0.95rem; cursor: pointer; outline: none;">
-        <option value="En 30 min" ${checkoutState.arrivalTime === 'En 30 min' ? 'selected' : ''}>🟢 Inmediato (Llegada en 30 min) — Suite Disponible Inmediata</option>
-        <option value="20:00" ${checkoutState.arrivalTime === '20:00' ? 'selected' : ''}>🟢 20:00 hrs (Turno Noche) — Suite Disponible</option>
-        <option value="21:00" ${checkoutState.arrivalTime === '21:00' ? 'selected' : ''}>🟢 21:00 hrs (Turno Noche) — Suite Disponible</option>
-        <option value="22:00" ${checkoutState.arrivalTime === '22:00' ? 'selected' : ''}>🟢 22:00 hrs (Noche Plena) — Suite Disponible</option>
-        <option value="23:00" ${checkoutState.arrivalTime === '23:00' ? 'selected' : ''}>🟢 23:00 hrs (Noche Plena) — Suite Disponible</option>
-        <option value="00:00" ${checkoutState.arrivalTime === '00:00' ? 'selected' : ''}>🟢 00:00 hrs (Madrugada) — Suite Disponible</option>
-        <option value="01:00" ${checkoutState.arrivalTime === '01:00' ? 'selected' : ''}>🟢 01:00 hrs (Madrugada) — Suite Disponible</option>
-        <option value="02:00" ${checkoutState.arrivalTime === '02:00' ? 'selected' : ''}>🟢 02:00 hrs (Madrugada) — Suite Disponible</option>
-        <option value="04:00" ${checkoutState.arrivalTime === '04:00' ? 'selected' : ''}>🟢 04:00 hrs (Madrugada) — Suite Disponible</option>
-        <option value="08:00" ${checkoutState.arrivalTime === '08:00' ? 'selected' : ''}>🟢 08:00 hrs (Turno Mañana) — Suite Disponible</option>
-        <option value="12:00" ${checkoutState.arrivalTime === '12:00' ? 'selected' : ''}>🟢 12:00 hrs (Turno Mediodía) — Suite Disponible</option>
-        <option value="16:00" ${checkoutState.arrivalTime === '16:00' ? 'selected' : ''}>🟢 16:00 hrs (Turno Tarde) — Suite Disponible</option>
-      </select>
-    </div>
-
-    <!-- ÍNDICE DE SECCIONES -->
-    <div class="checkout-sections-index">
-      <span>1. Duración</span>
-      <span class="step-sep">•</span>
-      <span>2. Extras</span>
-      <span class="step-sep">•</span>
-      <span>3. Pago en Recepción</span>
-      <span class="step-sep">•</span>
-      <span>4. Emitir Pase</span>
-    </div>
-
-    <form id="checkoutDynamicForm">
-      <!-- PASO 1: DURACIÓN DE ESTADÍA -->
-      <div style="margin-bottom: 1.5rem;">
-        <label style="display: block; font-size: 0.8rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">
-          PASO 1 — SELECCIONA LA DURACIÓN
-        </label>
-        <div class="chip-group" role="radiogroup" aria-label="Duración de la estancia" data-group="duration">
-          <button type="button" class="chip-option ${checkoutState.duration === '3 Horas' ? 'active' : ''}" role="radio" data-group="duration" data-value="3 Horas" aria-checked="${checkoutState.duration === '3 Horas'}">
-            <span class="chip-title">3 Horas</span>
-            <span class="chip-sub">S/ ${calculateDynamicPrice(basePrice, '3 Horas')} (-30%)</span>
-          </button>
-          <button type="button" class="chip-option ${checkoutState.duration === '6 Horas' ? 'active' : ''}" role="radio" data-group="duration" data-value="6 Horas" aria-checked="${checkoutState.duration === '6 Horas'}">
-            <span class="chip-title">6 Horas</span>
-            <span class="chip-sub">S/ ${calculateDynamicPrice(basePrice, '6 Horas')} (Estándar)</span>
-          </button>
-          <button type="button" class="chip-option ${checkoutState.duration === 'Toda la Noche' ? 'active' : ''}" role="radio" data-group="duration" data-value="Toda la Noche" aria-checked="${checkoutState.duration === 'Toda la Noche'}">
-            <span class="chip-title">Toda la Noche</span>
-            <span class="chip-sub">S/ ${calculateDynamicPrice(basePrice, 'Toda la Noche')} (hasta 12 PM)</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- PASO 2: EXTRAS Y EXPERIENCIAS (OPCIONAL) -->
-      <div style="margin-bottom: 1.5rem;">
-        <label style="display: block; font-size: 0.8rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em;">
-          PASO 2 — PERSONALIZA TU ESTADÍA (OPCIONAL)
-        </label>
-        <span style="font-size: 0.72rem; color: #94a3b8; display: block; margin-bottom: 0.6rem;">Encuentra tu suite decorada y preparada con total discreción al ingresar.</span>
-        
-        <div class="checkout-extras-grid">
-          ${AVAILABLE_EXTRAS.map(extra => {
-            const isSelected = checkoutState.selectedExtras.includes(extra.id);
-            return `
-              <button type="button" class="extra-option-card ${isSelected ? 'selected' : ''}" role="button" data-extra="${extra.id}" aria-pressed="${isSelected}" style="text-align: left; background: #0f172a; border: 1px solid ${isSelected ? '#fbbf24' : '#334155'}; cursor: pointer; width: 100%;">
-                <div>
-                  <div class="extra-title-row">
-                    <span class="extra-name">${extra.name}</span>
-                    <span class="extra-price">+S/ ${extra.price}</span>
-                  </div>
-                  <p class="extra-desc">${extra.desc}</p>
-                </div>
-                <div class="extra-status-text" style="margin-top: 0.5rem; text-align: right; font-size: 0.75rem; color: ${isSelected ? '#fbbf24' : '#64748b'}; font-weight: bold;">
-                  ${isSelected ? '✓ Incluido' : '+ Agregar'}
-                </div>
-              </button>
-            `;
-          }).join('')}
-        </div>
-      </div>
-
-      <!-- PASO 3: POLÍTICA DE PAGO EN EFECTIVO (CERO HUELLA BANCARIA) -->
-      <div style="margin-bottom: 1.5rem;">
-        <label style="display: block; font-size: 0.8rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">
-          PASO 3 — MODALIDAD DE PAGO (HOTEL DE PASO)
-        </label>
-        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 14px; padding: 1.25rem;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="font-size: 1.4rem;">💵</span>
-              <div>
-                <div style="color: #34d399; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                  Sin Pago Online • Abono en Efectivo en Recepción
-                </div>
-                <div style="font-size: 0.72rem; color: #94a3b8;">La reserva solo asegura la habitación y horario</div>
-              </div>
-            </div>
-            <span style="font-size: 0.72rem; background: rgba(16, 185, 129, 0.2); color: #6ee7b7; padding: 0.3rem 0.65rem; border-radius: 6px; font-weight: bold; letter-spacing: 0.5px;">
-              🛡️ CERO HUELLA DIGITAL
-            </span>
-          </div>
-          <p style="font-size: 0.82rem; color: #cbd5e1; line-height: 1.5; margin: 0; margin-top: 0.4rem;">
-            Al ser un hotel de paso de máxima privacidad, <strong>no se cobra por reservar ni se solicitan tarjetas de crédito/débito</strong> para evitar cualquier registro o vulnerabilidad bancaria. El monto de la estadía se cancela presencialmente en <strong>EFECTIVO</strong> al momento del ingreso.
-          </p>
-        </div>
-      </div>
-
-      <!-- DATOS DE REGISTRO CLIENTE (ALIAS DISCRETO) -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
-        <div>
-          <label for="checkoutName" style="display: block; font-size: 0.75rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.35rem;">NOMBRE / ALIAS DISCRETO</label>
-          <input type="text" id="checkoutName" name="customerName" value="${checkoutState.customerName}" placeholder="Nombre o alias" style="width: 100%; padding: 0.85rem; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: #fff; font-size: 0.9rem;" required />
-        </div>
-        <div>
-          <label for="checkoutPhone" style="display: block; font-size: 0.75rem; color: #cbd5e1; font-weight: bold; margin-bottom: 0.35rem;">TELÉFONO CELULAR (PARA EL PASE)</label>
-          <input type="tel" id="checkoutPhone" name="customerPhone" value="${checkoutState.customerPhone}" placeholder="990370681" style="width: 100%; padding: 0.85rem; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: #fff; font-size: 0.9rem;" required />
-        </div>
-      </div>
-
-      <!-- RESUMEN DEL PRECIO (MONTO A ABONAR EN RECEPCIÓN) -->
-      <div class="price-summary-box">
-        <div>
-          <span class="summary-total-label">Monto a Cancelar en Recepción (Efectivo)</span>
-          <div id="summaryDetailsDesc" style="font-size: 0.75rem; color: #94a3b8;">
-            ${checkoutState.duration} ${checkoutState.selectedExtras.length > 0 ? `+ ${checkoutState.selectedExtras.length} Extras` : ''} • Sin cobros en línea
-          </div>
-        </div>
-        <span class="summary-total-val" id="summaryTotalVal">S/ ${totalPrice}.00</span>
-      </div>
-
-      <!-- CASILLA OBLIGATORIA: TÉRMINOS, CONDICIONES Y REGLAMENTO DEL HOTEL -->
-      <div class="checkout-terms-block">
-        <label for="checkoutTermsAgree" class="checkout-terms-label">
-          <input 
-            type="checkbox" 
-            id="checkoutTermsAgree" 
-            name="termsAgree" 
-            class="checkout-terms-checkbox" 
-            required 
-          />
-          <span class="checkout-terms-copy">
-            He leído y acepto el 
-            <button 
-              type="button" 
-              id="btnOpenTermsModal" 
-              class="checkout-terms-link"
-              title="Haga clic para leer el Acta de entrega de llave y Reglamento Interno en pantalla"
-              style="background: none; border: none; padding: 0; margin: 0; color: #fbbf24; text-decoration: underline; font-weight: bold; cursor: pointer; font-size: inherit; font-family: inherit;"
-            >
-              Acta de entrega de llave, Términos y Reglamento del Hotel
-            </button>
-            <a 
-              href="/reglamento_hotel_wimbledon.pdf" 
-              download="reglamento_hotel_wimbledon.pdf" 
-              id="linkDownloadReglamento" 
-              class="terms-badge-dl"
-              title="Descargar el documento oficial en PDF"
-            >
-              📄 Descargar PDF
-            </a>
-          </span>
-        </label>
-        <div id="termsErrorAlert" class="checkout-terms-alert" role="alert" style="display: none;">
-          ⚠️ Debe marcar la casilla para aceptar los términos y leer el reglamento del hotel antes de emitir su pase.
-        </div>
-      </div>
-
-      <button type="submit" id="btnSubmitBooking" class="btn-editorial-light" style="width: 100%; text-align: center; justify-content: center; padding: 1.1rem; font-weight: bold; font-size: 1rem; cursor: not-allowed; background: linear-gradient(135deg, #d97706, #fbbf24); color: #000; border: none; border-radius: 12px; box-shadow: 0 10px 25px rgba(217, 119, 6, 0.35); opacity: 0.5;" disabled>
-        CONFIRMAR RESERVA Y EMITIR PASE (S/ ${totalPrice}.00 en Recepción)
-      </button>
-    </form>
-  `;
-
-  function syncFormFields() {
-    checkoutState.customerName = document.getElementById('checkoutName')?.value || checkoutState.customerName;
-    checkoutState.customerPhone = document.getElementById('checkoutPhone')?.value || checkoutState.customerPhone;
-  }
-
-  const form = document.getElementById('checkoutDynamicForm');
-  const termsCheckbox = document.getElementById('checkoutTermsAgree');
-  const termsAlert = document.getElementById('termsErrorAlert');
-  const submitBtn = document.getElementById('btnSubmitBooking');
-  const btnTermsModal = document.getElementById('btnOpenTermsModal');
-
-  if (btnTermsModal) {
-    btnTermsModal.onclick = (e) => {
-      e.preventDefault();
-      openFullTermsModal();
-    };
-  }
-
-  if (termsCheckbox && submitBtn) {
-    termsCheckbox.addEventListener('change', () => {
-      if (termsCheckbox.checked) {
-        if (termsAlert) termsAlert.style.display = 'none';
-        submitBtn.removeAttribute('disabled');
-        submitBtn.style.opacity = '1';
-        submitBtn.style.cursor = 'pointer';
-      } else {
-        submitBtn.setAttribute('disabled', 'true');
-        submitBtn.style.opacity = '0.5';
-        submitBtn.style.cursor = 'not-allowed';
-      }
-    });
-  }
-
-  if (form) {
-    form.onsubmit = async (e) => {
-      e.preventDefault();
-      if (termsCheckbox && !termsCheckbox.checked) {
-        if (termsAlert) termsAlert.style.display = 'block';
-        termsCheckbox.focus();
-        return;
-      }
-      syncFormFields();
-      const currentRoom = roomsData.find(r => String(r.id) === String(checkoutState.roomId)) || roomsData[0];
-      const basePriceCurrent = parseBasePrice(currentRoom.precio);
-      const totalAmount = calculateTotalWithExtras(basePriceCurrent, checkoutState.duration, checkoutState.selectedExtras);
-
-      // Limpiar errores previos si existen
-      const errorBox = document.getElementById('checkoutInlineError');
-      if (errorBox) errorBox.style.display = 'none';
-
-      // Estado de carga en el botón
-      const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
-      if (submitBtn) {
-        submitBtn.setAttribute('disabled', 'true');
-        submitBtn.style.opacity = '0.7';
-        submitBtn.style.cursor = 'wait';
-        submitBtn.innerHTML = '<span>⏳ Verificando disponibilidad y registrando...</span>';
-      }
-
-      try {
-        const res = await confirmAndSaveBooking(currentRoom, totalAmount);
-        if (!res.ok && submitBtn) {
-          submitBtn.removeAttribute('disabled');
-          submitBtn.style.opacity = '1';
-          submitBtn.style.cursor = 'pointer';
-          submitBtn.innerHTML = originalBtnHtml;
-        }
-      } catch (err) {
-        if (submitBtn) {
-          submitBtn.removeAttribute('disabled');
-          submitBtn.style.opacity = '1';
-          submitBtn.style.cursor = 'pointer';
-          submitBtn.innerHTML = originalBtnHtml;
-        }
-      }
-    };
-  }
 }
 
 // ==========================================================================
@@ -1935,21 +1437,21 @@ function openFullTermsModal() {
       <button class="admin-modal-close" id="btnCloseFullTerms" title="Cerrar">&times;</button>
       
       <div style="text-align: center; margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
-        <span style="color: #fbbf24; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">
+        <span style="color: #D4AF37; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">
           DOCUMENTO OFICIAL • HOTEL WIMBLEDON S.A.C.
         </span>
         <h2 style="font-family: var(--font-serif); font-size: 1.55rem; color: #fff; margin-top: 0.35rem;">
           Acta de Entrega de Llave y Reglamento Interno
         </h2>
-        <p style="color: #94a3b8; font-size: 0.8rem; margin-top: 0.25rem;">
+        <p style="color: #A8A29A; font-size: 0.8rem; margin-top: 0.25rem;">
           RUC: 20508934121 • Av. Costanera 2008, San Miguel, Lima • Tel: (01) 560-0388
         </p>
       </div>
 
-      <div style="font-size: 0.82rem; line-height: 1.6; color: #cbd5e1; display: flex; flex-direction: column; gap: 1rem;">
+      <div style="font-size: 0.82rem; line-height: 1.6; color: #D8D2C6; display: flex; flex-direction: column; gap: 1rem;">
         <!-- ACTA DE ENTREGA DE LLAVE -->
-        <div style="background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.35); border-radius: 12px; padding: 1.15rem;">
-          <h3 style="color: #fbbf24; font-size: 1rem; margin-top: 0; margin-bottom: 0.5rem; font-family: var(--font-serif); text-transform: uppercase; letter-spacing: 0.5px;">
+        <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid rgba(212, 175, 55, 0.35); border-radius: 12px; padding: 1.15rem;">
+          <h3 style="color: #D4AF37; font-size: 1rem; margin-top: 0; margin-bottom: 0.5rem; font-family: var(--font-serif); text-transform: uppercase; letter-spacing: 0.5px;">
             Acta de entrega de llave
           </h3>
           <p style="margin: 0 0 0.6rem 0;">
@@ -1965,7 +1467,7 @@ function openFullTermsModal() {
 
         <!-- REGLAMENTO INTERNO DE HOSPEDAJE -->
         <div>
-          <h4 style="color: #fff; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem; border-left: 3px solid #fbbf24; padding-left: 0.5rem;">
+          <h4 style="color: #fff; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem; border-left: 3px solid #D4AF37; padding-left: 0.5rem;">
             Reglamento Interno de Hospedaje
           </h4>
           <div style="display: flex; flex-direction: column; gap: 0.65rem;">
@@ -1988,8 +1490,8 @@ function openFullTermsModal() {
         </div>
 
         <!-- POLÍTICAS Y RESTRICCIONES -->
-        <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 1rem;">
-          <h4 style="color: #fbbf24; font-size: 0.9rem; text-transform: uppercase; margin-top: 0; margin-bottom: 0.5rem;">
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid #2E2C33; border-radius: 10px; padding: 1rem;">
+          <h4 style="color: #D4AF37; font-size: 0.9rem; text-transform: uppercase; margin-top: 0; margin-bottom: 0.5rem;">
             Políticas y Restricciones
           </h4>
           <ul style="margin: 0; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem;">
@@ -2005,7 +1507,7 @@ function openFullTermsModal() {
         </div>
 
         <!-- POLÍTICAS DE RESERVAS -->
-        <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 1rem;">
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid #2E2C33; border-radius: 10px; padding: 1rem;">
           <h4 style="color: #38bdf8; font-size: 0.9rem; text-transform: uppercase; margin-top: 0; margin-bottom: 0.5rem;">
             Políticas de reservas
           </h4>
@@ -2024,14 +1526,14 @@ function openFullTermsModal() {
           href="/reglamento_hotel_wimbledon.pdf" 
           download="reglamento_hotel_wimbledon.pdf" 
           class="btn-editorial-outline" 
-          style="padding: 0.75rem 1.25rem; font-size: 0.85rem; text-decoration: none; border-color: #fbbf24; color: #fbbf24; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.4rem;"
+          style="padding: 0.75rem 1.25rem; font-size: 0.85rem; text-decoration: none; border-color: #D4AF37; color: #D4AF37; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.4rem;"
         >
           📄 Descargar PDF Oficial
         </a>
         <button 
           id="btnAcceptTermsFromModal" 
           class="btn-editorial-light" 
-          style="padding: 0.75rem 1.35rem; font-size: 0.85rem; font-weight: bold; background: linear-gradient(135deg, #d97706, #fbbf24); color: #000; border: none; border-radius: 8px; cursor: pointer;"
+          style="padding: 0.75rem 1.35rem; font-size: 0.85rem; font-weight: bold; background: linear-gradient(135deg, #B8932E, #D4AF37); color: #000; border: none; border-radius: 8px; cursor: pointer;"
         >
           ✓ He leído y Acepto los Términos
         </button>
@@ -2053,628 +1555,6 @@ function openFullTermsModal() {
         chk.dispatchEvent(new Event('change'));
       }
       modal.classList.remove('open');
-    };
-  }
-}
-
-function renderKeycardHTML(booking) {
-  // El pase codifica SOLO el qrToken emitido por el backend. Sin prefijo de
-  // version, sin firma y sin carga legible: el valor que recepcion envia a
-  // POST /api/recepcion/checkin tiene que ser exactamente este.
-  const qrSvg = generateQRCodeSVG(booking.qrToken, {
-    size: 160,
-    accentColor: '#fbbf24',
-    darkColor: '#0b0f19'
-  });
-
-  const extrasText = (booking.extras || []).map(id => {
-    const ex = AVAILABLE_EXTRAS.find(e => e.id === id);
-    return ex ? ex.name : id;
-  }).join(', ');
-
-  return `
-    <div class="keycard-container">
-      <div class="wimbledon-keycard" id="keycardElement">
-        <div class="keycard-header">
-          <div class="keycard-brand">
-            <div class="keycard-chip"></div>
-            <div>
-              <span class="keycard-brand-text">WIMBLEDON</span>
-              <span style="display:block; font-size: 0.65rem; letter-spacing: 1.5px; color: #cbd5e1;">BLACK KEYCARD • ACCESO DIGITAL</span>
-            </div>
-          </div>
-          <div class="keycard-status-badge">
-            <span class="avail-dot"></span>
-            <span>${booking.estado}</span>
-          </div>
-        </div>
-
-        <div class="keycard-body-grid">
-          <div>
-            <span style="font-size: 0.7rem; color: #fbbf24; letter-spacing: 1px; text-transform: uppercase; font-weight: bold;">
-              PASE DE ACCESO DISCRETO
-            </span>
-            <h3 class="keycard-suite-title">${booking.habitacionNombre}</h3>
-            <p class="keycard-meta-line">
-              ⏱️ ${booking.duracion} • Llegada: ${booking.horaIngreso ? booking.horaIngreso.slice(0, 5) : booking.horarioLlegada}
-              ${extrasText ? `<br/><span style="color: #fbbf24; font-size: 0.75rem;">✦ Extras: ${extrasText}</span>` : ''}
-            </p>
-
-            <div class="keycard-pin-box">
-              <span class="keycard-pin-label">REFERENCIA DE RESERVA</span>
-              <span class="keycard-pin-code">${booking.id}</span>
-            </div>
-            <div class="keycard-pin-box">
-              <span class="keycard-pin-label">SALIDA CONFIRMADA POR EL HOTEL</span>
-              <span class="keycard-pin-code">${booking.horaSalida || '--:--'}</span>
-            </div>
-            ${booking.notaDiferencia ? `<div style="margin: 0.6rem 0; padding: 0.5rem 0.75rem; background: rgba(251, 191, 36, 0.10); border: 1px solid rgba(251, 191, 36, 0.35); border-radius: 8px; font-size: 0.75rem; color: #fde68a; line-height: 1.4;">&#9201; ${booking.notaDiferencia}</div>` : ''}
-            <div style="margin: 0.6rem 0; padding: 0.5rem 0.75rem; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; font-size: 0.75rem; color: #a7f3d0; line-height: 1.4;">
-              💵 <strong>Abono en Efectivo:</strong> S/ ${booking.monto}.00 a cancelar en recepción al ingresar.<br/>
-              🛡️ <strong>Sin huella bancaria:</strong> Máxima privacidad y discreción garantizada.
-            </div>
-            <span style="font-size: 0.72rem; color: #94a3b8; display: block; line-height: 1.4;">
-              Presenta este Pase Digital en recepcion al llegar al hotel para completar tu ingreso.
-            </span>
-          </div>
-
-          <div class="keycard-qr-wrap">
-            ${qrSvg}
-            <span class="keycard-qr-caption">${booking.id}</span>
-          </div>
-        </div>
-
-        <div class="keycard-countdown-bar">
-          <span class="countdown-label">Modalidad solicitada:</span>
-          <span class="countdown-time" id="keycardLiveTimer">${booking.duracion}</span>
-        </div>
-
-        <div class="keycard-actions-row">
-          <button class="btn-keycard-action btn-keycard-save" onclick="window.print()">
-            📄 Guardar Pase
-          </button>
-          <a href="https://wa.me/51990370681?text=${encodeURIComponent('Hola Hotel Wimbledon, tengo mi Pase Digital ' + booking.id + ' para ' + booking.habitacionNombre + '. Pago S/ ' + booking.monto + ' en efectivo en recepción.')}" target="_blank" class="btn-keycard-action btn-keycard-whatsapp">
-            💬 Enviar a WhatsApp
-          </a>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function setupKeycardTilt() {
-  const card = document.getElementById('keycardElement');
-  if (!card) return;
-  card.addEventListener('mousemove', (e) => {
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-    card.style.transform = `rotateY(${(x / 15).toFixed(1)}deg) rotateX(${(-y / 15).toFixed(1)}deg)`;
-  });
-  card.addEventListener('mouseleave', () => {
-    card.style.transform = 'rotateY(0deg) rotateX(0deg)';
-  });
-}
-
-/**
- * Convierte la hora de ingreso elegida a HH:mm:ss, el formato que espera el backend.
- */
-function formatearHoraIngreso(seleccionada) {
-  let hora = seleccionada || '20:00';
-  if (hora.includes('30 min') || hora.includes('Inmediato')) {
-    const d = new Date(Date.now() + 30 * 60000);
-    hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:00`;
-  } else if (hora.length === 5) {
-    hora = hora + ':00';
-  }
-  return hora;
-}
-
-/**
- * Horas de la modalidad elegida. Es una PISTA DE DISPONIBILIDAD que se envía a
- * GET /api/publico/habitaciones, no un dato de la reserva: la hora de salida la
- * calcula el servidor con la duracionBloqueHoras de la habitacion.
- */
-function duracionElegidaEnHoras(modalidad) {
-  if (modalidad === '3 Horas') return 3;
-  if (modalidad === 'Toda la Noche') return 12;
-  return 6;
-}
-
-/**
- * Resuelve el habitacionId contra el catálogo del backend.
- *
- * El identificador autoritativo es habitaciones.id en MySQL, que es lo que
- * espera CrearReservaRequest.habitacionId y lo que devuelve
- * ReservaResponse.habitacion.id. La tarjeta del portal ya trae un id de ese
- * espacio, pero se CONFIRMA contra el catálogo vivo en vez de suponerlo,
- * porque el backend sincroniza ese conjunto en cada arranque.
- *
- * Primero por id; si no coincide, por tipo de suite, tomando la primera unidad
- * disponible de ese tipo, porque el huésped eligió un tipo y no una puerta. Si no
- * hay coincidencia, la reserva no se puede crear y el checkout se cancela con
- * mensaje para que el huésped vuelva a elegir.
- */
-async function resolverHabitacionEnCatalogo(room, fecha, horaIngreso, duracionHoras) {
-  const catalogo = await api.obtenerHabitaciones(fecha, horaIngreso, duracionHoras);
-  if (!Array.isArray(catalogo) || catalogo.length === 0) {
-    return null;
-  }
-
-  const disponible = catalogo.filter(h => h.disponible !== false);
-
-  const porId = catalogo.find(h => String(h.id) === String(room.id));
-  if (porId) {
-    return porId;
-  }
-
-  const tipoBuscado = String(room.categoria_nombre || room.nombre || '').trim().toLowerCase();
-  if (tipoBuscado) {
-    const porTipo = disponible.find(h => {
-      const tipo = String(h.tipo || '').trim().toLowerCase();
-      const nombre = String(h.nombre || '').trim().toLowerCase();
-      return tipo === tipoBuscado || nombre.includes(tipoBuscado) || tipoBuscado.includes(nombre);
-    });
-    if (porTipo) {
-      return porTipo;
-    }
-  }
-
-  return null;
-}
-
-/**
- * Registra la reserva en el backend y, solo si el backend la crea, emite el pase.
- *
- * ANTES este checkout acuñaba un código y un PIN con Math.random(), componía un
- * token que el backend nunca emitió y lo guardaba en localStorage y en Supabase.
- * Recepción no podía resolver ese pase: siempre terminaba en 404.
- *
- * AHORA el pase procede del qrToken que devuelve POST /api/reservas. Si la
- * llamada no responde, el huésped NO recibe pase: se le comunica que la reserva
- * no pudo registrarse y se le ofrece reintentar, porque un pase fabricado en el
- * navegador sería irresoluble otra vez.
- */
-async function confirmAndSaveBooking(room, totalAmount) {
-  const errorBox = document.getElementById('checkoutInlineError');
-  if (errorBox) errorBox.style.display = 'none';
-
-  const horaIngreso = formatearHoraIngreso(checkoutState.arrivalTime);
-  const duracionHoras = duracionElegidaEnHoras(checkoutState.duration);
-  const fecha = new Date().toISOString().split('T')[0];
-  const dniVal = checkoutState.customerDni || Math.floor(10000000 + Math.random() * 80000000).toString();
-
-  const fallo = (mensaje) => {
-    if (errorBox) {
-      errorBox.textContent = mensaje;
-      errorBox.style.display = 'block';
-    }
-    showToastNotification(mensaje);
-    return { ok: false, booking: null };
-  };
-
-  // 1. El identificador de habitación es el del catálogo del backend.
-  let habitacion;
-  try {
-    habitacion = await resolverHabitacionEnCatalogo(room, fecha, horaIngreso, duracionHoras);
-  } catch (err) {
-    return fallo('No pudimos verificar la disponibilidad con el hotel. Revisa tu conexion e intentalo de nuevo.');
-  }
-
-  if (!habitacion) {
-    return fallo('La suite que elegiste ya no esta disponible en ese horario. Vuelve a seleccionar una suite e intentalo de nuevo.');
-  }
-
-  // 2. La reserva la crea el backend. Sin excepcion: es la unica autoridad del
-  //    identificador de habitacion, de la hora de salida y del qrToken.
-  const email = checkoutState.customerEmail || 'huesped@wimbledon.pe';
-  const nombreCompleto = checkoutState.customerName || 'Huésped Wimbledon';
-  const telefono = checkoutState.customerPhone || '990370681';
-
-  let reserva;
-  const modalidadMap = {
-    '3 Horas': 'TRES_HORAS',
-    '6 Horas': 'SEIS_HORAS',
-    'Toda la Noche': 'DOCE_HORAS'
-  };
-  const modalidad = modalidadMap[checkoutState.duration] || 'SEIS_HORAS';
-
-  try {
-    reserva = await api.crearReserva({
-      habitacionId: habitacion.id,
-      fecha,
-      horaIngreso,
-      nombreCompleto,
-      telefono,
-      email,
-      notas: '',
-      modalidad
-    });
-  } catch (err) {
-    const mensaje = err && err.status === 409
-      ? 'Ese horario acaba de ocuparse. Vuelve a seleccionar el horario e intentalo de nuevo.'
-      : 'No pudimos registrar tu reserva. Intentalo de nuevo en unos momentos.';
-    return fallo(mensaje);
-  }
-
-  if (!reserva || !reserva.qrToken) {
-    return fallo('No pudimos registrar tu reserva. Intentalo de nuevo en unos minutos.');
-  }
-
-  // 3. La hora de salida es respetada y persistida por el servidor según la modalidad
-  const horaSalidaServidor = String(reserva.horaSalida || '').slice(0, 5);
-  const modalidadElegida = checkoutState.duration;
-  const notaDiferencia = '';
-
-  const booking = {
-    id: reserva.id != null ? String(reserva.id) : String(reserva.qrToken),
-    qrToken: reserva.qrToken,
-    habitacionId: reserva.habitacion ? reserva.habitacion.id : habitacion.id,
-    habitacionNombre: reserva.habitacion ? reserva.habitacion.nombre : habitacion.nombre,
-    duracion: modalidadElegida,
-    horarioLlegada: checkoutState.arrivalTime,
-    horaIngreso,
-    horaSalida: horaSalidaServidor,
-    notaDiferencia,
-    extras: [...checkoutState.selectedExtras],
-    monto: totalAmount,
-    medioPago: 'Efectivo (En Recepción)',
-    clienteNombre: nombreCompleto,
-    clienteTelefono: telefono,
-    clienteEmail: email,
-    numeroDocumento: dniVal,
-    estado: reserva.estado || 'CONFIRMADA',
-    fechaReserva: new Date().toISOString()
-  };
-
-  // localStorage queda como CACHÉ DE INTERFAZ, no como copia autoritativa. La
-  // fuente de verdad es la fila que el backend acaba de crear.
-  try {
-    const existing = JSON.parse(localStorage.getItem('wimbledon_bookings') || '[]');
-    existing.unshift(booking);
-    localStorage.setItem('wimbledon_bookings', JSON.stringify(existing));
-    localStorage.setItem('wimbledon_last_booking', JSON.stringify(booking));
-    window.dispatchEvent(new CustomEvent('wimbledon:booking-created', { detail: booking }));
-  } catch (storageErr) {
-    console.warn('Advertencia de almacenamiento local:', storageErr);
-  }
-
-  // 4. El pase se renderiza unicamente con reserva creada.
-  const modalBody = document.getElementById('checkoutModalBody');
-  if (!modalBody) return { ok: true, booking };
-
-  modalBody.innerHTML = `
-    <div style="text-align: center; margin-bottom: 1.5rem;">
-      <span style="display: inline-block; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 4px 14px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.75rem;">
-        ✓ RESERVA CONFIRMADA & PASE EMITIDO
-      </span>
-      <h2 style="font-family: var(--font-serif); font-size: 2rem; color: #fff; margin-top: 0.25rem;">
-        ¡Tu Pase Digital está Listo!
-      </h2>
-      <p style="color: #94a3b8; font-size: 0.85rem; margin: 0.25rem auto 1rem; max-width: 480px; line-height: 1.5;">
-        Guarda tu pase o presenta tu código QR al llegar a recepción para ingresar de inmediato.
-      </p>
-    </div>
-
-    ${renderKeycardHTML(booking)}
-
-    <div style="margin-top: 1.5rem; text-align: center;">
-      <button id="btnFinishCheckout" class="btn-editorial-light" style="width: 100%; padding: 1rem; font-weight: bold; background: #fff; color: #000; border: none; border-radius: 12px; cursor: pointer; font-size: 0.95rem;">
-        FINALIZAR Y CERRAR
-      </button>
-    </div>
-  `;
-
-  setupKeycardTilt();
-
-  const btnFinish = document.getElementById('btnFinishCheckout');
-  if (btnFinish) {
-    btnFinish.onclick = () => {
-      const modal = document.getElementById('checkoutModal');
-      if (modal) {
-        modal.classList.remove('open');
-        modal.setAttribute('aria-hidden', 'true');
-      }
-    };
-  }
-
-  return { ok: true, booking };
-}
-
-function setupMyBookingListeners() {
-  const btnNav = document.getElementById('btnNavMyBooking');
-  const btnHeader = document.getElementById('btnHeaderMyBooking');
-  const modal = document.getElementById('myBookingModal');
-  const closeBtn = document.getElementById('myBookingCloseBtn');
-
-  const openModal = () => {
-    renderMyBookingModal();
-    if (modal) {
-      modal.classList.add('open');
-      modal.setAttribute('aria-hidden', 'false');
-    }
-  };
-
-  if (btnNav) btnNav.onclick = openModal;
-  if (btnHeader) btnHeader.onclick = openModal;
-
-  if (closeBtn && modal) {
-    closeBtn.onclick = () => {
-      modal.classList.remove('open');
-      modal.setAttribute('aria-hidden', 'true');
-    };
-    modal.onclick = (e) => {
-      if (e.target === modal) {
-        modal.classList.remove('open');
-        modal.setAttribute('aria-hidden', 'true');
-      }
-    };
-  }
-}
-
-function renderMyBookingModal(targetBooking = null) {
-  const container = document.getElementById('myBookingModalBody');
-  if (!container) return;
-
-  let booking = targetBooking;
-  if (!booking) {
-    try {
-      booking = JSON.parse(localStorage.getItem('wimbledon_last_booking') || 'null');
-    } catch (e) {}
-  }
-
-  container.innerHTML = `
-    <div style="text-align: center; margin-bottom: 1.5rem;">
-      <span style="color: #fbbf24; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">PORTAL DE AUTOGESTIÓN DEL HUÉSPED</span>
-      <h2 style="font-family: var(--font-serif); font-size: 1.85rem; color: #fff; margin-top: 0.25rem;">
-        🔑 Mi Llave Digital & Estadía
-      </h2>
-      <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
-        Consulta tu código de acceso, extiende tu tiempo o gestiona tu reserva con discreción absoluta.
-      </p>
-    </div>
-
-    <!-- BUSCADOR DE RESERVA -->
-    <div class="booking-lookup-box">
-      <input type="text" id="lookupCodeInput" class="booking-lookup-input" placeholder="Ingresa código (ej: #WMB-1024) o celular" value="${booking ? booking.id : ''}" />
-      <button id="btnSearchBooking" class="btn-booking-lookup">BUSCAR</button>
-    </div>
-
-    <div id="lookupResultContainer">
-      ${booking ? renderBookingManageSection(booking) : `
-        <div style="text-align: center; padding: 2.5rem 1rem; color: #64748b;">
-          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔒</div>
-          <p style="font-size: 0.9rem;">No tienes reservas activas en este dispositivo.</p>
-          <p style="font-size: 0.75rem; margin-top: 0.25rem;">Ingresa el código que recibiste al reservar para visualizar tu Pase Digital.</p>
-        </div>
-      `}
-    </div>
-  `;
-
-  const btnSearch = document.getElementById('btnSearchBooking');
-  if (btnSearch) {
-    btnSearch.onclick = () => {
-      const q = (document.getElementById('lookupCodeInput').value || '').trim().toUpperCase();
-      const resultBox = document.getElementById('lookupResultContainer');
-      try {
-        const list = JSON.parse(localStorage.getItem('wimbledon_bookings') || '[]');
-        const found = list.find(b => b.id.toUpperCase() === q || b.id.replace('#', '').toUpperCase() === q || b.clienteTelefono === q);
-        if (found) {
-          renderMyBookingModal(found);
-        } else {
-          if (resultBox) {
-            resultBox.innerHTML = `
-              <div style="text-align: center; padding: 2.5rem 1rem; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; color: #fca5a5;">
-                <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🔍</div>
-                <p style="font-size: 0.95rem; font-weight: 600;">No se encontró ninguna reserva para "${q}".</p>
-                <p style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.25rem;">Verifica el formato del código (ej: #WMB-1024) o el número de teléfono celular utilizado al reservar.</p>
-              </div>
-            `;
-          }
-        }
-      } catch (e) {
-        if (resultBox) {
-          resultBox.innerHTML = `<div style="color: #fca5a5; text-align: center; padding: 1.5rem;">Error al buscar la reserva.</div>`;
-        }
-      }
-    };
-  }
-
-  if (booking) {
-    setupBookingManageActions(booking);
-  }
-}
-
-function renderBookingManageSection(booking) {
-  return `
-    ${renderKeycardHTML(booking)}
-
-    <!-- HU.04: EXTENDER ESTADÍA -->
-    <div class="extension-box" style="margin-top: 1.5rem; background: #0f172a; border: 1px solid #334155; border-radius: 14px; padding: 1.25rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-        <div>
-          <span style="color: #38bdf8; font-size: 0.85rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
-            ⏱️ ¿Deseas más tiempo en tu suite?
-          </span>
-          <p style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.2rem;">
-            Extiende tu estadía de forma discreta sin llamar a recepción.
-          </p>
-        </div>
-      </div>
-      <div class="extension-options-row" style="display: flex; gap: 0.75rem;">
-        <button class="btn-extend-chip js-extend-stay" data-hours="2" data-price="45" style="flex: 1; padding: 0.75rem; background: #0b0f19; border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; border-radius: 10px; font-weight: 600; cursor: pointer;">
-          +2 Horas (S/ 45.00)
-        </button>
-        <button class="btn-extend-chip js-extend-stay" data-hours="3" data-price="65" style="flex: 1; padding: 0.75rem; background: #0b0f19; border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; border-radius: 10px; font-weight: 600; cursor: pointer;">
-          +3 Horas (S/ 65.00)
-        </button>
-      </div>
-
-      <!-- CONTENEDOR DINÁMICO INLINE PARA EXTENSIÓN (SOLUCIÓN #8) -->
-      <div id="inlineExtendActionPanel" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px;"></div>
-    </div>
-
-    <!-- HU.07: CANCELACIÓN O REPROGRAMACIÓN -->
-    <div style="margin-top: 1.5rem; background: rgba(244, 63, 94, 0.08); border: 1px solid rgba(244, 63, 94, 0.25); border-radius: 12px; padding: 1rem 1.25rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
-        <div>
-          <span style="font-size: 0.8rem; color: #fda4af; font-weight: bold;">Política de Modificación & Cancelación</span>
-          <span style="display: block; font-size: 0.72rem; color: #94a3b8;">Cancelación discreta conforme a políticas del Hotel Wimbledon.</span>
-        </div>
-        <button id="btnCancelBooking" class="btn-editorial-outline" style="border-color: #f43f5e; color: #f43f5e; font-size: 0.75rem; padding: 0.45rem 0.95rem; cursor: pointer; border-radius: 8px;">
-          Cancelar Reserva
-        </button>
-      </div>
-
-      <!-- CONTENEDOR DINÁMICO INLINE PARA CANCELACIÓN (SOLUCIÓN #8) -->
-      <div id="inlineCancelActionPanel" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.4); border-radius: 10px;"></div>
-    </div>
-  `;
-}
-
-function setupBookingManageActions(booking) {
-  setupKeycardTilt();
-
-  // Extensión de estadía interactiva inline (Solución #8)
-  document.querySelectorAll('.js-extend-stay').forEach(btn => {
-    btn.onclick = (e) => {
-      const hours = parseInt(e.currentTarget.getAttribute('data-hours'), 10);
-      const price = parseInt(e.currentTarget.getAttribute('data-price'), 10);
-      const panel = document.getElementById('inlineExtendActionPanel');
-      if (!panel) return;
-
-      panel.style.display = 'block';
-      panel.innerHTML = `
-        <div style="font-size: 0.85rem; color: #fff; margin-bottom: 0.5rem; font-weight: 600;">
-          Extender estadía: +${hours} Horas — Recargo: <span style="color: #fbbf24;">S/ ${price}.00</span>
-        </div>
-        <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.75rem;">
-          Selecciona medio de pago para la extensión:
-        </p>
-        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.85rem;">
-          <button type="button" class="btn-extend-method active" data-method="yape" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; background: #0b0f19; border: 1px solid #fbbf24; color: #fbbf24; border-radius: 6px; cursor: pointer;">
-            📱 Yape / Plin
-          </button>
-          <button type="button" class="btn-extend-method" data-method="card" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; background: #0b0f19; border: 1px solid #334155; color: #94a3b8; border-radius: 6px; cursor: pointer;">
-            💳 Tarjeta
-          </button>
-        </div>
-        <div style="display: flex; gap: 0.5rem;">
-          <button id="btnConfirmExtendAction" class="btn-editorial-light" style="padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: bold; background: #10b981; color: #fff; border: none; border-radius: 6px; cursor: pointer;">
-            Confirmar Extensión (S/ ${price}.00)
-          </button>
-          <button id="btnDismissExtendAction" class="btn-editorial-outline" style="padding: 0.5rem 1rem; font-size: 0.78rem; border-color: #64748b; color: #94a3b8; border-radius: 6px; cursor: pointer;">
-            Cerrar
-          </button>
-        </div>
-      `;
-
-      let extendMethod = 'yape';
-      panel.querySelectorAll('.btn-extend-method').forEach(mBtn => {
-        mBtn.onclick = () => {
-          panel.querySelectorAll('.btn-extend-method').forEach(b => {
-            b.style.borderColor = '#334155';
-            b.style.color = '#94a3b8';
-          });
-          mBtn.style.borderColor = '#fbbf24';
-          mBtn.style.color = '#fbbf24';
-          extendMethod = mBtn.getAttribute('data-method');
-        };
-      });
-
-      document.getElementById('btnDismissExtendAction').onclick = () => {
-        panel.style.display = 'none';
-      };
-
-      document.getElementById('btnConfirmExtendAction').onclick = () => {
-        booking.duracion = `${booking.duracion} (+${hours}h)`;
-        booking.monto = (Number(booking.monto) || 150) + price;
-        try {
-          const list = JSON.parse(localStorage.getItem('wimbledon_bookings') || '[]');
-          const idx = list.findIndex(b => b.id === booking.id);
-          if (idx !== -1) list[idx] = booking;
-          localStorage.setItem('wimbledon_bookings', JSON.stringify(list));
-          localStorage.setItem('wimbledon_last_booking', JSON.stringify(booking));
-          window.dispatchEvent(new CustomEvent('wimbledon:booking-created', { detail: booking }));
-        } catch (err) {}
-        showToastNotification(`✅ ¡Estadía extendida +${hours}h exitosamente! Monto adicional: S/ ${price}.00 (${extendMethod.toUpperCase()})`);
-        renderMyBookingModal(booking);
-      };
-    };
-  });
-
-  // Cancelación de reserva interactiva inline (Solución #8)
-  const btnCancel = document.getElementById('btnCancelBooking');
-  if (btnCancel) {
-    btnCancel.onclick = () => {
-      const panel = document.getElementById('inlineCancelActionPanel');
-      if (!panel) return;
-
-      panel.style.display = 'block';
-      panel.innerHTML = `
-        <div style="font-size: 0.85rem; color: #fda4af; font-weight: 600; margin-bottom: 0.4rem;">
-          ¿Confirmas la anulación de tu reserva ${booking.id}?
-        </div>
-        <p style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 0.85rem;">
-          Se invalidará el PIN de acceso a la suite y cochera privada conforme a las políticas del Hotel Wimbledon.
-        </p>
-        <div style="display: flex; gap: 0.5rem;">
-          <button id="btnExecuteCancel" class="btn-editorial-light" style="padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: bold; background: #e11d48; color: #fff; border: none; border-radius: 6px; cursor: pointer;">
-            Sí, Cancelar Reserva
-          </button>
-          <button id="btnDismissCancel" class="btn-editorial-outline" style="padding: 0.5rem 1rem; font-size: 0.78rem; border-color: #64748b; color: #94a3b8; border-radius: 6px; cursor: pointer;">
-            Mantener Reserva
-          </button>
-        </div>
-      `;
-
-      document.getElementById('btnDismissCancel').onclick = () => {
-        panel.style.display = 'none';
-      };
-
-      document.getElementById('btnExecuteCancel').onclick = async () => {
-        // La cancelacion la registra el backend, no el navegador. Se demuestra
-        // posesion de la credencial con el qrToken, igual que en la creacion.
-        //
-        // DEUDA DECLARADA, NO RESUELTA: ese endpoint solo cubre reservas en
-        // estado PENDIENTE. La cancelacion por el huesped de una reserva ya
-        // CONFIRMADA no tiene cliente en el backend y no puede
-        // completarse desde el portal. Queda registrada para un hito propio.
-        const btnEjecutar = document.getElementById('btnExecuteCancel');
-        if (btnEjecutar) {
-          btnEjecutar.setAttribute('disabled', 'true');
-          btnEjecutar.style.opacity = '0.7';
-          btnEjecutar.style.cursor = 'wait';
-        }
-
-        try {
-          await api.cancelarReservaPendiente(booking.id, booking.qrToken);
-        } catch (err) {
-          const mensaje = err && err.status === 400
-            ? 'El token de la reserva no es valido. Contacta a recepcion para cancelarla.'
-            : 'Solo se pueden cancelar desde el portal las reservas pendientes de confirmacion. Para una reserva confirmada, contacta a recepcion.';
-          showToastNotification(mensaje);
-          if (btnEjecutar) {
-            btnEjecutar.removeAttribute('disabled');
-            btnEjecutar.style.opacity = '1';
-            btnEjecutar.style.cursor = 'pointer';
-          }
-          return;
-        }
-
-        booking.estado = 'CANCELADA';
-        try {
-          const list = JSON.parse(localStorage.getItem('wimbledon_bookings') || '[]');
-          const idx = list.findIndex(b => b.id === booking.id);
-          if (idx !== -1) list[idx] = booking;
-          localStorage.setItem('wimbledon_bookings', JSON.stringify(list));
-          localStorage.setItem('wimbledon_last_booking', JSON.stringify(booking));
-          window.dispatchEvent(new CustomEvent('wimbledon:booking-created', { detail: booking }));
-        } catch (err) {}
-
-        showToastNotification(`Reserva ${booking.id} cancelada.`);
-        renderMyBookingModal(booking);
-      };
     };
   }
 }
@@ -2778,10 +1658,7 @@ function setupHeroSlider() {
   }
 
   document.querySelectorAll('.js-hero-reserve-btn').forEach(btn => {
-    btn.onclick = () => {
-      const defaultRoomId = roomsData.length > 0 ? roomsData[0].id : 860;
-      openCheckoutModal(defaultRoomId);
-    };
+    btn.onclick = () => openCheckoutModal(suiteElegida);
   });
 
   startAutoplay();
@@ -2981,23 +1858,67 @@ function setupTestimonialsInteractions() {
   });
 
   document.querySelectorAll('.js-testimonial-reserve-btn').forEach(btn => {
-    btn.onclick = () => {
-      const defaultRoomId = roomsData.length > 0 ? roomsData[0].id : 860;
-      openCheckoutModal(defaultRoomId);
-    };
+    btn.onclick = () => openCheckoutModal(suiteElegida);
   });
 }
+
+// Suite que el visitante abrió por última vez; da el total estimado en la barra de selección.
+let suiteElegida = null;
 
 function setupDecoracionesListeners() {
   document.querySelectorAll('.js-add-deco').forEach(btn => {
     btn.onclick = (e) => {
-      const decoId = e.currentTarget.getAttribute('data-deco');
-      const defaultRoomId = roomsData.length > 0 ? roomsData[0].id : 860;
-      checkoutState.selectedExtras = ['deco'];
-      openCheckoutModal(defaultRoomId);
-      showToastNotification(`✨ Pack Decoración ${decoId} añadido a tu reserva`);
+      const id = `DECO_${e.currentTarget.getAttribute('data-deco')}`;
+      setDecoSeleccionado(getDecoSeleccionado() === id ? null : id);
     };
   });
+  document.addEventListener('wimbledon:deco-change', renderDecoState);
+  renderDecoState();
+}
+
+/** Refleja el pack elegido en las tarjetas y en la barra fija con el total estimado. */
+function renderDecoState() {
+  const decoId = getDecoSeleccionado();
+  document.querySelectorAll('.js-add-deco').forEach(btn => {
+    const selected = `DECO_${btn.getAttribute('data-deco')}` === decoId;
+    btn.closest('.deco-card')?.classList.toggle('is-selected', selected);
+    btn.classList.toggle('is-selected', selected);
+    btn.setAttribute('aria-pressed', String(selected));
+    btn.innerHTML = selected ? '✓ Pack seleccionado <span class="deco-remove" aria-hidden="true">Quitar</span>' : 'Solicitar con reserva';
+  });
+
+  let bar = document.getElementById('rsvSelectionBar');
+  const pack = EXTRAS.find(e => e.id === decoId);
+  if (!pack) {
+    bar?.classList.remove('visible');
+    return;
+  }
+  if (!bar) {
+    bar = document.createElement('aside');
+    bar.id = 'rsvSelectionBar';
+    bar.className = 'rsv-selection-bar';
+    bar.setAttribute('aria-live', 'polite');
+    document.body.appendChild(bar);
+  }
+  const room = roomsData.find(r => String(r.id) === String(suiteElegida));
+  const base = room ? parseInt(String(room.precio).replace(/[^0-9]/g, ''), 10) || 0 : 0;
+  bar.innerHTML = `
+    <div class="rsv-selection-info">
+      <span class="rsv-selection-pack">${pack.name} <strong>+S/ ${pack.price.toFixed(2)}</strong></span>
+      <span class="rsv-selection-total">${room
+        ? `${room.nombre} S/ ${base.toFixed(2)} · <strong>Total S/ ${(base + pack.price).toFixed(2)}</strong>`
+        : 'Elige tu suite para ver el total'}</span>
+    </div>
+    <div class="rsv-selection-actions">
+      <button type="button" class="rsv-selection-cta">${room ? 'Reservar' : 'Elegir suite'}</button>
+      <button type="button" class="rsv-selection-close" aria-label="Quitar pack">✕</button>
+    </div>`;
+  bar.querySelector('.rsv-selection-cta').onclick = () => {
+    if (room) openCheckoutModal(room.id);
+    else scrollToSection('habitaciones');
+  };
+  bar.querySelector('.rsv-selection-close').onclick = () => setDecoSeleccionado(null);
+  bar.classList.add('visible');
 }
 
 function setupCatalogControls() {
@@ -3014,16 +1935,40 @@ function setupCatalogControls() {
     };
   }
 
-  // Filtros de Amenidades
+  // Filtros de Amenidades (el conteo sale del catálogo, no de un número fijo)
   const chips = document.querySelectorAll('.amenity-chip-btn');
   chips.forEach(chip => {
-    chip.onclick = (e) => {
-      chips.forEach(c => c.classList.remove('active'));
-      e.currentTarget.classList.add('active');
-      const filter = e.currentTarget.getAttribute('data-filter');
-      renderSuitesList(filter);
+    const filter = chip.getAttribute('data-filter');
+    chip.textContent = `${chip.textContent.trim()} (${roomsData.filter(r => roomMatchesFilter(r, filter)).length})`;
+    chip.onclick = () => aplicarFiltroSuites(filter, false);
+  });
+
+  // Botones "Ver suites con…" del carrusel de servicios: filtran y llevan al catálogo
+  document.querySelectorAll('.js-filtro-suites').forEach(link => {
+    link.onclick = (e) => {
+      e.preventDefault();
+      aplicarFiltroSuites(link.getAttribute('data-filtro'), true);
+      history.replaceState(null, '', `#habitaciones?filtro=${link.getAttribute('data-filtro')}`);
     };
   });
+  document.querySelectorAll('.js-filtro-carta').forEach(link => {
+    link.onclick = (e) => {
+      e.preventDefault();
+      document.querySelector(`.gastro-tab-btn[data-gastro="${link.getAttribute('data-tab')}"]`)?.click();
+      scrollToSection('gastronomia');
+    };
+  });
+
+  // Enlace directo: #habitaciones?filtro=jacuzzi
+  const match = location.hash.match(/^#habitaciones\?filtro=([a-z-]+)/);
+  if (match) aplicarFiltroSuites(match[1], true);
+}
+
+function aplicarFiltroSuites(filter, scroll) {
+  document.querySelectorAll('.amenity-chip-btn').forEach(c =>
+    c.classList.toggle('active', c.getAttribute('data-filter') === filter));
+  renderSuitesList(filter);
+  if (scroll) scrollToSection('habitaciones');
 }
 
 function setupGastroTabs() {
@@ -3063,7 +2008,6 @@ function setupMobileNav() {
   const drawer = document.getElementById('luxuryNavDrawer');
   const drawerCloseBtn = document.getElementById('luxuryDrawerClose');
   const drawerLinks = document.querySelectorAll('#luxuryDrawerNav a');
-  const drawerMyBooking = document.getElementById('btnDrawerMyBooking');
 
   if (sandwichBtn && drawer) {
     const openDrawer = () => {
@@ -3091,18 +2035,6 @@ function setupMobileNav() {
     drawerLinks.forEach(link => {
       link.addEventListener('click', closeDrawer);
     });
-
-    if (drawerMyBooking) {
-      drawerMyBooking.addEventListener('click', () => {
-        closeDrawer();
-        const myBookingModal = document.getElementById('myBookingModal');
-        if (myBookingModal) {
-          renderMyBookingModal();
-          myBookingModal.classList.add('open');
-          myBookingModal.setAttribute('aria-hidden', 'false');
-        }
-      });
-    }
 
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && drawer.classList.contains('open')) {

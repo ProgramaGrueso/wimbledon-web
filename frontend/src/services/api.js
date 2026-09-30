@@ -2,7 +2,7 @@
  * Cliente de integración con la API REST de Spring Boot.
  *
  * Base URL configurable por variable de entorno VITE_API_URL.
- * En desarrollo local apunta a http://localhost:8080 (o al proxy de Vite).
+ * En desarrollo local apunta a el proxy de Vite (/api -> http://localhost:8081).
  * En producción (Vercel) apunta al backend desplegado.
  */
 
@@ -77,11 +77,26 @@ export const api = {
   },
 
   // ── Portal Huésped / Catálogo Público ─────────────────────────────────────
-  async crearReserva(payload) {
+  /**
+   * idempotencyKey: la misma clave en un reintento devuelve la reserva ya creada
+   * en vez de abrir otra (doble clic, red intermitente).
+   */
+  async crearReserva(payload, idempotencyKey) {
     return request('/api/reservas', {
       method: 'POST',
+      headers: idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {},
       body: JSON.stringify(payload),
     });
+  },
+
+  async obtenerHorarios(habitacionId, fecha, duracionHoras) {
+    const params = new URLSearchParams({ fecha });
+    if (duracionHoras) params.append('duracionHoras', duracionHoras);
+    return request(`/api/publico/habitaciones/${habitacionId}/horarios?${params}`, { method: 'GET' });
+  },
+
+  async obtenerDatosPago() {
+    return request('/api/publico/pago', { method: 'GET' });
   },
 
   async cancelarReservaPendiente(id, qrToken) {
@@ -104,15 +119,6 @@ export const api = {
   },
 
   // ── Recepción & Check-in ──────────────────────────────────────────────────
-  async checkinRecepcion(qrToken, jwtToken) {
-    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
-    return request('/api/recepcion/checkin', {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ token: qrToken }),
-    });
-  },
-
   async obtenerAgendaHoy(jwtToken) {
     const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
     return request('/api/recepcion/agenda-hoy', {
@@ -144,6 +150,14 @@ export const api = {
       method: 'POST',
       headers,
       body: JSON.stringify(payload),
+    });
+  },
+
+  async obtenerReservasPendientes(jwtToken) {
+    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
+    return request('/api/recepcion/reservas-pendientes', {
+      method: 'GET',
+      headers,
     });
   },
 
