@@ -144,15 +144,6 @@ export const api = {
     });
   },
 
-  async crearReservaManual(payload, jwtToken) {
-    const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
-    return request('/api/recepcion/reserva-manual', {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-    });
-  },
-
   async obtenerReservasPendientes(jwtToken) {
     const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
     return request('/api/recepcion/reservas-pendientes', {

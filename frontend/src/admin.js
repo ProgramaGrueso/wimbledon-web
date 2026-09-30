@@ -1687,27 +1687,6 @@ const gerenteAnalyticsData = {
   }
 };
 
-function computeRealGerenteKPIs() {
-  let bookings = [];
-  try {
-    bookings = JSON.parse(localStorage.getItem('wimbledon_bookings') || '[]');
-  } catch (e) {}
-
-  const now = new Date();
-  const todayPrefix = now.toISOString().slice(0, 10);
-  const activeBookings = bookings.filter(b => b.estado !== 'CANCELADA');
-  const todayBookings = activeBookings.filter(b => {
-    if (!b.fechaReserva) return true;
-    return b.fechaReserva.startsWith(todayPrefix);
-  });
-
-  const todayRevenue = todayBookings.reduce((sum, b) => sum + (Number(b.monto) || 0), 0);
-  return {
-    totalActive: activeBookings.length,
-    todayCount: todayBookings.length,
-    todayRevenue
-  };
-}
 async function cargarGerenteKpis(periodo = currentGerentePeriod) {
   const token = currentStaffSession?.jwtToken;
   if (!token) return;

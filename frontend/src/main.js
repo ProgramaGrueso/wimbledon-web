@@ -3,9 +3,7 @@ import { abrirGaleria } from './galeria.js';
 import { initCursorGato } from './cursorGato.js';
 import { initReserva, openCheckoutModal, getDecoSeleccionado, setDecoSeleccionado, EXTRAS } from './reserva.js';
 
-let landingData = null;
 let roomsData = [];
-let figmaData = null;
 let specsData = {};
 let cleanupSmoothScroll = null;
 let heroMatchMedia = null;
@@ -59,16 +57,6 @@ function parseAmenitiesText(desc) {
   if (text.includes('frigobar') || text.includes('frigo bar')) amenities.push('Frigobar Gourmet');
   return amenities;
 }
-function getRoomCategory(room) {
-  const title = (room.nombre || '').toLowerCase();
-  const desc = (room.descripcion || '').toLowerCase();
-  if (title.includes('presidencial') || desc.includes('presidencial')) return 'presidencial';
-  if (desc.includes('cámara seca') || desc.includes('camara seca') || title.includes('cámara seca')) return 'camara-seca';
-  if (desc.includes('jacuzzi') || title.includes('jacuzzi')) return 'jacuzzi';
-  if (desc.includes('vista al mar') || title.includes('vista al mar')) return 'vista-mar';
-  return 'tematica';
-}
-
 function roomMatchesFilter(room, filterKey) {
   if (!filterKey || filterKey === 'all') return true;
   const title = (room.nombre || '').toLowerCase();
@@ -95,15 +83,11 @@ function roomMatchesFilter(room, filterKey) {
 
 async function initApp() {
   try {
-    const [resLanding, resRooms, resFigma, resSpecs] = await Promise.all([
-      fetch('/data/landing_real.json').then(r => r.json()),
+    const [resRooms, resSpecs] = await Promise.all([
       fetch('/data/catalogo_habitaciones.json').then(r => r.json()),
-      fetch('/data/figma_catalogo.json').then(r => r.json()),
       fetch('/data/specs_habitaciones.json').then(r => r.json())
     ]);
-    landingData = resLanding.landing_page || resLanding;
     roomsData = resRooms;
-    figmaData = resFigma;
     specsData = resSpecs;
     renderEditorialApp();
     cleanupSmoothScroll = initSmoothScroll();
@@ -136,8 +120,6 @@ async function initApp() {
   }
 }
 function renderEditorialApp() {
-  const hero = landingData.hero || {};
-  const contacto = landingData.contacto_real || {};
   const appEl = document.getElementById('app');
   appEl.innerHTML = `
     <!-- HERO SLIDER SECTION CON FOTOS INTERCAMBIABLES (COMO LA WEB OFICIAL) -->
