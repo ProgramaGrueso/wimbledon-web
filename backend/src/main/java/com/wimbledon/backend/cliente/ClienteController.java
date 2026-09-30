@@ -1,7 +1,10 @@
 package com.wimbledon.backend.cliente;
 
 import com.wimbledon.backend.domain.Usuario;
+import com.wimbledon.backend.security.IpCliente;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +27,7 @@ import java.util.List;
 public class ClienteController {
 
     private final ReservaService reservaService;
+    private final IpCliente ipCliente;
 
     // ── Crear reserva (público O autenticado) ─────────────────────────────────
 
@@ -43,10 +47,12 @@ public class ClienteController {
     @PostMapping("/api/reservas")
     public ResponseEntity<ReservaResponse> crearReserva(
             @Valid @RequestBody CrearReservaRequest request,
-            @AuthenticationPrincipal Usuario cliente   // null si no hay JWT
+            @AuthenticationPrincipal Usuario cliente,   // null si no hay JWT
+            @RequestHeader(value = "Idempotency-Key", required = false) @Size(max = 64) String idempotencyKey,
+            HttpServletRequest httpRequest
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(reservaService.crearReserva(request, cliente));
+                .body(reservaService.crearReserva(request, cliente, ipCliente.de(httpRequest), idempotencyKey));
     }
 
     /**

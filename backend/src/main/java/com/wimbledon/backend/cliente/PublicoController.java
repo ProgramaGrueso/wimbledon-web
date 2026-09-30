@@ -1,9 +1,11 @@
 package com.wimbledon.backend.cliente;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +27,10 @@ import java.util.List;
 public class PublicoController {
 
     private final ReservaService reservaService;
+    private final DatosPago datosPago;
+
+    @Value("${wimbledon.reservas.ventana-confirmacion-minutos:15}")
+    private int minutosRetencion;
 
     /**
      * Catálogo público de habitaciones.
@@ -42,5 +48,25 @@ public class PublicoController {
             @RequestParam(required = false) Integer duracionHoras
     ) {
         return ResponseEntity.ok(reservaService.listarHabitacionesConDisponibilidad(fecha, horaIngreso, duracionHoras));
+    }
+
+    /**
+     * Turnos de ingreso de una suite para una fecha (hoy hasta +60 días), con su disponibilidad.
+     */
+    @GetMapping("/habitaciones/{id}/horarios")
+    public ResponseEntity<List<ReservaService.HorarioDisponible>> horarios(
+            @PathVariable Integer id,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+            @RequestParam(required = false) Integer duracionHoras
+    ) {
+        return ResponseEntity.ok(reservaService.listarHorarios(id, fecha, duracionHoras));
+    }
+
+    /** Datos de depósito (Yape/Plin, cuentas) y minutos de retención de la suite. */
+    @GetMapping("/pago")
+    public ResponseEntity<DatosPago.Respuesta> datosPago() {
+        return ResponseEntity.ok(new DatosPago.Respuesta(
+                datosPago.titular(), datosPago.yapePlin(), datosPago.whatsapp(),
+                datosPago.cuentas(), minutosRetencion));
     }
 }

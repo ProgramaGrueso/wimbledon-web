@@ -52,6 +52,9 @@ class ReservaServiceTest {
     @Mock
     private TarifaService tarifaService;
 
+    @Mock
+    private NotificacionReservaService notificacionService;
+
     @InjectMocks
     private ReservaService reservaService;
 
@@ -64,6 +67,8 @@ class ReservaServiceTest {
         ReflectionTestUtils.setField(reservaService, "ventanaConfirmacionMinutos", 30);
         ReflectionTestUtils.setField(reservaService, "margenMinimoMinutos", 5);
         ReflectionTestUtils.setField(reservaService, "maxPendientesPorUsuario", 2);
+        ReflectionTestUtils.setField(reservaService, "maxPendientesPorIp", 1);
+        ReflectionTestUtils.setField(reservaService, "diasAnticipacionMax", 60);
         org.mockito.Mockito.lenient().when(tarifaService.calcularTarifa(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new BigDecimal("156.00"));
 
@@ -133,6 +138,7 @@ class ReservaServiceTest {
     @Test
     @DisplayName("Rechaza reserva online si faltan menos de 5 minutos para la hora de ingreso")
     void testRechazoMenosCincoMinutos() {
+        when(habitacionRepository.findByIdWithLock(860)).thenReturn(Optional.of(habitacionSuite));
         when(reservaRepository.countByEmailAndEstado(requestValido.email(), EstadoReserva.PENDIENTE)).thenReturn(0L);
         when(reservaRepository.countByTelefonoAndEstado(requestValido.telefono(), EstadoReserva.PENDIENTE)).thenReturn(0L);
 
@@ -333,8 +339,8 @@ class ReservaServiceTest {
     @Test
     @DisplayName("CrearReservaRequest no admite campo de duración arbitraria ni de horaSalida")
     void testElClienteNoFijaLaHoraDeSalida() {
-        assertEquals(8, CrearReservaRequest.class.getRecordComponents().length,
-                "El contrato de creación contiene 8 componentes incluyendo modalidad");
+        assertEquals(9, CrearReservaRequest.class.getRecordComponents().length,
+                "El contrato de creación contiene 9 componentes incluyendo modalidad y extras");
 
         List<String> nombres = Arrays.stream(CrearReservaRequest.class.getRecordComponents())
                 .map(RecordComponent::getName)
@@ -365,33 +371,117 @@ class ReservaServiceTest {
      * hito propio.
      */
     @Test
-    @DisplayName("Defecto preexistente registrado: contarReservasSolapadas no detecta bloques nocturnos")
-    void testDefectoPreexistenteDeSolapamientoNoCorregido() throws NoSuchMethodException {
-        Method contar = ReservaRepository.class.getMethod("contarReservasSolapadas",
-                Integer.class, LocalDate.class, LocalTime.class, LocalTime.class, Integer.class);
+    @DisplayName("El solapamiento detecta bloques que cruzan la medianoche")
+    void testSolapamientoCruzandoMedianoche() {
+        ReservaRepository repo = mock(ReservaRepository.class, CALLS_REAL_METHODS);
+        LocalDate hoy = LocalDate.now().plusDays(1);
+        // Reserva existente: hoy 22:00 -> mañana 04:00
+        Reserva nocturna = Reserva.builder().id(1).fecha(hoy)
+                .horaIngreso(LocalTime.of(22, 0)).horaSalida(LocalTime.of(4, 0)).build();
+        doReturn(List.of(nocturna)).when(repo).findActivasEntreFechas(eq(860), any(), any(), any());
 
-        String consulta = String.valueOf(contar.getAnnotation(Query.class).value());
+        // Mismo día 20:00 -> 02:00: se cruza con la nocturna
+        assertEquals(1, repo.contarReservasSolapadas(860, hoy, LocalTime.of(20, 0), LocalTime.of(2, 0), null));
+        // Día siguiente 02:00 -> 08:00: la nocturna sigue ocupando hasta las 04:00
+        assertEquals(1, repo.contarReservasSolapadas(860, hoy.plusDays(1), LocalTime.of(2, 0), LocalTime.of(8, 0), null));
+        // Día siguiente 04:00 -> 10:00: empieza justo cuando la nocturna libera
+        assertEquals(0, repo.contarReservasSolapadas(860, hoy.plusDays(1), LocalTime.of(4, 0), LocalTime.of(10, 0), null));
+        // Mismo día 14:00 -> 20:00: termina antes de que empiece la nocturna
+        assertEquals(0, repo.contarReservasSolapadas(860, hoy, LocalTime.of(14, 0), LocalTime.of(20, 0), null));
+    }
 
-        assertTrue(consulta.contains("r.horaIngreso < :horaSalida"),
-                "La condición vigente compara horas del mismo día");
-        assertTrue(consulta.contains("r.horaSalida > :horaIngreso"),
-                "La condición vigente no resuelve el cruce de medianoche");
+    // ── Hold de 15 min, antifraude y monto calculado en servidor ─────────────
 
-        // Para un bloque 20:00 -> 02:00, ningún instante de fin cumple a la vez
-        // entrada < fin y fin > salida, de modo que el conteo es siempre cero.
-        LocalTime ingreso = LocalTime.of(20, 0);
-        LocalTime salida = LocalTime.of(2, 0);
-        boolean existeFinQueCumpla = false;
-        for (int h = 0; h < 24; h++) {
-            for (int m = 0; m < 60; m++) {
-                LocalTime candidato = LocalTime.of(h, m);
-                if (ingreso.isBefore(candidato) && salida.isAfter(candidato)) {
-                    existeFinQueCumpla = true;
-                }
-            }
-        }
-        assertFalse(existeFinQueCumpla,
-                "Con horaSalida <= horaIngreso la condición de solapamiento nunca es verdadera. "
-                        + "Documentado, NO corregido: es un defecto preexistente de un hito propio.");
+    private void stubCreacionFeliz() {
+        when(habitacionRepository.findByIdWithLock(860)).thenReturn(Optional.of(habitacionSuite));
+        when(reservaRepository.contarReservasSolapadas(eq(860), any(), any(), any(), isNull())).thenReturn(0L);
+        when(reservaRepository.save(any(Reserva.class))).thenAnswer(invocation -> {
+            Reserva r = invocation.getArgument(0);
+            r.setId(202);
+            return r;
+        });
+    }
+
+    private CrearReservaRequest requestConExtras(List<com.wimbledon.backend.domain.enums.ExtraReserva> extras) {
+        return new CrearReservaRequest(860, LocalDate.now().plusDays(1), LocalTime.of(20, 0),
+                "Alias", "990370681", null, null,
+                com.wimbledon.backend.domain.enums.ModalidadEstadia.SEIS_HORAS, extras);
+    }
+
+    @Test
+    @DisplayName("La reserva online queda retenida el tiempo configurado y se notifica al huésped")
+    void testHoldConfiguradoYNotificacion() {
+        ReflectionTestUtils.setField(reservaService, "ventanaConfirmacionMinutos", 15);
+        stubCreacionFeliz();
+
+        ReservaResponse r = reservaService.crearReserva(requestConExtras(List.of()), null, "10.0.0.5", null);
+
+        assertEquals(EstadoReserva.PENDIENTE, r.estado());
+        assertTrue(r.segundosRestantes() <= 15 * 60 && r.segundosRestantes() > 14 * 60);
+        assertTrue(r.codigo().matches("WMB-[0-9A-F]{8}"));
+        verify(notificacionService).notificarReservaTemporal(any(Reserva.class), eq(15));
+    }
+
+    @Test
+    @DisplayName("Una IP con una reserva pendiente no puede abrir otra")
+    void testUnaReservaPendientePorIp() {
+        when(habitacionRepository.findByIdWithLock(860)).thenReturn(Optional.of(habitacionSuite));
+        when(reservaRepository.countByIpOrigenAndEstado("10.0.0.6", EstadoReserva.PENDIENTE)).thenReturn(1L);
+
+        assertThrows(IllegalStateException.class, () ->
+                reservaService.crearReserva(requestConExtras(List.of()), null, "10.0.0.6", null));
+        verify(reservaRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Un reenvío con la misma clave de idempotencia devuelve la reserva existente sin crear otra")
+    void testIdempotencia() {
+        Reserva existente = Reserva.builder().id(55).habitacion(habitacionSuite)
+                .fecha(LocalDate.now().plusDays(1)).horaIngreso(LocalTime.of(20, 0)).horaSalida(LocalTime.of(2, 0))
+                .estado(EstadoReserva.PENDIENTE).origen(OrigenReserva.ONLINE)
+                .qrToken("e6bc9342-1159-4277-bbc8-005b4918d953").build();
+        when(habitacionRepository.findByIdWithLock(860)).thenReturn(Optional.of(habitacionSuite));
+        when(reservaRepository.findByIdempotencyKey("clave-1")).thenReturn(Optional.of(existente));
+
+        ReservaResponse r = reservaService.crearReserva(requestConExtras(List.of()), null, "10.0.0.7", "clave-1");
+
+        assertEquals(55, r.id());
+        assertEquals("WMB-E6BC9342", r.codigo());
+        verify(reservaRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("El monto suma la tarifa y los adicionales con precios del servidor")
+    void testMontoConAdicionales() {
+        stubCreacionFeliz();
+
+        ReservaResponse r = reservaService.crearReserva(requestConExtras(List.of(
+                com.wimbledon.backend.domain.enums.ExtraReserva.DECO_2,
+                com.wimbledon.backend.domain.enums.ExtraReserva.PIQUEO)), null, "10.0.0.8", null);
+
+        // 156 (tarifa mock) + 75 + 42
+        assertEquals(0, new BigDecimal("273.00").compareTo(r.montoTotal()));
+        assertEquals(List.of("Pack Jacuzzi & Velas", "Piqueo Gourmet Wimbledon"), r.extras());
+    }
+
+    @Test
+    @DisplayName("No se aceptan dos packs de decoración en la misma reserva")
+    void testUnSoloPackDeDecoracion() {
+        when(habitacionRepository.findByIdWithLock(860)).thenReturn(Optional.of(habitacionSuite));
+        when(reservaRepository.contarReservasSolapadas(eq(860), any(), any(), any(), isNull())).thenReturn(0L);
+
+        assertThrows(IllegalArgumentException.class, () -> reservaService.crearReserva(requestConExtras(List.of(
+                com.wimbledon.backend.domain.enums.ExtraReserva.DECO_1,
+                com.wimbledon.backend.domain.enums.ExtraReserva.DECO_3)), null, "10.0.0.9", null));
+    }
+
+    @Test
+    @DisplayName("No se puede reservar más allá de 60 días")
+    void testLimiteDeAnticipacion() {
+        when(habitacionRepository.findByIdWithLock(860)).thenReturn(Optional.of(habitacionSuite));
+        CrearReservaRequest lejana = new CrearReservaRequest(860, LocalDate.now().plusDays(61), LocalTime.of(20, 0),
+                "Alias", "990370681", null, null);
+
+        assertThrows(IllegalArgumentException.class, () -> reservaService.crearReserva(lejana, null, "10.0.0.10", null));
     }
 }

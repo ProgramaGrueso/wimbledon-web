@@ -5,6 +5,7 @@ import com.wimbledon.backend.domain.Reserva;
 import com.wimbledon.backend.domain.Usuario;
 import com.wimbledon.backend.domain.enums.EstadoHabitacion;
 import com.wimbledon.backend.domain.enums.EstadoReserva;
+import com.wimbledon.backend.domain.enums.ExtraReserva;
 import com.wimbledon.backend.domain.enums.OrigenReserva;
 import com.wimbledon.backend.repository.HabitacionRepository;
 import com.wimbledon.backend.repository.ReservaRepository;
@@ -22,6 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -41,6 +43,7 @@ public class ReservaService {
     private final ReservaRepository reservaRepository;
     private final ReservaConfirmacionService confirmacionService;
     private final TarifaService tarifaService;
+    private final NotificacionReservaService notificacionService;
 
     /**
      * Horas mínimas previas al ingreso para poder cancelar o reprogramar.
@@ -67,6 +70,14 @@ public class ReservaService {
      */
     @Value("${wimbledon.reservas.max-pendientes:2}")
     private int maxPendientesPorUsuario;
+
+    /** Reservas online PENDIENTE simultáneas permitidas por IP (evita bloqueo masivo de inventario). */
+    @Value("${wimbledon.reservas.max-pendientes-por-ip:1}")
+    private int maxPendientesPorIp;
+
+    /** Hasta cuántos días hacia adelante se puede reservar desde el portal. */
+    @Value("${wimbledon.reservas.dias-anticipacion-max:60}")
+    private int diasAnticipacionMax;
 
     // ── Catálogo público ──────────────────────────────────────────────────────
 
@@ -137,7 +148,16 @@ public class ReservaService {
      */
     @Transactional
     public ReservaResponse crearReserva(CrearReservaRequest request, Usuario cliente) {
-        return crearReservaConOrigen(request, cliente, OrigenReserva.ONLINE);
+        return crearReserva(request, cliente, null, null);
+    }
+
+    /**
+     * Variante del portal: registra la IP de origen (límite de pendientes por IP) y
+     * una clave de idempotencia para que un doble envío devuelva la misma reserva.
+     */
+    @Transactional
+    public ReservaResponse crearReserva(CrearReservaRequest request, Usuario cliente, String ipOrigen, String idempotencyKey) {
+        return crearReservaInterna(request, cliente, OrigenReserva.ONLINE, ipOrigen, idempotencyKey);
     }
 
     /**
@@ -162,12 +182,52 @@ public class ReservaService {
             Usuario cliente,
             OrigenReserva origen
     ) {
+        return crearReservaInterna(request, cliente, origen, null, null);
+    }
+
+    private ReservaResponse crearReservaInterna(
+            CrearReservaRequest request,
+            Usuario cliente,
+            OrigenReserva origen,
+            String ipOrigen,
+            String idempotencyKey
+    ) {
+        // Bloqueo pesimista sobre el tipo de habitación como PRIMERA lectura de la
+        // transacción: serializa las reservas concurrentes de esa suite y hace que
+        // las lecturas siguientes (idempotencia, solapamiento) vean lo ya confirmado.
+        Habitacion habitacion = habitacionRepository.findByIdWithLock(request.habitacionId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "No encontramos esa habitación. Intenta con otra opción."));
+
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            Optional<Reserva> previa = reservaRepository.findByIdempotencyKey(idempotencyKey);
+            if (previa.isPresent()) {
+                return ReservaResponse.from(previa.get());
+            }
+        }
+
+        if (origen == OrigenReserva.ONLINE) {
+            if (request.telefono() == null || request.telefono().isBlank()) {
+                throw new IllegalArgumentException("Indica un número de celular para enviarte los datos de tu reserva.");
+            }
+            if (request.fecha().isAfter(LocalDate.now().plusDays(diasAnticipacionMax))) {
+                throw new IllegalArgumentException(
+                        "Solo se puede reservar con hasta " + diasAnticipacionMax + " días de anticipación.");
+            }
+            if (ipOrigen != null && reservaRepository.countByIpOrigenAndEstado(ipOrigen, EstadoReserva.PENDIENTE) >= maxPendientesPorIp) {
+                throw new IllegalStateException(
+                        "Ya tienes una reserva temporal en curso. Completa el abono o cancélala antes de solicitar otra.");
+            }
+        }
+
         // Control anti-abuso: límite de reservas PENDIENTE activas por email y teléfono
-        long pendientesEmail = reservaRepository.countByEmailAndEstado(request.email(), EstadoReserva.PENDIENTE);
-        if (pendientesEmail >= maxPendientesPorUsuario) {
-            throw new IllegalStateException(
-                    "Ya cuentas con " + pendientesEmail + " reserva(s) pendiente(s) de confirmación. " +
-                    "Por favor confirma o cancela tu reserva anterior antes de solicitar una nueva.");
+        if (request.email() != null && !request.email().isBlank()) {
+            long pendientesEmail = reservaRepository.countByEmailAndEstado(request.email(), EstadoReserva.PENDIENTE);
+            if (pendientesEmail >= maxPendientesPorUsuario) {
+                throw new IllegalStateException(
+                        "Ya cuentas con " + pendientesEmail + " reserva(s) pendiente(s) de confirmación. " +
+                        "Por favor confirma o cancela tu reserva anterior antes de solicitar una nueva.");
+            }
         }
 
         if (request.telefono() != null && !request.telefono().isBlank()) {
@@ -189,11 +249,6 @@ public class ReservaService {
                         margenMinimoMinutos + " minutos). Por favor acércate directamente a la Recepción del hotel.");
             }
         }
-
-        // Bloqueo pesimista sobre el tipo de habitación para ejecución atómica de contarReservasSolapadas e insert
-        Habitacion habitacion = habitacionRepository.findByIdWithLock(request.habitacionId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "No encontramos esa habitación. Intenta con otra opción."));
 
         if (habitacion.getEstado() == EstadoHabitacion.MANTENIMIENTO) {
             throw new IllegalStateException("La habitación seleccionada se encuentra en mantenimiento y no puede ser reservada.");
@@ -234,7 +289,12 @@ public class ReservaService {
             expiraEn = expiraVentana.isBefore(expiraMargen) ? expiraVentana : expiraMargen;
         }
 
+        List<ExtraReserva> extras = request.extras() == null ? List.of() : request.extras().stream().distinct().toList();
+        if (extras.stream().filter(e -> e.decoracion).count() > 1) {
+            throw new IllegalArgumentException("Elige un solo pack de decoración por reserva.");
+        }
         BigDecimal tarifaCalculada = tarifaService.calcularTarifa(habitacion, request.modalidad());
+        BigDecimal montoTotal = extras.stream().map(e -> e.precio).reduce(tarifaCalculada, BigDecimal::add);
 
         Reserva nuevaReserva = Reserva.builder()
                 .habitacion(habitacion)
@@ -251,7 +311,10 @@ public class ReservaService {
                 .qrToken(qrToken)
                 .qrUsado(false)
                 .expiraEn(expiraEn)
-                .montoTotal(tarifaCalculada)
+                .montoTotal(montoTotal)
+                .extras(extras.isEmpty() ? null : extras.stream().map(Enum::name).collect(java.util.stream.Collectors.joining(",")))
+                .ipOrigen(ipOrigen)
+                .idempotencyKey(idempotencyKey == null || idempotencyKey.isBlank() ? null : idempotencyKey)
                 .adelanto(java.math.BigDecimal.ZERO)
                 .build();
 
@@ -259,7 +322,9 @@ public class ReservaService {
 
         // Notificación y emisión de QR únicamente cuando la reserva pasa a CONFIRMADA
         if (guardada.getEstado() == EstadoReserva.CONFIRMADA) {
-            confirmacionService.enviarConfirmacion(guardada);
+            enviarCorreoSiHayEmail(guardada);
+        } else if (origen == OrigenReserva.ONLINE) {
+            notificacionService.notificarReservaTemporal(guardada, ventanaConfirmacionMinutos);
         }
 
         return ReservaResponse.from(guardada);
@@ -297,7 +362,8 @@ public class ReservaService {
         reserva.setExpiraEn(null);
         Reserva actualizada = reservaRepository.save(reserva);
 
-        confirmacionService.enviarConfirmacion(actualizada);
+        enviarCorreoSiHayEmail(actualizada);
+        notificacionService.notificarPagoConfirmado(actualizada);
         return ReservaResponse.from(actualizada);
     }
 
@@ -512,5 +578,44 @@ public class ReservaService {
                 h.getEstado(),
                 h.getImagenUrl()
         );
+    }
+
+    private void enviarCorreoSiHayEmail(Reserva reserva) {
+        if (reserva.getEmail() != null && !reserva.getEmail().isBlank()) {
+            confirmacionService.enviarConfirmacion(reserva);
+        }
+    }
+
+    // ── Horarios disponibles por suite y fecha ────────────────────────────────
+
+    public record HorarioDisponible(LocalTime hora, boolean disponible) {}
+
+    /**
+     * Turnos de ingreso de una suite para una fecha: cada hora en punto del día,
+     * marcada como disponible si aún no alcanza su capacidad. Para hoy se omiten
+     * las horas que ya no llegan al margen mínimo de reserva online.
+     */
+    public List<HorarioDisponible> listarHorarios(Integer habitacionId, LocalDate fecha, Integer duracionHoras) {
+        Habitacion h = habitacionRepository.findById(habitacionId)
+                .orElseThrow(() -> new EntityNotFoundException("No encontramos esa habitación."));
+        LocalDate hoy = LocalDate.now();
+        if (fecha.isBefore(hoy) || fecha.isAfter(hoy.plusDays(diasAnticipacionMax))) {
+            throw new IllegalArgumentException(
+                    "La fecha debe estar entre hoy y los próximos " + diasAnticipacionMax + " días.");
+        }
+        int duracion = (duracionHoras != null && duracionHoras > 0) ? duracionHoras : h.getDuracionBloqueHoras();
+        int capacidad = h.getCapacidadUnidades() != null ? h.getCapacidadUnidades() : 1;
+        boolean enMantenimiento = h.getEstado() == EstadoHabitacion.MANTENIMIENTO;
+        LocalDateTime limite = LocalDateTime.now().plusMinutes(Math.max(margenMinimoMinutos, 30));
+
+        List<HorarioDisponible> horarios = new java.util.ArrayList<>();
+        for (int hora = 0; hora < 24; hora++) {
+            LocalTime ingreso = LocalTime.of(hora, 0);
+            if (LocalDateTime.of(fecha, ingreso).isBefore(limite)) continue;
+            boolean libre = !enMantenimiento && reservaRepository.contarReservasSolapadas(
+                    h.getId(), fecha, ingreso, ingreso.plusHours(duracion), null) < capacidad;
+            horarios.add(new HorarioDisponible(ingreso, libre));
+        }
+        return horarios;
     }
 }

@@ -75,23 +75,44 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
 
     /**
      * Cuenta el número de reservas activas (no CANCELADA ni FINALIZADA) que se solapan
-     * con el bloque horario solicitado para una habitación (tipo de suite).
+     * con el bloque horario solicitado para una habitación (tipo de suite),
+     * incluidos los bloques que cruzan la medianoche.
      * Si reservaIdExcluir no es null, se omite dicha reserva del conteo
      * (crucial para reprogramaciones, evitando que la reserva se auto-bloquee con su horario anterior).
      */
-    @Query("SELECT COUNT(r) FROM Reserva r " +
+    default long contarReservasSolapadas(Integer habitacionId,
+                                         LocalDate fecha,
+                                         java.time.LocalTime horaIngreso,
+                                         java.time.LocalTime horaSalida,
+                                         Integer reservaIdExcluir) {
+        // Se compara en fecha+hora absolutas: un bloque 22:00 -> 04:00 termina al día
+        // siguiente. Los bloques duran como máximo 12 h, así que basta mirar la
+        // víspera, el día y el día siguiente.
+        java.time.LocalDateTime inicio = fecha.atTime(horaIngreso);
+        java.time.LocalDateTime fin = finDeBloque(fecha, horaIngreso, horaSalida);
+        return findActivasEntreFechas(habitacionId, fecha.minusDays(1), fecha.plusDays(1), reservaIdExcluir)
+                .stream()
+                .filter(r -> r.getFecha().atTime(r.getHoraIngreso()).isBefore(fin)
+                        && finDeBloque(r.getFecha(), r.getHoraIngreso(), r.getHoraSalida()).isAfter(inicio))
+                .count();
+    }
+
+    /** Fin absoluto de un bloque: si la salida no es posterior al ingreso, cae al día siguiente. */
+    static java.time.LocalDateTime finDeBloque(LocalDate fecha, java.time.LocalTime ingreso, java.time.LocalTime salida) {
+        return (salida.isAfter(ingreso) ? fecha : fecha.plusDays(1)).atTime(salida);
+    }
+
+    /** Reservas que ocupan inventario (no canceladas ni finalizadas) de una suite en un rango de fechas. */
+    @Query("SELECT r FROM Reserva r " +
            "WHERE r.habitacion.id = :habitacionId " +
-           "AND r.fecha = :fecha " +
+           "AND r.fecha BETWEEN :desde AND :hasta " +
            "AND r.estado NOT IN (com.wimbledon.backend.domain.enums.EstadoReserva.CANCELADA, " +
            "                     com.wimbledon.backend.domain.enums.EstadoReserva.FINALIZADA) " +
-           "AND (:reservaIdExcluir IS NULL OR r.id <> :reservaIdExcluir) " +
-           "AND r.horaIngreso < :horaSalida " +
-           "AND r.horaSalida > :horaIngreso")
-    long contarReservasSolapadas(@Param("habitacionId") Integer habitacionId,
-                                @Param("fecha") LocalDate fecha,
-                                @Param("horaIngreso") java.time.LocalTime horaIngreso,
-                                @Param("horaSalida") java.time.LocalTime horaSalida,
-                                @Param("reservaIdExcluir") Integer reservaIdExcluir);
+           "AND (:reservaIdExcluir IS NULL OR r.id <> :reservaIdExcluir)")
+    List<Reserva> findActivasEntreFechas(@Param("habitacionId") Integer habitacionId,
+                                         @Param("desde") LocalDate desde,
+                                         @Param("hasta") LocalDate hasta,
+                                         @Param("reservaIdExcluir") Integer reservaIdExcluir);
 
     /** Busca reservas en estado PENDIENTE cuyo límite de confirmación expiraEn haya caducado. */
     @Query("SELECT r FROM Reserva r WHERE r.estado = :estado AND r.expiraEn IS NOT NULL AND r.expiraEn <= :ahora")
@@ -103,6 +124,15 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
 
     /** Control anti-abuso: conteo de reservas por teléfono en un estado determinado. */
     long countByTelefonoAndEstado(String telefono, EstadoReserva estado);
+
+    /** Reservas en un estado, las de vencimiento más próximo primero (vouchers por validar). */
+    List<Reserva> findByEstadoOrderByExpiraEnAsc(EstadoReserva estado);
+
+    /** Control anti-abuso: reservas por IP de origen en un estado determinado. */
+    long countByIpOrigenAndEstado(String ipOrigen, EstadoReserva estado);
+
+    /** Idempotencia del portal: la reserva ya creada con esta clave, si existe. */
+    java.util.Optional<Reserva> findByIdempotencyKey(String idempotencyKey);
 
     /** KPIs — total de reservas por origen en un período */
     long countByOrigenAndFechaBetween(

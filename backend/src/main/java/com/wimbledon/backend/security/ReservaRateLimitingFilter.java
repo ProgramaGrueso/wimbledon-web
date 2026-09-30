@@ -16,18 +16,24 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
- * Filtro de rate limiting en memoria para prevenir abusos de denegación de inventario
- * en el endpoint público POST /api/reservas.
- *
- * Límite predeterminado: 5 solicitudes de creación de reserva por minuto por IP.
+ * Filtro de rate limiting en memoria para las rutas públicas del portal:
+ *  - POST /api/reservas: 5 solicitudes de creación por minuto por IP.
+ *  - GET  /api/publico/**: 60 consultas de disponibilidad por minuto por IP.
  */
 @Component
 public class ReservaRateLimitingFilter extends OncePerRequestFilter {
 
     private static final int MAX_REQUESTS_PER_MINUTE = 5;
+    private static final int MAX_CONSULTAS_PER_MINUTE = 60;
     private static final long WINDOW_MS = 60_000L;
 
     private final Map<String, ConcurrentLinkedQueue<Long>> requestCountsByIp = new ConcurrentHashMap<>();
+    private final Map<String, ConcurrentLinkedQueue<Long>> consultasByIp = new ConcurrentHashMap<>();
+    private final IpCliente ipCliente;
+
+    public ReservaRateLimitingFilter(IpCliente ipCliente) {
+        this.ipCliente = ipCliente;
+    }
 
     @Override
     protected void doFilterInternal(
@@ -36,11 +42,18 @@ public class ReservaRateLimitingFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        if ("POST".equalsIgnoreCase(request.getMethod()) && "/api/reservas".equalsIgnoreCase(request.getRequestURI())) {
-            String clientIp = getClientIp(request);
+        boolean creaReserva = "POST".equalsIgnoreCase(request.getMethod())
+                && "/api/reservas".equalsIgnoreCase(request.getRequestURI());
+        boolean consultaPublica = "GET".equalsIgnoreCase(request.getMethod())
+                && request.getRequestURI().startsWith("/api/publico/");
+
+        if (creaReserva || consultaPublica) {
+            Map<String, ConcurrentLinkedQueue<Long>> contadores = creaReserva ? requestCountsByIp : consultasByIp;
+            int limite = creaReserva ? MAX_REQUESTS_PER_MINUTE : MAX_CONSULTAS_PER_MINUTE;
+            String clientIp = ipCliente.de(request);
             long now = System.currentTimeMillis();
 
-            ConcurrentLinkedQueue<Long> timestamps = requestCountsByIp.computeIfAbsent(
+            ConcurrentLinkedQueue<Long> timestamps = contadores.computeIfAbsent(
                     clientIp, k -> new ConcurrentLinkedQueue<>()
             );
 
@@ -49,13 +62,14 @@ public class ReservaRateLimitingFilter extends OncePerRequestFilter {
                 timestamps.poll();
             }
 
-            if (timestamps.size() >= MAX_REQUESTS_PER_MINUTE) {
+            if (timestamps.size() >= limite) {
                 response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 response.setCharacterEncoding("UTF-8");
                 response.getWriter().write("""
                     {
-                      "error": "Has excedido el límite permitido de solicitudes de reserva por minuto. Por favor espera unos momentos antes de intentar nuevamente."
+                      "mensaje": "Demasiadas solicitudes en poco tiempo. Espera unos momentos e inténtalo de nuevo.",
+                      "codigo": "DEMASIADAS_SOLICITUDES"
                     }
                     """);
                 return;
@@ -64,16 +78,16 @@ public class ReservaRateLimitingFilter extends OncePerRequestFilter {
             timestamps.add(now);
 
             // Mantenimiento periódico suave del mapa si crece demasiado
-            if (requestCountsByIp.size() > 5000) {
-                cleanupOldEntries(now);
+            if (contadores.size() > 5000) {
+                cleanupOldEntries(contadores, now);
             }
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private void cleanupOldEntries(long now) {
-        Iterator<Map.Entry<String, ConcurrentLinkedQueue<Long>>> it = requestCountsByIp.entrySet().iterator();
+    private void cleanupOldEntries(Map<String, ConcurrentLinkedQueue<Long>> contadores, long now) {
+        Iterator<Map.Entry<String, ConcurrentLinkedQueue<Long>>> it = contadores.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<String, ConcurrentLinkedQueue<Long>> entry = it.next();
             ConcurrentLinkedQueue<Long> queue = entry.getValue();
@@ -84,13 +98,5 @@ public class ReservaRateLimitingFilter extends OncePerRequestFilter {
                 it.remove();
             }
         }
-    }
-
-    private String getClientIp(HttpServletRequest request) {
-        String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null || xfHeader.isBlank()) {
-            return request.getRemoteAddr();
-        }
-        return xfHeader.split(",")[0].trim();
     }
 }

@@ -48,6 +48,15 @@ public class RecepcionController {
     }
 
     /**
+     * Reservas online en espera de voucher (cualquier fecha), las que vencen antes primero.
+     * Recepción las ubica por el código que el huésped envía por WhatsApp y confirma el pago.
+     */
+    @GetMapping("/reservas-pendientes")
+    public ResponseEntity<List<AgendaItemResponse>> reservasPendientesDePago() {
+        return ResponseEntity.ok(recepcionService.reservasPendientesDePago());
+    }
+
+    /**
      * Agenda de una fecha específica (para consultar días anteriores o futuros).
      * Param: fecha en formato ISO-8601 (YYYY-MM-DD).
      */

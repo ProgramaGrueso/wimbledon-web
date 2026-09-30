@@ -20,7 +20,7 @@ class ReservaRateLimitingFilterTest {
 
     @BeforeEach
     void setUp() {
-        filter = new ReservaRateLimitingFilter();
+        filter = new ReservaRateLimitingFilter(new IpCliente());
         filterChain = mock(FilterChain.class);
     }
 
@@ -54,7 +54,7 @@ class ReservaRateLimitingFilterTest {
     }
 
     @Test
-    @DisplayName("Peticiones a otras rutas no son afectadas por el rate limit")
+    @DisplayName("Las consultas de disponibilidad no comparten el cupo de creación de reservas")
     void testOtrasRutasNoAfectadas() throws ServletException, IOException {
         for (int i = 1; i <= 10; i++) {
             MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/publico/habitaciones");
@@ -67,5 +67,37 @@ class ReservaRateLimitingFilterTest {
         }
 
         verify(filterChain, times(10)).doFilter(any(), any());
+    }
+
+    @Test
+    @DisplayName("Las consultas públicas se cortan con 429 al pasar 60 por minuto desde la misma IP")
+    void testRateLimitingConsultasPublicas() throws ServletException, IOException {
+        for (int i = 1; i <= 60; i++) {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/publico/habitaciones");
+            request.setRemoteAddr("10.0.0.2");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            filter.doFilter(request, response, filterChain);
+            assertEquals(200, response.getStatus(), "Consulta " + i + " debe permitirse");
+        }
+
+        MockHttpServletRequest excedida = new MockHttpServletRequest("GET", "/api/publico/habitaciones");
+        excedida.setRemoteAddr("10.0.0.2");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        filter.doFilter(excedida, response, filterChain);
+
+        assertEquals(429, response.getStatus());
+    }
+
+    @Test
+    @DisplayName("Sin proxy de confianza, X-Forwarded-For inventado no evade el límite por IP")
+    void testXForwardedForNoEvadeElLimite() throws ServletException, IOException {
+        for (int i = 1; i <= 6; i++) {
+            MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/reservas");
+            request.setRemoteAddr("192.168.1.77");
+            request.addHeader("X-Forwarded-For", "1.1.1." + i);
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            filter.doFilter(request, response, filterChain);
+            assertEquals(i <= 5 ? 200 : 429, response.getStatus(), "Petición " + i);
+        }
     }
 }

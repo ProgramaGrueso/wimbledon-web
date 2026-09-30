@@ -3,6 +3,9 @@ package com.wimbledon.backend.recepcion;
 import com.wimbledon.backend.domain.enums.EstadoReserva;
 import com.wimbledon.backend.domain.enums.OrigenReserva;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 /**
@@ -24,5 +27,12 @@ public record AgendaItemResponse(
         EstadoReserva estado,
         OrigenReserva origen,
         /** true si el QR ya fue escaneado (check-in realizado) */
-        Boolean qrUsado
+        Boolean qrUsado,
+        /** Código que el huésped envía con su voucher de pago (WMB-XXXXXXXX). */
+        String codigo,
+        /** Monto que el huésped debe haber depositado. */
+        BigDecimal montoTotal,
+        /** Límite para validar el voucher; null si ya no está pendiente. */
+        LocalDateTime expiraEn,
+        LocalDate fecha
 ) {}

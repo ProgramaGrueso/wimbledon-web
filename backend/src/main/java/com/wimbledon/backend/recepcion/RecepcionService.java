@@ -6,6 +6,7 @@ import com.wimbledon.backend.cliente.ReservaService;
 import com.wimbledon.backend.domain.Habitacion;
 import com.wimbledon.backend.domain.Reserva;
 import com.wimbledon.backend.domain.enums.EstadoHabitacion;
+import com.wimbledon.backend.domain.enums.EstadoReserva;
 import com.wimbledon.backend.repository.HabitacionRepository;
 import com.wimbledon.backend.repository.ReservaRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -52,6 +53,13 @@ public class RecepcionService {
      */
     public List<AgendaItemResponse> agendaDelDia() {
         return reservaRepository.findAgendaDelDia(LocalDate.now())
+                .stream()
+                .map(this::toAgendaItem)
+                .toList();
+    }
+
+    public List<AgendaItemResponse> reservasPendientesDePago() {
+        return reservaRepository.findByEstadoOrderByExpiraEnAsc(EstadoReserva.PENDIENTE)
                 .stream()
                 .map(this::toAgendaItem)
                 .toList();
@@ -176,7 +184,11 @@ public class RecepcionService {
                 r.getHoraSalida(),
                 r.getEstado(),
                 r.getOrigen(),
-                r.getQrUsado()
+                r.getQrUsado(),
+                r.getCodigoReserva(),
+                r.getMontoTotal(),
+                r.getExpiraEn(),
+                r.getFecha()
         );
     }
 }

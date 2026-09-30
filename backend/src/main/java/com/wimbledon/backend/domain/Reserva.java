@@ -54,7 +54,8 @@ public class Reserva {
     private String telefono;
 
     /** Email al que se enviará la confirmación y el QR. */
-    @Column(nullable = false, length = 150)
+    /** Opcional: el portal público no pide correo para no dejar rastro del huésped. */
+    @Column(length = 150)
     private String email;
 
     @Column(nullable = false)
@@ -110,6 +111,27 @@ public class Reserva {
 
     @Column(name = "creado_en", updatable = false)
     private LocalDateTime creadoEn;
+
+    /** Adicionales contratados (nombres de ExtraReserva separados por coma). */
+    @Column(length = 120)
+    private String extras;
+
+    /** IP desde la que se creó la reserva online; sostiene el límite de 1 reserva pendiente por IP. */
+    @Column(name = "ip_origen", length = 45)
+    private String ipOrigen;
+
+    /** Clave enviada por el portal para que un doble envío no cree dos reservas. */
+    @Column(name = "idempotency_key", unique = true, length = 64)
+    private String idempotencyKey;
+
+    /**
+     * Código corto que el huésped comparte por WhatsApp con su voucher y que
+     * recepción usa para ubicar la reserva. Se deriva del qrToken (no adivinable).
+     */
+    @Transient
+    public String getCodigoReserva() {
+        return qrToken == null ? null : "WMB-" + qrToken.replace("-", "").substring(0, 8).toUpperCase();
+    }
 
     @PrePersist
     protected void onCreate() {
