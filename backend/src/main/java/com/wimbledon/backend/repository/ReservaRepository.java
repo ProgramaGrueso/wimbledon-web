@@ -1,5 +1,6 @@
 package com.wimbledon.backend.repository;
 
+import com.wimbledon.backend.domain.Habitacion;
 import com.wimbledon.backend.domain.Reserva;
 import com.wimbledon.backend.domain.Usuario;
 import com.wimbledon.backend.domain.enums.EstadoReserva;
@@ -14,6 +15,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
+
+    boolean existsByHabitacion(Habitacion habitacion);
 
     /** Módulo 6 — resolución del token QR en check-in. Solo lectura, SIN bloqueo. */
     Optional<Reserva> findByQrToken(String qrToken);

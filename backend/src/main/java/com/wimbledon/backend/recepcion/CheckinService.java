@@ -6,6 +6,7 @@ import com.wimbledon.backend.domain.enums.ResultadoIntento;
 import com.wimbledon.backend.exception.CredencialNoUtilizableException;
 import com.wimbledon.backend.exception.ExcepcionCheckin;
 import com.wimbledon.backend.repository.ReservaRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,6 +80,14 @@ public class CheckinService {
             checkinAuditoriaService.registrar(ResultadoIntento.FALLIDO, MotivoRechazo.ERROR, null, operador);
             throw ex;
         }
+    }
+
+    /** Check-in desde la agenda de recepción: ubica la credencial por el ID de la reserva. */
+    public CheckinResponse consumirPorReserva(Integer reservaId, OperadorOperacion operador) {
+        String token = reservaRepository.findById(reservaId)
+                .map(Reserva::getQrToken)
+                .orElseThrow(() -> new EntityNotFoundException("Reserva no encontrada con ID: " + reservaId));
+        return consumir(token, operador);
     }
 
     /**

@@ -133,6 +133,20 @@ public class RecepcionController {
         return ResponseEntity.ok(recepcionService.confirmarReserva(id));
     }
 
+    /**
+     * Check-in de una reserva desde la agenda de recepción, tras verificar el DNI
+     * del huésped en counter. Aplica las mismas validaciones y la misma auditoría
+     * que el check-in por QR.
+     */
+    @PostMapping("/reservas/{id}/checkin")
+    public ResponseEntity<CheckinResponse> checkinPorReserva(
+            @PathVariable Integer id,
+            Authentication authentication
+    ) {
+        OperadorOperacion operador = OperadorOperacion.desde(authentication);
+        return ResponseEntity.ok(checkinService.consumirPorReserva(id, operador));
+    }
+
     // ── Estado de habitación ──────────────────────────────────────────────────
 
     /**

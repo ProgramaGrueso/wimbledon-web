@@ -160,6 +160,13 @@ export const api = {
     });
   },
 
+  async checkinReservaRecepcion(id, jwtToken) {
+    return request(`/api/recepcion/reservas/${id}/checkin`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${jwtToken}` },
+    });
+  },
+
   async consultarReniec(jwtToken, dni) {
     const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
     return request(`/api/recepcion/reniec/${dni}`, {
@@ -201,6 +208,36 @@ export const api = {
     return request('/api/admin/habitaciones', {
       method: 'GET',
       headers,
+    });
+  },
+
+  async crearHabitacionAdmin(payload, jwtToken) {
+    return request('/api/admin/habitaciones', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${jwtToken}` },
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async actualizarHabitacionAdmin(id, payload, jwtToken) {
+    return request(`/api/admin/habitaciones/${id}`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${jwtToken}` },
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async cambiarEstadoHabitacionAdmin(id, estado, jwtToken) {
+    return request(`/api/admin/habitaciones/${id}/estado?estado=${encodeURIComponent(estado)}`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${jwtToken}` },
+    });
+  },
+
+  async eliminarHabitacionAdmin(id, jwtToken) {
+    return request(`/api/admin/habitaciones/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${jwtToken}` },
     });
   },
 

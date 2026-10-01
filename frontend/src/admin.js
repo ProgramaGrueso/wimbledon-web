@@ -6,24 +6,13 @@ import { api } from './services/api.js';
  * Gestiona el Rack de habitaciones físicas, lectura QR y KPIs en tiempo real.
  */
 
-// Estado inicial del Rack Hotel Wimbledon (Fallback offline)
-const DEFAULT_ROOMS_RACK = [
-  { id: 1, numero: "1", nombre: "Suite Presidencial (Estándar)", piso: 1, tipo: "Presidencial", estado: "LIBRE", duracionRestante: "-", cliente: null },
-  { id: 2, numero: "2", nombre: "Tropical Dreams (Estándar)", piso: 1, tipo: "Temática", estado: "LIBRE", duracionRestante: "-", cliente: null },
-  { id: 3, numero: "3", nombre: "Riverside Dreams (Estándar)", piso: 1, tipo: "Presidencial", estado: "LIBRE", duracionRestante: "-", cliente: null },
-  { id: 860, numero: "860", nombre: "Suite Presidencial", piso: 4, tipo: "Presidencial", estado: "LIBRE", duracionRestante: "-", cliente: null },
-  { id: 528, numero: "528", nombre: "Tropical Dreams", piso: 3, tipo: "Temática", estado: "LIBRE", duracionRestante: "-", cliente: null },
-  { id: 526, numero: "526", nombre: "Riverside Dreams Presidencial", piso: 4, tipo: "Presidencial", estado: "LIBRE", duracionRestante: "-", cliente: null },
-  { id: 227, numero: "227", nombre: "Dark Fantasies", piso: 2, tipo: "Temática", estado: "LIBRE", duracionRestante: "-", cliente: null },
-  { id: 35, numero: "35", nombre: "Habitación Delux", piso: 1, tipo: "Delux", estado: "LIBRE", duracionRestante: "-", cliente: null }
-];
 
 let roomsRack = [];
 try {
   const storedRack = localStorage.getItem('wimbledon_admin_rack');
-  roomsRack = storedRack ? JSON.parse(storedRack) : DEFAULT_ROOMS_RACK;
+  roomsRack = storedRack ? JSON.parse(storedRack) : [];
 } catch (e) {
-  roomsRack = DEFAULT_ROOMS_RACK;
+  roomsRack = [];
 }
 
 let liveReservas = [];
@@ -80,13 +69,11 @@ async function syncAdminDataFromBackend() {
           id: r.id || (idx + 1),
           numero: String(r.numero || r.id),
           nombre: r.nombre || `Habitación ${r.numero || r.id}`,
-          piso: r.piso || ((idx % 4) + 1),
           tipo: r.tipo || 'Estándar',
           estado: estadoUI,
           duracionRestante: estadoUI === 'OCUPADA' ? 'En ocupación' : (estadoUI === 'LIMPIEZA' ? 'Aseo Pendiente' : (estadoUI === 'EN_PROCESO' ? 'Desinfección' : '-')),
           cliente: null,
-          tarifa: r.tarifaBase || 150,
-          cochera: r.cochera !== undefined ? r.cochera : (r.tipo || '').toLowerCase().includes('cochera')
+          tarifa: r.tarifaBase != null ? Number(r.tarifaBase) : null
         };
       });
       saveRack();
@@ -134,8 +121,11 @@ async function syncAdminDataFromBackend() {
 let currentStaffSession = null;
 let activeFloorFilter = 'all';
 let currentAdminAuthView = 'login'; // 'login' | 'register'
-let currentGerenteSubView = 'dashboard'; // 'dashboard' | 'solicitudes'
+let currentGerenteSubView = 'dashboard'; // 'dashboard' | 'habitaciones' | 'solicitudes'
 let usuariosPendientesCache = [];
+let habitacionesAdminCache = [];
+let habitacionesAdminError = null;
+let habitacionEditandoId = null; // null = sin formulario, 'nueva' = alta, número = edición
 let liveGerenteKpis = null;
 let loadingGerenteKpis = false;
 let gerenteKpisError = null;
@@ -493,7 +483,7 @@ function renderAdminApp() {
           <div>
             <span style="font-size: 0.72rem; color: #A8A29A; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">PANEL HOTEL WIMBLEDON EN VIVO</span>
             <h2 style="font-family: var(--font-serif); font-size: 2rem; color: #fff; margin-top: 0.2rem;">
-              ${role === 'gerente' ? (currentGerenteSubView === 'solicitudes' ? '👥 Aprobación de Altas de Personal' : '📊 Gerencia & Indicadores de Negocio') : (role === 'recepcion' ? '🛎️ Recepción, Check-in & Rack Operativo' : '🧹 Gestión de Limpieza & Mantenimiento')}
+              ${role === 'gerente' ? (currentGerenteSubView === 'solicitudes' ? '👥 Aprobación de Altas de Personal' : (currentGerenteSubView === 'habitaciones' ? '🛏️ Catálogo de Habitaciones' : '📊 Gerencia & Indicadores de Negocio')) : (role === 'recepcion' ? '🛎️ Recepción, Check-in & Rack Operativo' : '🧹 Gestión de Limpieza & Mantenimiento')}
             </h2>
             <div style="display: flex; align-items: center; gap: 0.6rem; margin-top: 0.35rem;">
               <span class="avail-dot"></span>
@@ -503,12 +493,18 @@ function renderAdminApp() {
             </div>
 
             ${role === 'gerente' ? `
-              <div style="display: flex; gap: 0.5rem; margin-top: 0.85rem;">
+              <div style="display: flex; gap: 0.5rem; margin-top: 0.85rem; flex-wrap: wrap;">
                 <button 
                   id="btnSubViewDashboard" 
                   style="padding: 0.45rem 1rem; font-size: 0.8rem; font-weight: 600; border-radius: 8px; cursor: pointer; border: 1px solid ${currentGerenteSubView === 'dashboard' ? '#D4AF37' : '#2E2C33'}; background: ${currentGerenteSubView === 'dashboard' ? 'rgba(212, 175, 55, 0.15)' : '#16161B'}; color: ${currentGerenteSubView === 'dashboard' ? '#D4AF37' : '#A8A29A'};"
                 >
                   📊 Indicadores & KPIs
+                </button>
+                <button 
+                  id="btnSubViewHabitaciones" 
+                  style="padding: 0.45rem 1rem; font-size: 0.8rem; font-weight: 600; border-radius: 8px; cursor: pointer; border: 1px solid ${currentGerenteSubView === 'habitaciones' ? '#10b981' : '#2E2C33'}; background: ${currentGerenteSubView === 'habitaciones' ? 'rgba(16, 185, 129, 0.15)' : '#16161B'}; color: ${currentGerenteSubView === 'habitaciones' ? '#10b981' : '#A8A29A'};"
+                >
+                  🛏️ Habitaciones
                 </button>
                 <button 
                   id="btnSubViewSolicitudes" 
@@ -531,7 +527,7 @@ function renderAdminApp() {
 
         <!-- CONTENIDO ESPECÍFICO SEGÚN ROL -->
         ${role === 'gerente' 
-          ? (currentGerenteSubView === 'solicitudes' ? renderSolicitudesAccesoWorkspace() : renderGerenteWorkspace()) 
+          ? (currentGerenteSubView === 'solicitudes' ? renderSolicitudesAccesoWorkspace() : (currentGerenteSubView === 'habitaciones' ? renderHabitacionesWorkspace() : renderGerenteWorkspace())) 
           : (role === 'recepcion' ? renderRecepcionWorkspace() : renderLimpiezaWorkspace())}
       </div>
     `;
@@ -551,9 +547,19 @@ function renderAdminApp() {
     if (role === 'gerente') {
       const btnDash = document.getElementById('btnSubViewDashboard');
       const btnSol = document.getElementById('btnSubViewSolicitudes');
+      const btnHab = document.getElementById('btnSubViewHabitaciones');
       if (btnDash) {
-        btnDash.onclick = () => {
+        btnDash.onclick = async () => {
           currentGerenteSubView = 'dashboard';
+          await cargarGerenteKpis(currentGerentePeriod);
+          renderAdminApp();
+        };
+      }
+      if (btnHab) {
+        btnHab.onclick = async () => {
+          currentGerenteSubView = 'habitaciones';
+          habitacionEditandoId = null;
+          await cargarHabitacionesAdmin();
           renderAdminApp();
         };
       }
@@ -567,6 +573,8 @@ function renderAdminApp() {
 
       if (currentGerenteSubView === 'solicitudes') {
         setupSolicitudesEvents();
+      } else if (currentGerenteSubView === 'habitaciones') {
+        setupHabitacionesEvents();
       } else {
         setupGerenteEvents();
       }
@@ -586,11 +594,8 @@ function getCajaTurno() {
   } catch (e) {}
   const inicial = {
     turnoIniciado: new Date().toISOString(),
-    recepcionista: 'Carlos Mendoza (Recepcionista)',
-    cobros: [
-      { id: 'COB-101', fechaHora: '19:30', fechaCompleta: '2026-09-19T19:30:00', habitacionNumero: '211', habitacionNombre: 'Hawaian Dreams', dni: '45892134', huespedNombre: 'ANA PATRICIA RODRÍGUEZ VARGAS', duracion: '6 Horas', monto: 170.00, metodo: 'EFECTIVO' },
-      { id: 'COB-102', fechaHora: '20:15', fechaCompleta: '2026-09-19T20:15:00', habitacionNumero: '301', habitacionNombre: 'Tropical Dreams', dni: '72819203', huespedNombre: 'ROBERTO CARLOS FERRER SALAZAR', duracion: '6 Horas', monto: 180.00, metodo: 'EFECTIVO' }
-    ]
+    recepcionista: currentStaffSession?.name || '',
+    cobros: []
   };
   saveCajaTurno(inicial);
   return inicial;
@@ -708,7 +713,7 @@ function openRecepcionCheckinModal(preset = {}) {
   }
 
   const allRooms = roomsRack;
-  const initialMonto = preset.monto || 150;
+  const initialMonto = preset.monto ?? '';
 
   overlay.innerHTML = `
     <div class="admin-modal-panel">
@@ -778,7 +783,7 @@ function openRecepcionCheckinModal(preset = {}) {
             </label>
             <select id="chkHabSelect" style="width: 100%; padding: 0.75rem; background: #0B0B0D; border: 1px solid #2E2C33; border-radius: 8px; color: #fff; font-size: 0.9rem; cursor: pointer;">
               ${allRooms.map(r => `
-                <option value="${r.numero}" data-tarifa="${r.tarifa || 150}" ${String(r.numero) === String(preset.habitacionNumero) ? 'selected' : ''}>
+                <option value="${r.numero}" data-tarifa="${r.tarifa ?? ''}" ${String(r.numero) === String(preset.habitacionNumero) ? 'selected' : ''}>
                   Hab. ${r.numero} — ${r.nombre} (${r.estado})
                 </option>
               `).join('')}
@@ -939,6 +944,18 @@ function openRecepcionCheckinModal(preset = {}) {
       const habNum = overlay.querySelector('#chkHabSelect').value;
       const duracion = overlay.querySelector('#chkDurSelect').value;
       const montoCobrado = parseFloat(montoInput.value) || 0;
+      const token = currentStaffSession?.jwtToken;
+
+      // 0. Si viene de una reserva, el check-in se registra primero en el servidor;
+      //    si lo rechaza (fuera de horario, cancelada…) no se toca el rack ni la caja.
+      if (preset.reservaId) {
+        try {
+          await api.checkinReservaRecepcion(preset.reservaId, token);
+        } catch (err) {
+          alert(`❌ No se pudo registrar el check-in:\n${err.message}`);
+          return;
+        }
+      }
 
       // 1. Actualizar habitación en el Rack
       const room = roomsRack.find(r => r.numero === habNum);
@@ -970,7 +987,7 @@ function openRecepcionCheckinModal(preset = {}) {
       }
 
       overlay.classList.remove('open');
-      alert(`✅ Check-in oficial completado exitosamente.\n\n• Habitación: ${habNum}\n• Huésped (RENIEC): ${nombre} (DNI: ${dni})\n• Cobro en Efectivo Registrado: S/ ${montoCobrado}.00\n• Modalidad: Cero Huella Digital Bancaria`);
+      alert(`✅ Check-in oficial completado exitosamente.\n\n• Habitación: ${habNum}\n• Huésped (RENIEC): ${nombre} (DNI: ${dni})\n• Cobro en efectivo registrado: S/ ${montoCobrado.toFixed(2)}`);
       renderAdminApp();
     };
   }
@@ -1216,7 +1233,7 @@ function renderRecepcionWorkspace() {
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
           <h4 style="font-family: var(--font-serif); font-size: 1.35rem; color: #D4AF37;">
-            Rack Operativo en Vivo (16 Suites)
+            Rack Operativo en Vivo (${roomsRack.length} habitaciones)
           </h4>
           <span style="font-size: 0.8rem; color: #A8A29A;">
             🟢 ${freeCount} Libres • 🔴 ${occupiedCount} Ocupadas • 🟡 ${cleaningCount} En Aseo
@@ -1224,11 +1241,10 @@ function renderRecepcionWorkspace() {
         </div>
 
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-          <button class="amenity-chip-btn ${activeFloorFilter === 'all' ? 'active' : ''}" data-floor="all">Todos (${roomsRack.length})</button>
-          <button class="amenity-chip-btn ${activeFloorFilter === '1' ? 'active' : ''}" data-floor="1">Piso 1 (Cocheras)</button>
-          <button class="amenity-chip-btn ${activeFloorFilter === '2' ? 'active' : ''}" data-floor="2">Piso 2 (Confort)</button>
-          <button class="amenity-chip-btn ${activeFloorFilter === '3' ? 'active' : ''}" data-floor="3">Piso 3 (Vistas)</button>
-          <button class="amenity-chip-btn ${activeFloorFilter === '4' ? 'active' : ''}" data-floor="4">Piso 4 (Penthouse)</button>
+          <button class="amenity-chip-btn ${activeFloorFilter === 'all' ? 'active' : ''}" data-floor="all">Todas (${roomsRack.length})</button>
+          ${[...new Set(roomsRack.map(r => r.tipo))].sort().map(tipo => `
+            <button class="amenity-chip-btn ${activeFloorFilter === tipo ? 'active' : ''}" data-floor="${escapeHtml(tipo)}">${escapeHtml(tipo)}</button>
+          `).join('')}
         </div>
       </div>
 
@@ -1314,7 +1330,7 @@ function renderRecepcionWorkspace() {
 function renderRackCardsHTML() {
   const filtered = roomsRack.filter(r => {
     if (activeFloorFilter === 'all') return true;
-    return r.piso === parseInt(activeFloorFilter, 10);
+    return r.tipo === activeFloorFilter;
   });
 
   return filtered.map(room => {
@@ -1334,7 +1350,7 @@ function renderRackCardsHTML() {
 
     return `
       <div class="rack-room-card ${stateClass} js-rack-card" data-room-id="${room.id}">
-        <span style="font-size: 0.7rem; color: #A8A29A; display: block;">PISO ${room.piso} • ${room.tipo}</span>
+        <span style="font-size: 0.7rem; color: #A8A29A; display: block;">${escapeHtml(room.tipo)}</span>
         <strong style="font-size: 1.6rem; color: #fff; display: block; margin: 0.2rem 0; font-family: monospace;">${room.numero}</strong>
         <span style="font-size: 0.75rem; color: #D8D2C6; display: block; margin-bottom: 0.5rem; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">${room.nombre}</span>
         <span style="font-size: 0.65rem; background: ${badgeColor}; color: #000; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold; text-transform: uppercase;">
@@ -1349,7 +1365,7 @@ function setupRecepcionEvents() {
   // Filtro de pisos
   document.querySelectorAll('[data-floor]').forEach(btn => {
     btn.onclick = (e) => {
-      activeFloorFilter = e.target.getAttribute('data-floor');
+      activeFloorFilter = e.currentTarget.getAttribute('data-floor');
       const grid = document.getElementById('adminRackGrid');
       if (grid) grid.innerHTML = renderRackCardsHTML();
       setupCardClickEvents();
@@ -1376,18 +1392,17 @@ function setupRecepcionEvents() {
   document.querySelectorAll('.js-checkin-booking').forEach(btn => {
     btn.onclick = (e) => {
       const code = e.target.getAttribute('data-code');
-      let bookings = [];
-      try { bookings = JSON.parse(localStorage.getItem('wimbledon_bookings') || '[]'); } catch (err) {}
-      const resLocal = bookings.find(b => b.id === code || b.pin === code);
       const resCloud = liveReservas.find(b => String(b.id) === String(code));
+      if (!resCloud) return;
+      const habitacion = roomsRack.find(r => r.nombre === resCloud.habitacion);
 
       const preset = {
-        reservaId: resCloud?.id || resLocal?.id || null,
-        habitacionNumero: resCloud?.habitacion || '401',
-        huespedNombre: resCloud?.nombre_huesped || resLocal?.clienteNombre || '',
-        dni: resCloud?.numero_documento || '',
-        monto: resCloud?.monto_total || resLocal?.monto || 150,
-        duracion: resCloud ? `${resCloud.duracion_horas} Horas` : (resLocal?.duracion || '6 Horas')
+        reservaId: resCloud.id,
+        habitacionNumero: habitacion?.numero,
+        huespedNombre: resCloud.nombre_huesped || '',
+        dni: '',
+        monto: resCloud.monto_total !== '—' ? resCloud.monto_total : '',
+        duracion: `${resCloud.duracion_horas} Horas`
       };
       openRecepcionCheckinModal(preset);
     };
@@ -1436,7 +1451,7 @@ function setupCardClickEvents() {
       );
 
       if (opt === '2') {
-        openRecepcionCheckinModal({ habitacionNumero: room.numero, monto: room.tarifa || 150 });
+        openRecepcionCheckinModal({ habitacionNumero: room.numero, monto: room.tarifa ?? '' });
         return;
       }
 
@@ -1499,7 +1514,7 @@ function renderLimpiezaWorkspace() {
           <div style="background: #0B0B0D; border: 1px solid ${r.estado === 'EN_PROCESO' ? '#38bdf8' : '#f59e0b'}; border-radius: 14px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
             <div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <span style="font-size: 0.7rem; color: #A8A29A;">PISO ${r.piso}</span>
+                <span style="font-size: 0.7rem; color: #A8A29A;">${escapeHtml(r.tipo)}</span>
                 <span style="font-size: 0.65rem; background: ${r.estado === 'EN_PROCESO' ? '#0369a1' : '#b45309'}; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold;">
                   ${r.estado === 'EN_PROCESO' ? 'EN PROCESO' : 'PENDIENTE'}
                 </span>
@@ -1583,109 +1598,27 @@ function setupLimpiezaEvents() {
 // ==========================================
 let currentGerentePeriod = 'dia';
 
-const gerenteAnalyticsData = {
-  dia: {
-    label: 'Hoy (24 Horas)',
-    badge: 'En tiempo real',
-    kpis: {
-      ocupacion: { label: 'Tasa de Ocupación', val: '68.8%', num: 68.8, sub: '11 de 16 suites ocupadas', trend: '+12.5% vs ayer', trendUp: true, color: '#10b981' },
-      ingresos: { label: 'Ingresos Proyectados', val: 'S/ 4,820', num: 92, sub: 'Ticket prom: S/ 175.00', trend: '+14.2% vs meta diaria', trendUp: true, color: '#D4AF37' },
-      rotacion: { label: 'Índice de Rotación', val: '2.8x', num: 70, sub: 'Rotación por suite / día', trend: '+0.4x vs prom.', trendUp: true, color: '#38bdf8' },
-      checkinQr: { label: 'Check-in Digital / QR', val: '84%', num: 84, sub: 'Cerradura Inteligente & PIN', trend: '+6% adopción', trendUp: true, color: '#a855f7' },
-    },
-    chartTitle: 'Flujo de Ocupación por Intervalos Horarios (Hoy)',
-    chartSubtitle: 'Pico de afluencia registrado entre las 20:00 y las 03:00 hrs',
-    bars: [
-      { label: '00:00', val: '85%', heightPct: 85, color: 'linear-gradient(180deg, #D4AF37, #B8932E)', highlight: true },
-      { label: '04:00', val: '60%', heightPct: 60, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: '08:00', val: '30%', heightPct: 30, color: 'linear-gradient(180deg, #7C766D, #2E2C33)', highlight: false },
-      { label: '12:00', val: '55%', heightPct: 55, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: '16:00', val: '75%', heightPct: 75, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: '20:00', val: '95%', heightPct: 95, color: 'linear-gradient(180deg, #D4AF37, #B8932E)', highlight: true },
-      { label: '23:00', val: '90%', heightPct: 90, color: 'linear-gradient(180deg, #D4AF37, #B8932E)', highlight: true }
-    ],
-    breakdown: [
-      { name: 'Alquiler de Suites & Jacuzzis', amount: 'S/ 3,615.00', pct: '75%', color: '#D4AF37' },
-      { name: 'Coctelería & Bar de Autor', amount: 'S/ 820.00', pct: '17%', color: '#38bdf8' },
-      { name: 'Minibar & Room Service Exprés', amount: 'S/ 385.00', pct: '8%', color: '#a855f7' }
-    ],
-    ranking: [
-      { num: '301', name: 'Presidencial Wimbledon', cat: 'Presidencial', metric: '4 rotaciones', rev: 'S/ 1,480.00', badge: 'Top 1' },
-      { num: '201', name: 'Suite Jacuzzi Sensaciones', cat: 'Jacuzzi Deluxe', metric: '3 rotaciones', rev: 'S/ 920.00', badge: 'Top 2' },
-      { num: '102', name: 'Suite Cochera Privada Directa', cat: 'Cochera Privada', metric: '3 rotaciones', rev: 'S/ 750.00', badge: 'Top 3' },
-      { num: '204', name: 'Suite Espejos & Spa', cat: 'Jacuzzi Deluxe', metric: '2 rotaciones', rev: 'S/ 640.00', badge: 'Top 4' },
-      { num: '105', name: 'Suite Ejecutiva Cochera', cat: 'Cochera Privada', metric: '2 rotaciones', rev: 'S/ 510.00', badge: 'Top 5' }
-    ]
-  },
-  mes: {
-    label: 'Septiembre 2026',
-    badge: 'Cierre Proyectado',
-    kpis: {
-      ocupacion: { label: 'Tasa de Ocupación', val: '76.5%', num: 76.5, sub: 'Promedio mensual acumulado', trend: '+8.1% vs agosto', trendUp: true, color: '#10b981' },
-      ingresos: { label: 'Ingresos Proyectados', val: 'S/ 124,580', num: 96, sub: 'Ticket prom: S/ 188.00', trend: '+18.5% vs meta mes', trendUp: true, color: '#D4AF37' },
-      rotacion: { label: 'Índice de Rotación', val: '3.1x', num: 78, sub: 'Rotación media por suite', trend: '+0.5x crecimiento', trendUp: true, color: '#38bdf8' },
-      checkinQr: { label: 'Check-in Digital / QR', val: '88%', num: 88, sub: 'Ingresos con llave digital QR', trend: '+11% vs mes ant.', trendUp: true, color: '#a855f7' },
-    },
-    chartTitle: 'Ingresos Semanales Acumulados (Septiembre 2026)',
-    chartSubtitle: 'Comportamiento de demanda semanal sostenida con picos en fin de semana',
-    bars: [
-      { label: 'Semana 1', val: 'S/ 28.5k', heightPct: 70, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: 'Semana 2', val: 'S/ 32.2k', heightPct: 82, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: 'Semana 3', val: 'S/ 34.8k', heightPct: 90, color: 'linear-gradient(180deg, #D4AF37, #B8932E)', highlight: true },
-      { label: 'Semana 4 (Proj)', val: 'S/ 29.0k', heightPct: 74, color: 'linear-gradient(180deg, #a855f7, #7e22ce)', highlight: false }
-    ],
-    breakdown: [
-      { name: 'Alquiler de Suites & Jacuzzis', amount: 'S/ 90,940.00', pct: '73%', color: '#D4AF37' },
-      { name: 'Coctelería & Bar de Autor', amount: 'S/ 22,420.00', pct: '18%', color: '#38bdf8' },
-      { name: 'Minibar & Room Service Exprés', amount: 'S/ 11,220.00', pct: '9%', color: '#a855f7' }
-    ],
-    ranking: [
-      { num: '301', name: 'Presidencial Wimbledon', cat: 'Presidencial', metric: '84 estancias', rev: 'S/ 35,280.00', badge: 'Top 1' },
-      { num: '302', name: 'Penthouse Panorámica', cat: 'Presidencial', metric: '72 estancias', rev: 'S/ 30,240.00', badge: 'Top 2' },
-      { num: '201', name: 'Suite Jacuzzi Sensaciones', cat: 'Jacuzzi Deluxe', metric: '68 estancias', rev: 'S/ 20,400.00', badge: 'Top 3' },
-      { num: '202', name: 'Jacuzzi Cúpula Estelar', cat: 'Jacuzzi Deluxe', metric: '62 estancias', rev: 'S/ 18,600.00', badge: 'Top 4' },
-      { num: '101', name: 'Suite Cochera Directa', cat: 'Cochera Privada', metric: '58 estancias', rev: 'S/ 14,500.00', badge: 'Top 5' }
-    ]
-  },
-  ano: {
-    label: 'Ejercicio Anual 2026',
-    badge: 'Consolidado Anual',
-    kpis: {
-      ocupacion: { label: 'Tasa de Ocupación', val: '79.2%', num: 79.2, sub: 'Ocupación anual promedio', trend: '+12.4% vs 2025', trendUp: true, color: '#10b981' },
-      ingresos: { label: 'Ingresos Proyectados', val: 'S/ 1,385,400', num: 100, sub: 'Ticket prom: S/ 192.00', trend: '+22.8% récord anual', trendUp: true, color: '#D4AF37' },
-      rotacion: { label: 'Índice de Rotación', val: '3.4x', num: 85, sub: 'Promedio anual de rotación', trend: '+0.7x vs año ant.', trendUp: true, color: '#38bdf8' },
-      checkinQr: { label: 'Check-in Digital / QR', val: '91%', num: 91, sub: 'Adopción consolidada QR/PIN', trend: '+24% modernización', trendUp: true, color: '#a855f7' },
-    },
-    chartTitle: 'Curva Histórica de Ocupación Mensual (Ene - Dic 2026)',
-    chartSubtitle: 'Picos sobresalientes: Febrero (San Valentín - 98%) y Julio (Fiestas Patrias - 95%)',
-    bars: [
-      { label: 'Ene', val: '85%', heightPct: 85, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: 'Feb (♥)', val: '98%', heightPct: 98, color: 'linear-gradient(180deg, #f43f5e, #be123c)', highlight: true },
-      { label: 'Mar', val: '70%', heightPct: 70, color: 'linear-gradient(180deg, #7C766D, #2E2C33)', highlight: false },
-      { label: 'Abr', val: '72%', heightPct: 72, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: 'May', val: '78%', heightPct: 78, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: 'Jun', val: '80%', heightPct: 80, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: 'Jul (★)', val: '95%', heightPct: 95, color: 'linear-gradient(180deg, #D4AF37, #B8932E)', highlight: true },
-      { label: 'Ago', val: '82%', heightPct: 82, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: 'Set', val: '76%', heightPct: 76, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: 'Oct', val: '74%', heightPct: 74, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: 'Nov', val: '80%', heightPct: 80, color: 'linear-gradient(180deg, #38bdf8, #0284c7)', highlight: false },
-      { label: 'Dic', val: '92%', heightPct: 92, color: 'linear-gradient(180deg, #D4AF37, #B8932E)', highlight: true }
-    ],
-    breakdown: [
-      { name: 'Alquiler de Suites & Jacuzzis', amount: 'S/ 1,025,196.00', pct: '74%', color: '#D4AF37' },
-      { name: 'Coctelería & Bar de Autor', amount: 'S/ 235,518.00', pct: '17%', color: '#38bdf8' },
-      { name: 'Minibar & Room Service Exprés', amount: 'S/ 124,686.00', pct: '9%', color: '#a855f7' }
-    ],
-    ranking: [
-      { num: '301', name: 'Presidencial Wimbledon', cat: 'Presidencial', metric: '1,040 estancias', rev: 'S/ 416,000.00', badge: 'Top 1 Anual' },
-      { num: '302', name: 'Penthouse Panorámica', cat: 'Presidencial', metric: '980 estancias', rev: 'S/ 392,000.00', badge: 'Top 2 Anual' },
-      { num: '201', name: 'Suite Jacuzzi Sensaciones', cat: 'Jacuzzi Deluxe', metric: '860 estancias', rev: 'S/ 258,000.00', badge: 'Top 3 Anual' },
-      { num: '203', name: 'Suite Sauna Privado', cat: 'Jacuzzi & Sauna', metric: '780 estancias', rev: 'S/ 234,000.00', badge: 'Top 4 Anual' },
-      { num: '102', name: 'Suite Cochera Privada Directa', cat: 'Cochera Privada', metric: '710 estancias', rev: 'S/ 177,500.00', badge: 'Top 5 Anual' }
-    ]
-  }
-};
+/** Escapa texto que viene de la base antes de insertarlo como HTML. */
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatSoles(value) {
+  return `S/ ${(Number(value) || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function etiquetaPeriodoGerente(periodo) {
+  const hoy = new Date();
+  if (periodo === 'dia') return `Hoy, ${hoy.toLocaleDateString('es-PE')}`;
+  if (periodo === 'ano') return `Año ${hoy.getFullYear()}`;
+  const mes = hoy.toLocaleDateString('es-PE', { month: 'long', year: 'numeric' });
+  return mes.charAt(0).toUpperCase() + mes.slice(1);
+}
 
 async function cargarGerenteKpis(periodo = currentGerentePeriod) {
   const token = currentStaffSession?.jwtToken;
@@ -1693,13 +1626,11 @@ async function cargarGerenteKpis(periodo = currentGerentePeriod) {
   loadingGerenteKpis = true;
   gerenteKpisError = null;
   try {
-    const data = await api.obtenerKpisAdmin(token, periodo);
-    if (data) {
-      liveGerenteKpis = data;
-    }
+    liveGerenteKpis = await api.obtenerKpisAdmin(token, periodo);
   } catch (err) {
     console.warn('No se pudieron obtener KPIs de Spring Boot en vivo:', err);
-    gerenteKpisError = 'No se pudieron cargar los KPIs en tiempo real desde el servidor.';
+    liveGerenteKpis = null;
+    gerenteKpisError = 'No se pudieron cargar los indicadores desde el servidor.';
   } finally {
     loadingGerenteKpis = false;
   }
@@ -1717,290 +1648,190 @@ async function cargarUsuariosPendientes() {
 }
 
 function renderGerenteWorkspace() {
-  const data = JSON.parse(JSON.stringify(gerenteAnalyticsData[currentGerentePeriod]));
-  const { kpis, bars, breakdown, ranking } = data;
-
-  // Integrar métricas reales calculadas por Spring Boot & MySQL
-  if (liveGerenteKpis) {
-    const occ = Number(liveGerenteKpis.tasaOcupacion) || 0;
-    kpis.ocupacion.val = `${occ.toFixed(1)}%`;
-    kpis.ocupacion.num = occ;
-    kpis.ocupacion.sub = `${liveGerenteKpis.habitacionesOcupadas || 0} de ${liveGerenteKpis.totalHabitaciones || 132} habitaciones ocupadas`;
-
-    const ing = Number(liveGerenteKpis.ingresosTotales) || 0;
-    kpis.ingresos.val = `S/ ${ing.toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
-    kpis.ingresos.sub = `Auditado en Spring Boot & MySQL (${currentGerentePeriod})`;
-    kpis.ingresos.num = Math.min(100, Math.round((ing / (currentGerentePeriod === 'dia' ? 5000 : (currentGerentePeriod === 'mes' ? 120000 : 1200000))) * 100));
-
-    const rot = Number(liveGerenteKpis.rotacionPromedio) || 0;
-    kpis.rotacion.val = `${rot.toFixed(1)}x`;
-    kpis.rotacion.num = Math.min(100, Math.round(rot * 25));
-
-    const qrPct = Number(liveGerenteKpis.checkinDigitalPct) || 0;
-    kpis.checkinQr.val = `${qrPct.toFixed(0)}%`;
-    kpis.checkinQr.num = qrPct;
-
-    if (liveGerenteKpis.ocupacionPorDia && liveGerenteKpis.ocupacionPorDia.length > 0) {
-      data.bars = liveGerenteKpis.ocupacionPorDia.map(d => ({
-        label: d.dia,
-        val: `${(d.ocupacionPct || 0).toFixed(0)}%`,
-        heightPct: Math.min(100, Math.max(10, Math.round(d.ocupacionPct || 0))),
-        color: (d.ocupacionPct || 0) >= 70 ? 'linear-gradient(180deg, #D4AF37, #B8932E)' : 'linear-gradient(180deg, #38bdf8, #0284c7)',
-        highlight: (d.ocupacionPct || 0) >= 70
-      }));
-    }
-  }
+  const k = liveGerenteKpis;
+  const periodoLabel = etiquetaPeriodoGerente(currentGerentePeriod);
 
   const renderGauge = (num, color) => {
-    const strokeDash = Math.min(100, Math.max(0, num));
-    const offset = 100 - strokeDash;
+    const pct = Math.min(100, Math.max(0, num));
     return `
       <div class="kpi-gauge-wrap">
         <svg class="kpi-gauge-svg" viewBox="0 0 36 36" width="72" height="72">
           <circle class="kpi-gauge-bg" cx="18" cy="18" r="15.9155" />
-          <circle class="kpi-gauge-fill" cx="18" cy="18" r="15.9155" stroke="${color}" stroke-dasharray="100, 100" stroke-dashoffset="${offset}" />
+          <circle class="kpi-gauge-fill" cx="18" cy="18" r="15.9155" stroke="${color}" stroke-dasharray="100, 100" stroke-dashoffset="${100 - pct}" />
         </svg>
-        <span class="kpi-gauge-pct" style="color: ${color};">${Math.round(num)}%</span>
+        <span class="kpi-gauge-pct" style="color: ${color};">${Math.round(pct)}%</span>
       </div>
     `;
   };
 
-  return `
-    <div id="gerenteContainer" style="animation: cardFadeIn 0.35s ease;">
-      <!-- BARRA DE CONTROL DE PERÍODO & ACCIONES GERENCIALES -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1.25rem;">
-        <div>
-          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;">
-            <span style="font-size: 0.72rem; color: #D4AF37; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase;">
-              BUSINESS INTELLIGENCE & ANALYTICS EXECUTIVE
-            </span>
-            <span style="font-size: 0.65rem; background: rgba(212, 175, 55, 0.15); color: #D4AF37; border: 1px solid rgba(212, 175, 55, 0.3); padding: 0.2rem 0.6rem; border-radius: var(--radius-pill); font-weight: 700;">
-              ${liveGerenteKpis ? '🟢 Conectado a Spring Boot' : data.badge}
-            </span>
-          </div>
-          <h3 style="font-family: var(--font-serif); font-size: 1.75rem; color: #fff; margin: 0;">
-            Tablero de Rendimiento Hotelero
-          </h3>
-        </div>
-
-        <!-- SELECTOR INTERACTIVO DÍA / MES / AÑO -->
-        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-          <div class="gerente-period-nav" id="gerentePeriodTabs">
-            <button class="period-tab-btn ${currentGerentePeriod === 'dia' ? 'active' : ''}" data-period="dia">
-              ☀️ Hoy (Día)
-            </button>
-            <button class="period-tab-btn ${currentGerentePeriod === 'mes' ? 'active' : ''}" data-period="mes">
-              📅 Este Mes
-            </button>
-            <button class="period-tab-btn ${currentGerentePeriod === 'ano' ? 'active' : ''}" data-period="ano">
-              📈 Año 2026
-            </button>
-          </div>
-
-          <button id="btnExportGerenteReport" class="btn-editorial-outline" style="padding: 0.55rem 1.2rem; border-color: #38bdf8; color: #38bdf8; font-size: 0.8rem; border-radius: var(--radius-pill); cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;">
-            📥 Exportar Reporte (.CSV)
-          </button>
-        </div>
+  const renderKpi = ({ label, val, sub, color, gauge }) => `
+    <div class="kpi-luxe-card">
+      <div class="kpi-luxe-info">
+        <span class="kpi-luxe-label">${label}</span>
+        <div class="kpi-luxe-val" style="color: ${color};">${val}</div>
+        <span style="font-size: 0.75rem; color: #A8A29A;">${sub}</span>
       </div>
+      ${gauge != null ? renderGauge(gauge, color) : ''}
+    </div>
+  `;
 
-      ${gerenteKpisError ? `
-        <div style="background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.3); border-radius: 12px; padding: 0.75rem 1rem; color: #f43f5e; font-size: 0.82rem; margin-bottom: 1.5rem; text-align: center;">
-          ⚠️ ${gerenteKpisError}
-        </div>
-      ` : ''}
+  let contenido;
+  if (!k) {
+    contenido = `
+      <div class="analytics-panel-card" style="text-align: center; color: #A8A29A; padding: 2.5rem;">
+        ${loadingGerenteKpis ? 'Cargando indicadores…' : (gerenteKpisError || 'Sin datos de indicadores.')}
+      </div>
+    `;
+  } else {
+    const franjas = k.ocupacionPorFranja || { madrugada: 0, dia: 0, noche: 0 };
+    const origen = k.reservasPorOrigen || { online: 0, manual: 0, porcentajeOnline: 0 };
+    const totalCanal = (origen.online || 0) + (origen.manual || 0);
+    const pctManual = totalCanal ? 100 - (origen.porcentajeOnline || 0) : 0;
 
-      <!-- 4 TARJETAS KPI CON MEDIDORES RADIALES (DIALES CIRCULARES) -->
+    const bars = [
+      { label: 'Madrugada (00–06 h)', val: franjas.madrugada || 0 },
+      { label: 'Día (06–18 h)', val: franjas.dia || 0 },
+      { label: 'Noche (18–24 h)', val: franjas.noche || 0 },
+    ];
+    const maxBar = Math.max(1, ...bars.map(b => b.val));
+
+    const ranking = (k.ocupacionPorDia || [])
+      .filter(r => (r.totalReservas || 0) > 0)
+      .sort((a, b) => (Number(b.ingresoEstimado) || 0) - (Number(a.ingresoEstimado) || 0))
+      .slice(0, 5);
+
+    contenido = `
       <div class="gerente-kpi-grid">
-        <!-- KPI 1: Tasa de Ocupación -->
-        <div class="kpi-luxe-card">
-          <div class="kpi-luxe-info">
-            <span class="kpi-luxe-label">${kpis.ocupacion.label}</span>
-            <div class="kpi-luxe-val" style="color: ${kpis.ocupacion.color};">${kpis.ocupacion.val}</div>
-            <span style="font-size: 0.75rem; color: #A8A29A; margin-bottom: 0.5rem;">${kpis.ocupacion.sub}</span>
-            <span class="kpi-luxe-trend" style="color: #10b981;">▲ ${kpis.ocupacion.trend}</span>
-          </div>
-          ${renderGauge(kpis.ocupacion.num, kpis.ocupacion.color)}
-        </div>
-
-        <!-- KPI 2: Ingresos Totales -->
-        <div class="kpi-luxe-card">
-          <div class="kpi-luxe-info">
-            <span class="kpi-luxe-label">${kpis.ingresos.label}</span>
-            <div class="kpi-luxe-val" style="color: ${kpis.ingresos.color};">${kpis.ingresos.val}</div>
-            <span style="font-size: 0.75rem; color: #A8A29A; margin-bottom: 0.5rem;">${kpis.ingresos.sub}</span>
-            <span class="kpi-luxe-trend" style="color: #D4AF37;">★ ${kpis.ingresos.trend}</span>
-          </div>
-          ${renderGauge(kpis.ingresos.num, kpis.ingresos.color)}
-        </div>
-
-        <!-- KPI 3: Rotación -->
-        <div class="kpi-luxe-card">
-          <div class="kpi-luxe-info">
-            <span class="kpi-luxe-label">${kpis.rotacion.label}</span>
-            <div class="kpi-luxe-val" style="color: ${kpis.rotacion.color};">${kpis.rotacion.val}</div>
-            <span style="font-size: 0.75rem; color: #A8A29A; margin-bottom: 0.5rem;">${kpis.rotacion.sub}</span>
-            <span class="kpi-luxe-trend" style="color: #38bdf8;">▲ ${kpis.rotacion.trend}</span>
-          </div>
-          ${renderGauge(kpis.rotacion.num, kpis.rotacion.color)}
-        </div>
-
-        <!-- KPI 4: Check-in Digital / Cerradura Inteligente -->
-        <div class="kpi-luxe-card">
-          <div class="kpi-luxe-info">
-            <span class="kpi-luxe-label">${kpis.checkinQr.label}</span>
-            <div class="kpi-luxe-val" style="color: ${kpis.checkinQr.color};">${kpis.checkinQr.val}</div>
-            <span style="font-size: 0.75rem; color: #A8A29A; margin-bottom: 0.5rem;">${kpis.checkinQr.sub}</span>
-            <span class="kpi-luxe-trend" style="color: #a855f7;">▲ ${kpis.checkinQr.trend}</span>
-          </div>
-          ${renderGauge(kpis.checkinQr.num, kpis.checkinQr.color)}
-        </div>
+        ${renderKpi({ label: 'Reservas del período', val: k.totalReservas, sub: 'Sin contar canceladas', color: '#10b981' })}
+        ${renderKpi({ label: 'Ticket promedio', val: formatSoles(k.ticketPromedio), sub: 'Monto medio por reserva', color: '#D4AF37' })}
+        ${renderKpi({ label: 'Reservas online', val: `${(origen.porcentajeOnline || 0).toFixed(0)}%`, sub: `${origen.online || 0} online · ${origen.manual || 0} en recepción`, color: '#38bdf8', gauge: origen.porcentajeOnline || 0 })}
+        ${renderKpi({ label: 'Clientes que repiten', val: `${(k.tasaRetencionPct || 0).toFixed(0)}%`, sub: 'Sobre clientes únicos', color: '#a855f7', gauge: k.tasaRetencionPct || 0 })}
       </div>
 
-      <!-- FILA DE ANALÍTICA: GRÁFICO DE BARRAS DINÁMICO + DESGLOSE POR CONCEPTO -->
       <div class="gerente-analytics-grid">
-        <!-- PANEL DE GRÁFICO INTERACTIVO -->
         <div class="analytics-panel-card">
           <div class="panel-header-row">
             <div>
-              <h4 class="panel-title">${data.chartTitle}</h4>
-              <p style="font-size: 0.78rem; color: #A8A29A; margin-top: 0.25rem;">${data.chartSubtitle}</p>
+              <h4 class="panel-title">Reservas por franja horaria</h4>
+              <p style="font-size: 0.78rem; color: #A8A29A; margin-top: 0.25rem;">Según la hora de ingreso de cada reserva</p>
             </div>
-            <span style="font-size: 0.75rem; color: #D4AF37; font-weight: 700; background: rgba(212, 175, 55, 0.1); padding: 0.3rem 0.75rem; border-radius: 8px;">
-              Período: ${data.label}
-            </span>
           </div>
-
-          <!-- Cuadrícula visual de barras verticales con escala en eje Y (Solución #12 - v4) -->
           <div class="gerente-chart">
-            <div class="bar-chart-yaxis" aria-hidden="true">
-              <span>100%</span>
-              <span>75%</span>
-              <span>50%</span>
-              <span>25%</span>
-              <span>0%</span>
-            </div>
             <div class="bar-chart-bars">
               ${bars.map(b => `
                 <div class="bar-col-item" style="flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative;">
-                  <span class="bar-val-badge" style="position: absolute; top: -24px; font-size: 0.65rem; font-family: monospace; font-weight: 800; color: ${b.highlight ? '#D4AF37' : '#A8A29A'};">${b.val}</span>
-                  <div class="bar-fill-track" style="width: 100%; max-width: 38px; height: 100%; background: rgba(255, 255, 255, 0.04); border-radius: 8px 8px 0 0; display: flex; align-items: flex-end; overflow: hidden;">
-                    <div class="bar-fill" style="width: 100%; height: ${b.heightPct}%; background: ${b.color}; border-radius: 8px 8px 0 0; transition: height 0.8s ease;" title="${b.label}: ${b.val}"></div>
+                  <span class="bar-val-badge" style="position: absolute; top: -24px; font-size: 0.75rem; font-family: monospace; font-weight: 800; color: #D4AF37;">${b.val}</span>
+                  <div class="bar-fill-track" style="width: 100%; max-width: 56px; height: 100%; background: rgba(255, 255, 255, 0.04); border-radius: 8px 8px 0 0; display: flex; align-items: flex-end; overflow: hidden;">
+                    <div class="bar-fill" style="width: 100%; height: ${b.val ? Math.max(4, Math.round((b.val / maxBar) * 100)) : 0}%; background: linear-gradient(180deg, #D4AF37, #B8932E); border-radius: 8px 8px 0 0; transition: height 0.8s ease;" title="${b.label}: ${b.val}"></div>
                   </div>
                 </div>
               `).join('')}
             </div>
             <div class="chart-x-labels">
-              ${bars.map(b => `
-                <span style="flex: 1; text-align: center; font-size: 0.72rem; color: ${b.highlight ? '#fff' : '#A8A29A'}; font-weight: ${b.highlight ? '700' : '400'};">${b.label}</span>
-              `).join('')}
+              ${bars.map(b => `<span style="flex: 1; text-align: center; font-size: 0.72rem; color: #A8A29A;">${b.label}</span>`).join('')}
             </div>
-          </div>
-
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; font-size: 0.75rem; color: #7C766D;">
-            <span>⚡ Actualizado automáticamente según registros del sistema</span>
-            <span style="color: #D4AF37;">■ Barras resaltadas indican franjas de máxima ocupación</span>
           </div>
         </div>
 
-        <!-- PANEL DE DESGLOSE POR CONCEPTO -->
         <div class="analytics-panel-card">
           <div class="panel-header-row">
-            <h4 class="panel-title">Ingresos por Concepto</h4>
-            <span style="font-size: 0.75rem; color: #A8A29A;">100% Total</span>
+            <h4 class="panel-title">Reservas por canal</h4>
+            <span style="font-size: 0.75rem; color: #A8A29A;">${totalCanal} en total</span>
           </div>
-
-          <!-- Barra segmentada horizontal -->
           <div style="display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: #1F1F26; margin-bottom: 1.5rem;">
-            ${breakdown.map(item => `
-              <div style="width: ${item.pct}; background: ${item.color}; height: 100%; transition: width 0.6s ease;" title="${item.name}: ${item.pct}"></div>
-            `).join('')}
+            <div style="width: ${totalCanal ? origen.porcentajeOnline : 0}%; background: #38bdf8;"></div>
+            <div style="width: ${pctManual}%; background: #D4AF37;"></div>
           </div>
-
-          <!-- Lista de leyenda con cifras -->
           <div class="concept-legend-list">
-            ${breakdown.map(item => `
+            ${[
+              { name: 'Web (online)', n: origen.online || 0, pct: totalCanal ? origen.porcentajeOnline : 0, color: '#38bdf8' },
+              { name: 'Recepción (manual)', n: origen.manual || 0, pct: pctManual, color: '#D4AF37' },
+            ].map(item => `
               <div class="concept-legend-item">
                 <div style="display: flex; align-items: center;">
                   <span class="legend-dot" style="background: ${item.color};"></span>
                   <span style="color: #D8D2C6; font-size: 0.8rem;">${item.name}</span>
                 </div>
                 <div style="text-align: right;">
-                  <strong style="color: #fff; font-family: monospace; font-size: 0.85rem; display: block;">${item.amount}</strong>
-                  <span style="color: ${item.color}; font-size: 0.7rem; font-weight: bold;">${item.pct}</span>
+                  <strong style="color: #fff; font-family: monospace; font-size: 0.85rem; display: block;">${item.n}</strong>
+                  <span style="color: ${item.color}; font-size: 0.7rem; font-weight: bold;">${(item.pct || 0).toFixed(0)}%</span>
                 </div>
               </div>
             `).join('')}
           </div>
-
-          <div style="margin-top: 1.75rem; padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; text-align: center;">
-            <span style="font-size: 0.75rem; color: #A8A29A; display: block; margin-bottom: 0.25rem;">Meta Financiera del Período</span>
-            <strong style="color: #10b981; font-size: 1.1rem; font-family: monospace;">104.2% CUMPLIDA</strong>
-          </div>
         </div>
       </div>
 
-      <!-- RANKING TOP 5 SUITES CON MAYOR RENDIMIENTO -->
       <div class="analytics-panel-card" style="margin-bottom: 2rem;">
         <div class="panel-header-row">
           <div>
-            <h4 class="panel-title">Top 5 Suites con Mayor Rentabilidad (${data.label})</h4>
-            <p style="font-size: 0.78rem; color: #A8A29A; margin-top: 0.25rem;">
-              Desempeño según rotación de turnos, consumos adicionales y recaudación total
-            </p>
+            <h4 class="panel-title">Habitaciones con más ingresos (${escapeHtml(periodoLabel)})</h4>
+            <p style="font-size: 0.78rem; color: #A8A29A; margin-top: 0.25rem;">Ingreso estimado = tarifa base × reservas del período</p>
           </div>
-          <span style="font-size: 0.75rem; color: #10b981; font-weight: bold;">★ Mayor Demanda</span>
         </div>
-
-        <div style="overflow-x: auto;">
-          <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
-            <thead>
-              <tr style="border-bottom: 1px solid #2E2C33; color: #A8A29A; font-size: 0.75rem; text-transform: uppercase;">
-                <th style="padding: 0.75rem;">Posición</th>
-                <th style="padding: 0.75rem;">Habitación</th>
-                <th style="padding: 0.75rem;">Categoría</th>
-                <th style="padding: 0.75rem;">Actividad</th>
-                <th style="padding: 0.75rem; text-align: right;">Recaudación Total</th>
-                <th style="padding: 0.75rem; text-align: center;">Rendimiento</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${ranking.map((r, idx) => `
-                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
-                  <td style="padding: 0.85rem 0.75rem;">
-                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-weight: 800; font-size: 0.75rem; background: ${idx === 0 ? 'rgba(212, 175, 55, 0.2)' : (idx === 1 ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)')}; color: ${idx === 0 ? '#D4AF37' : (idx === 1 ? '#38bdf8' : '#D8D2C6')};">
-                      #${idx + 1}
-                    </span>
-                  </td>
-                  <td style="padding: 0.85rem 0.75rem;">
-                    <strong style="color: #fff; font-family: monospace; font-size: 1rem;">Hab. ${r.num}</strong>
-                    <div style="font-size: 0.75rem; color: #D8D2C6;">${r.name}</div>
-                  </td>
-                  <td style="padding: 0.85rem 0.75rem; color: #A8A29A;">${r.cat}</td>
-                  <td style="padding: 0.85rem 0.75rem;">
-                    <span style="display: inline-block; padding: 0.25rem 0.6rem; border-radius: 6px; background: rgba(56, 189, 248, 0.1); color: #38bdf8; font-weight: 600; font-size: 0.75rem;">
-                      ${r.metric}
-                    </span>
-                  </td>
-                  <td style="padding: 0.85rem 0.75rem; text-align: right;">
-                    <strong style="color: #10b981; font-family: monospace; font-size: 1rem;">${r.rev}</strong>
-                  </td>
-                  <td style="padding: 0.85rem 0.75rem; text-align: center;">
-                    <span style="font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: var(--radius-pill); font-weight: bold; background: ${idx === 0 ? 'linear-gradient(135deg, rgba(184, 147, 46, 0.3), rgba(212, 175, 55, 0.3))' : 'rgba(255,255,255,0.06)'}; color: ${idx === 0 ? '#D4AF37' : '#D8D2C6'}; border: 1px solid ${idx === 0 ? '#D4AF37' : 'rgba(255,255,255,0.1)'};">
-                      ${r.badge}
-                    </span>
-                  </td>
+        ${ranking.length === 0 ? `
+          <p style="text-align: center; color: #A8A29A; padding: 1.5rem 0; margin: 0;">Todavía no hay reservas en este período.</p>
+        ` : `
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
+              <thead>
+                <tr style="border-bottom: 1px solid #2E2C33; color: #A8A29A; font-size: 0.75rem; text-transform: uppercase;">
+                  <th style="padding: 0.75rem;">#</th>
+                  <th style="padding: 0.75rem;">Habitación</th>
+                  <th style="padding: 0.75rem; text-align: center;">Reservas</th>
+                  <th style="padding: 0.75rem; text-align: center;">Check-ins</th>
+                  <th style="padding: 0.75rem; text-align: right;">Ingreso estimado</th>
                 </tr>
-              `).join('')}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                ${ranking.map((r, idx) => `
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 0.85rem 0.75rem; color: ${idx === 0 ? '#D4AF37' : '#D8D2C6'}; font-weight: 800;">${idx + 1}</td>
+                    <td style="padding: 0.85rem 0.75rem;">
+                      <strong style="color: #fff;">${escapeHtml(r.habitacion)}</strong>
+                      <div style="font-size: 0.75rem; color: #A8A29A;">${escapeHtml(r.tipo)}</div>
+                    </td>
+                    <td style="padding: 0.85rem 0.75rem; text-align: center; color: #38bdf8; font-weight: 600;">${r.totalReservas}</td>
+                    <td style="padding: 0.85rem 0.75rem; text-align: center; color: #D8D2C6;">${r.checkins}</td>
+                    <td style="padding: 0.85rem 0.75rem; text-align: right;"><strong style="color: #10b981; font-family: monospace;">${formatSoles(r.ingresoEstimado)}</strong></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `}
+      </div>
+    `;
+  }
+
+  return `
+    <div id="gerenteContainer" style="animation: cardFadeIn 0.35s ease;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1.25rem;">
+        <div>
+          <span style="font-size: 0.72rem; color: #D4AF37; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase;">
+            ${escapeHtml(periodoLabel)}
+          </span>
+          <h3 style="font-family: var(--font-serif); font-size: 1.75rem; color: #fff; margin: 0;">
+            Tablero de Rendimiento Hotelero
+          </h3>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <div class="gerente-period-nav" id="gerentePeriodTabs">
+            <button class="period-tab-btn ${currentGerentePeriod === 'dia' ? 'active' : ''}" data-period="dia">☀️ Hoy</button>
+            <button class="period-tab-btn ${currentGerentePeriod === 'mes' ? 'active' : ''}" data-period="mes">📅 Este mes</button>
+            <button class="period-tab-btn ${currentGerentePeriod === 'ano' ? 'active' : ''}" data-period="ano">📈 Este año</button>
+          </div>
+          <button id="btnExportGerenteReport" class="btn-editorial-outline" style="padding: 0.55rem 1.2rem; border-color: #38bdf8; color: #38bdf8; font-size: 0.8rem; border-radius: var(--radius-pill); cursor: pointer;" ${k ? '' : 'disabled'}>
+            📥 Exportar reporte (.CSV)
+          </button>
         </div>
       </div>
+      ${contenido}
     </div>
   `;
 }
 
 function setupGerenteEvents() {
-  // Selector de período Día / Mes / Año
   document.querySelectorAll('#gerentePeriodTabs .period-tab-btn').forEach(btn => {
     btn.onclick = async (e) => {
       const period = e.currentTarget.getAttribute('data-period');
@@ -2012,33 +1843,266 @@ function setupGerenteEvents() {
     };
   });
 
-  // Botón Exportar CSV
   const btnExport = document.getElementById('btnExportGerenteReport');
   if (btnExport) {
     btnExport.onclick = () => {
-      const data = gerenteAnalyticsData[currentGerentePeriod];
-      let csvContent = `Reporte Ejecutivo Hotel Wimbledon - ${data.label}\n`;
-      csvContent += `Fecha de generación: ${new Date().toLocaleString()}\n\n`;
-      csvContent += `Métrica,Valor,Tendencia\n`;
-      csvContent += `Tasa de Ocupación,${data.kpis.ocupacion.val},${data.kpis.ocupacion.trend}\n`;
-      csvContent += `Ingresos Proyectados,${data.kpis.ingresos.val},${data.kpis.ingresos.trend}\n`;
-      csvContent += `Índice de Rotación,${data.kpis.rotacion.val},${data.kpis.rotacion.trend}\n`;
-      csvContent += `Check-in Digital / QR,${data.kpis.checkinQr.val},${data.kpis.checkinQr.trend}\n\n`;
-      csvContent += `Top Suites,Categoría,Actividad,Recaudación\n`;
-      data.ranking.forEach(r => {
-        csvContent += `Hab ${r.num} - ${r.name},${r.cat},${r.metric},${r.rev}\n`;
-      });
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
+      const k = liveGerenteKpis;
+      if (!k) return;
+      const csv = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+      const origen = k.reservasPorOrigen || {};
+      const franjas = k.ocupacionPorFranja || {};
+      const filas = [
+        ['Reporte Hotel Wimbledon', etiquetaPeriodoGerente(currentGerentePeriod)],
+        ['Generado', new Date().toLocaleString('es-PE')],
+        [],
+        ['Métrica', 'Valor'],
+        ['Reservas (sin canceladas)', k.totalReservas],
+        ['Ticket promedio (S/)', Number(k.ticketPromedio || 0).toFixed(2)],
+        ['Reservas online', origen.online || 0],
+        ['Reservas en recepción', origen.manual || 0],
+        ['% online', (origen.porcentajeOnline || 0).toFixed(1)],
+        ['% clientes que repiten', (k.tasaRetencionPct || 0).toFixed(1)],
+        ['Reservas madrugada (00-06 h)', franjas.madrugada || 0],
+        ['Reservas día (06-18 h)', franjas.dia || 0],
+        ['Reservas noche (18-24 h)', franjas.noche || 0],
+        [],
+        ['Habitación', 'Tipo', 'Reservas', 'Online', 'Recepción', 'Check-ins', 'Tarifa base (S/)', 'Ingreso estimado (S/)'],
+        ...(k.ocupacionPorDia || []).map(r => [r.habitacion, r.tipo, r.totalReservas, r.reservasOnline, r.reservasManuales, r.checkins, r.tarifaBase, r.ingresoEstimado]),
+      ];
+      const contenido = '﻿' + filas.map(f => f.map(csv).join(',')).join('\n');
+      const url = URL.createObjectURL(new Blob([contenido], { type: 'text/csv;charset=utf-8;' }));
       const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `wimbledon_reporte_${currentGerentePeriod}_${Date.now()}.csv`);
+      link.href = url;
+      link.download = `wimbledon_reporte_${currentGerentePeriod}_${new Date().toISOString().slice(0, 10)}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     };
   }
+}
+
+// ==========================================
+// GERENCIA: CATÁLOGO DE HABITACIONES (CRUD)
+// ==========================================
+
+const ESTADO_HABITACION_UI = {
+  DISPONIBLE: { label: 'Disponible', color: '#10b981' },
+  OCUPADA: { label: 'Ocupada', color: '#f43f5e' },
+  LIMPIEZA_PENDIENTE: { label: 'Limpieza pendiente', color: '#f59e0b' },
+  EN_PROCESO: { label: 'En limpieza', color: '#f59e0b' },
+  LISTA: { label: 'Lista', color: '#38bdf8' },
+  MANTENIMIENTO: { label: 'Mantenimiento', color: '#A8A29A' },
+};
+
+async function cargarHabitacionesAdmin() {
+  const token = currentStaffSession?.jwtToken;
+  if (!token) return;
+  habitacionesAdminError = null;
+  try {
+    const lista = await api.obtenerHabitacionesAdmin(token);
+    habitacionesAdminCache = (lista || []).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  } catch (err) {
+    console.warn('Error al obtener el catálogo de habitaciones:', err);
+    habitacionesAdminCache = [];
+    habitacionesAdminError = `No se pudo cargar el catálogo: ${err.message}`;
+  }
+}
+
+function renderHabitacionFormHTML() {
+  const esNueva = habitacionEditandoId === 'nueva';
+  const h = esNueva ? {} : (habitacionesAdminCache.find(x => x.id === habitacionEditandoId) || {});
+  const campo = 'width: 100%; padding: 0.6rem 0.75rem; background: #16161B; border: 1px solid #2E2C33; border-radius: 8px; color: #fff; font-size: 0.85rem; box-sizing: border-box;';
+  const etiqueta = 'display: block; font-size: 0.75rem; color: #A8A29A; margin-bottom: 0.3rem;';
+  return `
+    <form id="habitacionForm" class="analytics-panel-card" style="margin-bottom: 1.5rem; border-color: rgba(16, 185, 129, 0.4);">
+      <h4 class="panel-title" style="margin-bottom: 1rem;">${esNueva ? '➕ Nueva habitación' : `✏️ Editar: ${escapeHtml(h.nombre)}`}</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <label><span style="${etiqueta}">Nombre *</span>
+          <input name="nombre" required maxlength="100" value="${escapeHtml(h.nombre)}" style="${campo}"></label>
+        <label><span style="${etiqueta}">Tipo</span>
+          <input name="tipo" maxlength="60" value="${escapeHtml(h.tipo)}" placeholder="Simple, Delux, Temática…" style="${campo}"></label>
+        <label><span style="${etiqueta}">Tarifa base (S/) *</span>
+          <input name="tarifaBase" type="number" required min="0.01" step="0.01" value="${h.tarifaBase ?? ''}" style="${campo}"></label>
+        <label><span style="${etiqueta}">Bloque de estadía (horas) *</span>
+          <input name="duracionBloqueHoras" type="number" required min="1" max="24" step="1" value="${h.duracionBloqueHoras ?? 6}" style="${campo}"></label>
+      </div>
+      <label style="display: block; margin-top: 1rem;"><span style="${etiqueta}">Descripción</span>
+        <textarea name="descripcion" rows="3" style="${campo} resize: vertical;">${escapeHtml(h.descripcion)}</textarea></label>
+      <label style="display: block; margin-top: 1rem;"><span style="${etiqueta}">URL de imagen</span>
+        <input name="imagenUrl" maxlength="255" value="${escapeHtml(h.imagenUrl)}" placeholder="/images/suites/…" style="${campo}"></label>
+      <div id="habitacionFormError" style="display: none; margin-top: 1rem; color: #f43f5e; font-size: 0.85rem; background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.3); border-radius: 8px; padding: 0.6rem;"></div>
+      <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem; justify-content: flex-end;">
+        <button type="button" id="btnCancelarHabitacion" class="btn-editorial-outline" style="padding: 0.55rem 1.2rem; font-size: 0.8rem; border-radius: 8px; cursor: pointer;">Cancelar</button>
+        <button type="submit" id="btnGuardarHabitacion" style="padding: 0.55rem 1.4rem; font-size: 0.8rem; font-weight: 700; border-radius: 8px; cursor: pointer; background: #10b981; border: 1px solid #10b981; color: #0b0b0e;">
+          ${esNueva ? 'Crear habitación' : 'Guardar cambios'}
+        </button>
+      </div>
+    </form>
+  `;
+}
+
+function renderHabitacionesWorkspace() {
+  const btn = 'padding: 0.35rem 0.7rem; font-size: 0.75rem; font-weight: 600; border-radius: 6px; cursor: pointer; background: #16161B;';
+  return `
+    <div id="habitacionesContainer" style="animation: cardFadeIn 0.35s ease;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h3 style="font-family: var(--font-serif); font-size: 1.75rem; color: #fff; margin: 0;">Catálogo de habitaciones</h3>
+          <p style="color: #A8A29A; font-size: 0.85rem; margin-top: 0.25rem;">${habitacionesAdminCache.length} habitaciones registradas. Los cambios se ven al momento en la web de reservas.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+          <button id="btnRefrescarHabitaciones" class="btn-editorial-outline" style="padding: 0.55rem 1.2rem; font-size: 0.8rem; border-radius: var(--radius-pill); cursor: pointer;">🔄 Actualizar</button>
+          <button id="btnNuevaHabitacion" style="padding: 0.55rem 1.2rem; font-size: 0.8rem; font-weight: 700; border-radius: var(--radius-pill); cursor: pointer; background: #10b981; border: 1px solid #10b981; color: #0b0b0e;">➕ Nueva habitación</button>
+        </div>
+      </div>
+
+      ${habitacionesAdminError ? `
+        <div style="background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.3); border-radius: 12px; padding: 0.75rem 1rem; color: #f43f5e; font-size: 0.82rem; margin-bottom: 1.5rem;">⚠️ ${escapeHtml(habitacionesAdminError)}</div>
+      ` : ''}
+
+      ${habitacionEditandoId != null ? renderHabitacionFormHTML() : ''}
+
+      <div class="analytics-panel-card">
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 1px solid #2E2C33; color: #A8A29A; font-size: 0.75rem; text-transform: uppercase;">
+                <th style="padding: 0.75rem;">Habitación</th>
+                <th style="padding: 0.75rem; text-align: right;">Tarifa</th>
+                <th style="padding: 0.75rem; text-align: center;">Bloque</th>
+                <th style="padding: 0.75rem; text-align: center;">Estado</th>
+                <th style="padding: 0.75rem; text-align: right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${habitacionesAdminCache.length === 0 ? `
+                <tr><td colspan="5" style="padding: 1.5rem; text-align: center; color: #A8A29A;">No hay habitaciones registradas.</td></tr>
+              ` : habitacionesAdminCache.map(h => {
+                const est = ESTADO_HABITACION_UI[h.estado] || { label: h.estado, color: '#A8A29A' };
+                const enMantenimiento = h.estado === 'MANTENIMIENTO';
+                return `
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 0.8rem 0.75rem;">
+                      <strong style="color: #fff;">${escapeHtml(h.nombre)}</strong>
+                      <div style="font-size: 0.75rem; color: #A8A29A;">${escapeHtml(h.tipo || 'Sin tipo')} · ID ${h.id}</div>
+                    </td>
+                    <td style="padding: 0.8rem 0.75rem; text-align: right; color: #D4AF37; font-family: monospace;">${formatSoles(h.tarifaBase)}</td>
+                    <td style="padding: 0.8rem 0.75rem; text-align: center; color: #D8D2C6;">${h.duracionBloqueHoras} h</td>
+                    <td style="padding: 0.8rem 0.75rem; text-align: center;">
+                      <span style="font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: var(--radius-pill); color: ${est.color}; border: 1px solid ${est.color};">${escapeHtml(est.label)}</span>
+                    </td>
+                    <td style="padding: 0.8rem 0.75rem; text-align: right; white-space: nowrap;">
+                      <button class="js-hab-editar" data-id="${h.id}" style="${btn} border: 1px solid #38bdf8; color: #38bdf8;">Editar</button>
+                      <button class="js-hab-estado" data-id="${h.id}" data-estado="${enMantenimiento ? 'DISPONIBLE' : 'MANTENIMIENTO'}" style="${btn} border: 1px solid #A8A29A; color: #D8D2C6;">${enMantenimiento ? 'Reactivar' : 'Mantenimiento'}</button>
+                      <button class="js-hab-eliminar" data-id="${h.id}" style="${btn} border: 1px solid #f43f5e; color: #f43f5e;">Eliminar</button>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function setupHabitacionesEvents() {
+  const token = currentStaffSession?.jwtToken;
+  const recargar = async () => {
+    await cargarHabitacionesAdmin();
+    renderAdminApp();
+  };
+
+  const btnRefresh = document.getElementById('btnRefrescarHabitaciones');
+  if (btnRefresh) btnRefresh.onclick = recargar;
+
+  const btnNueva = document.getElementById('btnNuevaHabitacion');
+  if (btnNueva) btnNueva.onclick = () => { habitacionEditandoId = 'nueva'; renderAdminApp(); };
+
+  const btnCancelar = document.getElementById('btnCancelarHabitacion');
+  if (btnCancelar) btnCancelar.onclick = () => { habitacionEditandoId = null; renderAdminApp(); };
+
+  const form = document.getElementById('habitacionForm');
+  if (form) {
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const texto = (n) => (fd.get(n) || '').toString().trim();
+      const payload = {
+        nombre: texto('nombre'),
+        tipo: texto('tipo') || null,
+        descripcion: texto('descripcion') || null,
+        tarifaBase: Number(fd.get('tarifaBase')),
+        duracionBloqueHoras: Number(fd.get('duracionBloqueHoras')),
+        imagenUrl: texto('imagenUrl') || null,
+      };
+      const btnGuardar = document.getElementById('btnGuardarHabitacion');
+      const errEl = document.getElementById('habitacionFormError');
+      btnGuardar.disabled = true;
+      btnGuardar.innerText = 'Guardando…';
+      try {
+        if (habitacionEditandoId === 'nueva') {
+          await api.crearHabitacionAdmin(payload, token);
+        } else {
+          await api.actualizarHabitacionAdmin(habitacionEditandoId, payload, token);
+        }
+        habitacionEditandoId = null;
+        await recargar();
+      } catch (err) {
+        errEl.style.display = 'block';
+        errEl.innerText = err.message;
+        btnGuardar.disabled = false;
+        btnGuardar.innerText = habitacionEditandoId === 'nueva' ? 'Crear habitación' : 'Guardar cambios';
+      }
+    };
+  }
+
+  document.querySelectorAll('.js-hab-editar').forEach(b => {
+    b.onclick = () => {
+      habitacionEditandoId = Number(b.getAttribute('data-id'));
+      renderAdminApp();
+      document.getElementById('habitacionForm')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+  });
+
+  document.querySelectorAll('.js-hab-estado').forEach(b => {
+    b.onclick = async () => {
+      const id = Number(b.getAttribute('data-id'));
+      const estado = b.getAttribute('data-estado');
+      b.disabled = true;
+      try {
+        await api.cambiarEstadoHabitacionAdmin(id, estado, token);
+        await recargar();
+      } catch (err) {
+        alert(`❌ No se pudo cambiar el estado:\n${err.message}`);
+        b.disabled = false;
+      }
+    };
+  });
+
+  document.querySelectorAll('.js-hab-eliminar').forEach(b => {
+    b.onclick = async () => {
+      const id = Number(b.getAttribute('data-id'));
+      const h = habitacionesAdminCache.find(x => x.id === id);
+      if (!h) return;
+      const ok = confirm(`¿Eliminar "${h.nombre}"?\n\nSi tiene reservas o incidencias registradas no se borra: pasa a Mantenimiento para conservar el historial.`);
+      if (!ok) return;
+      b.disabled = true;
+      try {
+        await api.eliminarHabitacionAdmin(id, token);
+        if (habitacionEditandoId === id) habitacionEditandoId = null;
+        await cargarHabitacionesAdmin();
+        const sigue = habitacionesAdminCache.find(x => x.id === id);
+        renderAdminApp();
+        if (sigue) alert(`ℹ️ "${h.nombre}" tiene historial, así que se pasó a Mantenimiento en lugar de borrarse.`);
+      } catch (err) {
+        alert(`❌ No se pudo eliminar:\n${err.message}`);
+        b.disabled = false;
+      }
+    };
+  });
 }
 
 function renderSolicitudesAccesoWorkspace() {
@@ -2197,13 +2261,6 @@ function setupSolicitudesEvents() {
 }
 
 renderAdminApp();
-
-// Sincronización reactiva en tiempo real con reservas creadas en el portal público (Solución #11)
-window.addEventListener('storage', (e) => {
-  if (e.key === 'wimbledon_bookings') {
-    if (currentStaffSession) renderAdminApp();
-  }
-});
 
 window.addEventListener('wimbledon:booking-created', () => {
   if (currentStaffSession) renderAdminApp();

@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface IncidenciaRepository extends JpaRepository<Incidencia, Integer> {
     List<Incidencia> findByHabitacion(Habitacion habitacion);
+    boolean existsByHabitacion(Habitacion habitacion);
     List<Incidencia> findByReportadoPor(Usuario reportadoPor);
     List<Incidencia> findByEstado(EstadoIncidencia estado);
     List<Incidencia> findAllByOrderByCreadoEnDesc();

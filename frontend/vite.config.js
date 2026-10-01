@@ -2,6 +2,8 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 export default defineConfig({
   server: {
+    // Permite servir la demo a través de un túnel de Cloudflare (scripts/demo.sh)
+    allowedHosts: ['.trycloudflare.com'],
     proxy: {
       '/api': {
         target: 'http://localhost:8081',

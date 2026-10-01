@@ -9,6 +9,7 @@ import com.wimbledon.backend.domain.enums.EstadoReserva;
 import com.wimbledon.backend.domain.enums.OrigenReserva;
 import com.wimbledon.backend.domain.enums.Rol;
 import com.wimbledon.backend.repository.HabitacionRepository;
+import com.wimbledon.backend.repository.IncidenciaRepository;
 import com.wimbledon.backend.repository.ReservaRepository;
 import com.wimbledon.backend.repository.TurnoRepository;
 import com.wimbledon.backend.repository.UsuarioRepository;
@@ -48,6 +49,7 @@ public class AdminService {
 
     private final ReservaRepository reservaRepository;
     private final HabitacionRepository habitacionRepository;
+    private final IncidenciaRepository incidenciaRepository;
     private final UsuarioRepository usuarioRepository;
     private final TurnoRepository turnoRepository;
     private final PasswordEncoder passwordEncoder;
@@ -281,17 +283,15 @@ public class AdminService {
         Habitacion h = habitacionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Habitación no encontrada con ID: " + id));
 
-        // Para preservar la integridad del historial de reservas pasadas,
-        // si la habitación tiene reservas asociadas se marca como MANTENIMIENTO;
-        // si no tiene reservas, se elimina físicamente.
-        try {
-            habitacionRepository.delete(h);
-            habitacionRepository.flush();
-            log.info("Habitación ID {} eliminada físicamente del catálogo", id);
-        } catch (Exception ex) {
+        // Para preservar el historial, si la habitación tiene reservas o
+        // incidencias asociadas se marca como MANTENIMIENTO; si no, se elimina.
+        if (reservaRepository.existsByHabitacion(h) || incidenciaRepository.existsByHabitacion(h)) {
             h.setEstado(EstadoHabitacion.MANTENIMIENTO);
             habitacionRepository.save(h);
-            log.info("Habitación ID {} tiene historial de reservas; se marcó en MANTENIMIENTO", id);
+            log.info("Habitación ID {} tiene historial; se marcó en MANTENIMIENTO", id);
+        } else {
+            habitacionRepository.delete(h);
+            log.info("Habitación ID {} eliminada físicamente del catálogo", id);
         }
     }
 
