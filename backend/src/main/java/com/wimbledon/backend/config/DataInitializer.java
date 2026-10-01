@@ -9,6 +9,7 @@ import com.wimbledon.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,18 +21,13 @@ import java.math.BigDecimal;
  * Inicializador de datos de prueba.
  * Se ejecuta al arrancar la aplicación SOLO si la BD está vacía.
  *
- * Usuarios de prueba creados (contraseña igual para todos: "Wimbledon2024!"):
- * ┌──────────────────────────────────┬─────────────────────────────┬──────────────┐
- * │ Email                            │ Nombre                      │ Rol          │
- * ├──────────────────────────────────┼─────────────────────────────┼──────────────┤
- * │ superadmin@wimbledon.test        │ Juan Francisco Ganoza        │ SUPER_ADMIN  │
- * │ admin@wimbledon.test             │ Sebastian Sotelo             │ ADMINISTRADOR│
- * │ recepcion@wimbledon.test         │ Fabiana La Madrid            │ RECEPCIONISTA│
- * │ limpieza@wimbledon.test          │ Vania Cerron                 │ LIMPIEZA     │
- * │ cliente@wimbledon.test           │ Carlos Prueba                │ CLIENTE      │
- * └──────────────────────────────────┴─────────────────────────────┴──────────────┘
+ * Cuentas creadas: superadmin@wimbledon.pe (SUPER_ADMIN) y admin@wimbledon.pe
+ * (ADMINISTRADOR). Su contraseña se toma de la propiedad
+ * wimbledon.seed.admin-password (variable SEED_ADMIN_PASSWORD); si está vacía,
+ * no se crean.
  *
- * Contraseña de prueba: Wimbledon2024!
+ * El resto del personal se registra vía /api/auth/registro y los clientes
+ * con el registro público.
  */
 @Configuration
 @RequiredArgsConstructor
@@ -39,8 +35,9 @@ public class DataInitializer {
 
     private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
-    /** Contraseña genérica de prueba para todos los usuarios. */
-    private static final String PASSWORD_PRUEBA = "Wimbledon2024!";
+    /** Contraseña inicial de las cuentas administradoras; nunca en el código. */
+    @Value("${wimbledon.seed.admin-password:}")
+    private String passwordAdmin;
 
     @Bean
     public CommandLineRunner initData(
@@ -50,13 +47,12 @@ public class DataInitializer {
             org.springframework.jdbc.core.JdbcTemplate jdbcTemplate
     ) {
         return args -> {
-            if (usuarioRepo.count() == 0) {
-                log.info("════════════════════════════════════════════════");
-                log.info("  DataInitializer — Cargando datos de prueba...");
-                log.info("  Contraseña de todos los usuarios: {}", PASSWORD_PRUEBA);
-                log.info("════════════════════════════════════════════════");
+            if (usuarioRepo.count() == 0 && passwordAdmin.isBlank()) {
+                log.warn("DataInitializer — SEED_ADMIN_PASSWORD vacía, no se crean cuentas administradoras.");
+            } else if (usuarioRepo.count() == 0) {
+                log.info("DataInitializer — Creando cuentas administradoras iniciales...");
 
-                String hash = encoder.encode(PASSWORD_PRUEBA);
+                String hash = encoder.encode(passwordAdmin);
 
                 // Cuentas administradoras iniciales de arranque (aprobadores del sistema)
                 usuarioRepo.save(Usuario.builder()

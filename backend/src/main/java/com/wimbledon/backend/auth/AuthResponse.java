@@ -8,11 +8,11 @@ package com.wimbledon.backend.auth;
  *
  * Ejemplo JSON:
  * {
- *   "token": "eyJhbGciOiJIUzI1NiJ9...",
+ *   "token": "<jwt>",
  *   "tipo":  "Bearer",
- *   "rol":   "RECEPCIONISTA",
- *   "nombre": "Fabiana La Madrid",
- *   "email":  "recepcion@wimbledon.test"
+ *   "rol":   "<rol>",
+ *   "nombre": "<nombre>",
+ *   "email":  "<email>"
  * }
  */
 public record AuthResponse(

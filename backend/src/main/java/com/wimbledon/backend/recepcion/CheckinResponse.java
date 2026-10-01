@@ -13,7 +13,7 @@ import java.time.LocalTime;
  *
  * Ejemplo JSON:
  * {
- *   "nombreHuesped": "Carlos Prueba",
+ *   "nombreHuesped": "<nombre del huésped>",
  *   "habitacion": "Suite Presidencial",
  *   "horaIngreso": "20:00",
  *   "horaSalida": "02:00",

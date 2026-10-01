@@ -29,11 +29,11 @@ public class AuthController {
      *
      * Ejemplo de request:
      * POST /api/auth/login
-     * { "email": "recepcion@wimbledon.test", "password": "Wimbledon2024!" }
+     * { "email": "<email>", "password": "<contraseña>" }
      *
      * Ejemplo de response 200:
-     * { "token": "eyJ...", "tipo": "Bearer", "rol": "RECEPCIONISTA",
-     *   "nombre": "Fabiana La Madrid", "email": "recepcion@wimbledon.test" }
+     * { "token": "<jwt>", "tipo": "Bearer", "rol": "<rol>",
+     *   "nombre": "<nombre>", "email": "<email>" }
      */
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
