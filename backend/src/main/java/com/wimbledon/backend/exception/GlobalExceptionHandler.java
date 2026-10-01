@@ -3,12 +3,15 @@ package com.wimbledon.backend.exception;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -25,6 +28,8 @@ import java.util.stream.Collectors;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     // ── Autenticación ─────────────────────────────────────────────────────────
 
@@ -189,10 +194,17 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("El recurso solicitado no fue encontrado.", ErrorResponse.RECURSO_NO_ENCONTRADO));
     }
 
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(new ErrorResponse("Operación no permitida en este recurso.", ErrorResponse.VALIDACION_FALLIDA));
+    }
+
     // ── Fallback ──────────────────────────────────────────────────────────────
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
-        // No exponemos el stacktrace al cliente
+        // No exponemos el stacktrace al cliente, pero sí queda en el log
+        log.error("Error no controlado", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponse(
                         "Algo salió mal de nuestro lado. Inténtalo en unos momentos.",
