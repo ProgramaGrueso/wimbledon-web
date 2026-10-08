@@ -167,6 +167,28 @@ export const api = {
     });
   },
 
+  async obtenerCajaTurno(jwtToken) {
+    return request('/api/recepcion/caja', {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${jwtToken}` },
+    });
+  },
+
+  async registrarCobroCaja(cobro, jwtToken) {
+    return request('/api/recepcion/caja/cobros', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${jwtToken}` },
+      body: JSON.stringify(cobro),
+    });
+  },
+
+  async cerrarCajaTurno(jwtToken) {
+    return request('/api/recepcion/caja/cierre', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${jwtToken}` },
+    });
+  },
+
   async consultarReniec(jwtToken, dni) {
     const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
     return request(`/api/recepcion/reniec/${dni}`, {

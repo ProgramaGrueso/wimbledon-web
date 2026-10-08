@@ -7,23 +7,12 @@ import { api } from './services/api.js';
  */
 
 
+// El rack vive solo en memoria: la única fuente de verdad es el backend (MySQL).
 let roomsRack = [];
-try {
-  const storedRack = localStorage.getItem('wimbledon_admin_rack');
-  roomsRack = storedRack ? JSON.parse(storedRack) : [];
-} catch (e) {
-  roomsRack = [];
-}
 
 let liveReservas = [];
 // Reservas online en espera de voucher (cualquier fecha)
 let pendientesPago = [];
-
-function saveRack() {
-  try {
-    localStorage.setItem('wimbledon_admin_rack', JSON.stringify(roomsRack));
-  } catch (e) {}
-}
 
 // Sincronización en tiempo real con Spring Boot Backend & MySQL
 async function syncAdminDataFromBackend() {
@@ -32,27 +21,11 @@ async function syncAdminDataFromBackend() {
     let rackData = [];
 
     if (currentStaffSession?.role === 'limpieza') {
-      try {
-        rackData = await api.obtenerHabitacionesLimpieza(token);
-      } catch (err) {
-        console.warn('Fallback carga habitaciones limpieza:', err);
-        rackData = await api.obtenerHabitaciones();
-      }
+      rackData = await api.obtenerHabitacionesLimpieza(token);
     } else if (currentStaffSession?.role === 'recepcion') {
-      try {
-        rackData = await api.obtenerHabitacionesRecepcion(token);
-      } catch (err) {
-        console.warn('Fallback carga habitaciones recepción:', err);
-        rackData = await api.obtenerHabitaciones();
-      }
-    } else if (token) {
-      try {
-        rackData = await api.obtenerHabitacionesAdmin(token);
-      } catch (e) {
-        rackData = await api.obtenerHabitaciones();
-      }
+      rackData = await api.obtenerHabitacionesRecepcion(token);
     } else {
-      rackData = await api.obtenerHabitaciones();
+      rackData = await api.obtenerHabitacionesAdmin(token);
     }
 
     if (rackData && rackData.length > 0) {
@@ -76,7 +49,6 @@ async function syncAdminDataFromBackend() {
           tarifa: r.tarifaBase != null ? Number(r.tarifaBase) : null
         };
       });
-      saveRack();
     }
 
     // Cargar agenda de reservas de hoy si el rol es Recepción o Gerencia
@@ -95,6 +67,10 @@ async function syncAdminDataFromBackend() {
       } catch (err) {
         console.warn('Reservas pendientes no disponibles:', err);
       }
+    }
+
+    if (currentStaffSession?.role === 'recepcion') {
+      await cargarCajaTurno();
     }
 
     // Cargar KPIs de negocio y solicitudes pendientes si es Gerencia
@@ -131,18 +107,8 @@ let loadingGerenteKpis = false;
 let gerenteKpisError = null;
 
 // Inicialización de autenticación de personal
-async function initAdminAuth() {
-  try {
-    const saved = localStorage.getItem('wimbledon_staff_session');
-    if (saved) {
-      currentStaffSession = JSON.parse(saved);
-      await syncAdminDataFromBackend();
-      renderAdminApp();
-      return;
-    }
-  } catch (err) {
-    console.warn('No hay sesión activa local:', err);
-  }
+function initAdminAuth() {
+  // La sesión vive solo en memoria: no se persiste ningún JWT en el navegador.
   currentStaffSession = null;
   renderAdminApp();
 }
@@ -283,7 +249,6 @@ function renderAdminApp() {
             };
 
             localStorage.setItem('wimbledon_last_login_email', email);
-            localStorage.setItem('wimbledon_staff_session', JSON.stringify(currentStaffSession));
             currentAdminAuthView = 'login';
 
             await syncAdminDataFromBackend();
@@ -533,8 +498,6 @@ function renderAdminApp() {
     `;
 
     const handleLogout = () => {
-      localStorage.removeItem('wimbledon_staff_session');
-      localStorage.removeItem('wimbledon_jwt_token');
       currentStaffSession = null;
       roomsRack = [];
       liveReservas = [];
@@ -587,50 +550,42 @@ function renderAdminApp() {
 // ==========================================
 // GESTIÓN DE CAJA DE TURNO (PAGO 100% EFECTIVO)
 // ==========================================
+// El turno vive en MySQL (/api/recepcion/caja); aquí solo se guarda la última lectura.
+let cajaTurno = { turnoIniciado: new Date().toISOString(), recepcionista: '', total: 0, cobros: [] };
+
 function getCajaTurno() {
-  try {
-    const raw = localStorage.getItem('wimbledon_caja_turno');
-    if (raw) return JSON.parse(raw);
-  } catch (e) {}
-  const inicial = {
-    turnoIniciado: new Date().toISOString(),
-    recepcionista: currentStaffSession?.name || '',
-    cobros: []
-  };
-  saveCajaTurno(inicial);
-  return inicial;
+  return cajaTurno;
 }
 
-function saveCajaTurno(caja) {
+async function cargarCajaTurno() {
   try {
-    localStorage.setItem('wimbledon_caja_turno', JSON.stringify(caja));
-  } catch (e) {}
+    const t = await api.obtenerCajaTurno(currentStaffSession?.jwtToken);
+    cajaTurno = {
+      ...t,
+      cobros: (t.cobros || []).map(c => ({
+        ...c,
+        fechaHora: new Date(c.fechaHora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }))
+    };
+  } catch (err) {
+    console.warn('Caja del turno no disponible:', err);
+  }
 }
 
-function registrarCobroEnCaja({ habitacionNumero, habitacionNombre, dni, huespedNombre, duracion, monto }) {
-  const caja = getCajaTurno();
-  const ahora = new Date();
-  const horaStr = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const nuevoCobro = {
-    id: `COB-${Math.floor(1000 + Math.random() * 9000)}`,
-    fechaHora: horaStr,
-    fechaCompleta: ahora.toISOString(),
+async function registrarCobroEnCaja({ habitacionNumero, habitacionNombre, dni, huespedNombre, duracion, monto }) {
+  await api.registrarCobroCaja({
     habitacionNumero: String(habitacionNumero),
     habitacionNombre: String(habitacionNombre || 'Suite'),
     dni: String(dni || 'NO_REGISTRADO'),
     huespedNombre: String(huespedNombre || 'Huésped Wimbledon'),
     duracion: String(duracion || '6 Horas'),
-    monto: Number(monto) || 0,
-    metodo: 'EFECTIVO'
-  };
-  caja.cobros.unshift(nuevoCobro);
-  saveCajaTurno(caja);
-  return nuevoCobro;
+    monto: Number(monto) || 0
+  }, currentStaffSession?.jwtToken);
+  await cargarCajaTurno();
 }
 
 function calcularTotalCajaEfectivo() {
-  const caja = getCajaTurno();
-  return caja.cobros.reduce((acc, curr) => acc + (Number(curr.monto) || 0), 0);
+  return cajaTurno.cobros.reduce((acc, curr) => acc + (Number(curr.monto) || 0), 0);
 }
 
 // ==========================================
@@ -963,11 +918,10 @@ function openRecepcionCheckinModal(preset = {}) {
         room.estado = 'OCUPADA';
         room.duracionRestante = duracion === '3 Horas' ? '03h:00m' : (duracion === 'Toda la Noche' ? '12h:00m' : '06h:00m');
         room.cliente = nombre || `DNI ${dni}`;
-        saveRack();
       }
 
       // 2. Registrar cobro en caja del turno (Efectivo)
-      registrarCobroEnCaja({
+      await registrarCobroEnCaja({
         habitacionNumero: habNum,
         habitacionNombre: room ? room.nombre : 'Suite',
         dni: dni,
@@ -1108,13 +1062,15 @@ function openCierreCajaModal() {
 
   const btnReset = overlay.querySelector('#btnResetTurnoCaja');
   if (btnReset) {
-    btnReset.onclick = () => {
+    btnReset.onclick = async () => {
       if (confirm(`¿Confirmas el cierre del turno actual con recaudación de S/ ${total}.00 en efectivo? Se iniciará un nuevo turno en cero.`)) {
-        saveCajaTurno({
-          turnoIniciado: new Date().toISOString(),
-          recepcionista: 'Carlos Mendoza (Recepcionista)',
-          cobros: []
-        });
+        try {
+          await api.cerrarCajaTurno(currentStaffSession?.jwtToken);
+        } catch (err) {
+          alert(`❌ No se pudo cerrar la caja:\n${err.message}`);
+          return;
+        }
+        await cargarCajaTurno();
         overlay.classList.remove('open');
         renderAdminApp();
       }
@@ -1469,7 +1425,6 @@ function setupCardClickEvents() {
         if (localState === 'LIBRE') { room.duracionRestante = '-'; room.cliente = null; }
         else if (localState === 'OCUPADA') { room.duracionRestante = '06h:00m'; room.cliente = 'Asignación Recepción'; }
         else if (localState === 'LIMPIEZA') { room.duracionRestante = 'Aseo'; room.cliente = null; }
-        saveRack();
         renderAdminApp();
       } catch (err) {
         alert(`❌ Error al actualizar estado en el servidor:\n${err.message}`);
@@ -1559,7 +1514,6 @@ function setupLimpiezaEvents() {
         } else {
           room.duracionRestante = 'Desinfección';
         }
-        saveRack();
         renderAdminApp();
       } catch (err) {
         alert(`❌ Error al actualizar estado de aseo:\n${err.message}`);

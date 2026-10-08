@@ -104,7 +104,7 @@ public class AdminService {
         // 1. Ocupación por franjas
         long madrugada = reservaRepository.countPorFranja(desde, hasta, LocalTime.of(0, 0), LocalTime.of(6, 0));
         long dia = reservaRepository.countPorFranja(desde, hasta, LocalTime.of(6, 0), LocalTime.of(18, 0));
-        long noche = reservaRepository.countPorFranja(desde, hasta, LocalTime.of(18, 0), LocalTime.MAX);
+        long noche = reservaRepository.countPorFranja(desde, hasta, LocalTime.of(18, 0), LocalTime.of(23, 59, 59));
         KpisResponse.OcupacionFranjas ocupacionFranjas = new KpisResponse.OcupacionFranjas(madrugada, dia, noche);
 
         // 2. Reservas del periodo (excluyendo CANCELADA)

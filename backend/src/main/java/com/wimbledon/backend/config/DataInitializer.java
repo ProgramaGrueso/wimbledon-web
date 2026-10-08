@@ -40,6 +40,7 @@ public class DataInitializer {
     private String passwordAdmin;
 
     @Bean
+    @org.springframework.core.annotation.Order(1)
     public CommandLineRunner initData(
             UsuarioRepository usuarioRepo,
             HabitacionRepository habitacionRepo,

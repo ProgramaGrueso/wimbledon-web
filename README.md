@@ -89,3 +89,17 @@ El esquema lo genera Hibernate a partir de las entidades JPA de `backend/src/mai
 Hibernate agrega columnas nuevas pero no relaja restricciones: en una base existente, el email de la
 reserva (ahora opcional) requiere una vez `ALTER TABLE reservas MODIFY email VARCHAR(150) NULL;`.
 Los diagramas del modelo están en `docs/diagramas/`.
+
+#### Datos de demostración (últimos 90 días)
+
+Para que el panel administrativo muestre datos reales y no simulados:
+
+```bash
+export SEED_DEMO_DATA=true
+export DEMO_PASSWORD=<clave-para-cuentas-demo>   # no se guarda en el repo
+mvn spring-boot:run
+```
+
+Crea ~1 200 reservas, cobros de caja y las cuentas `recepcion.demo@`, `gerencia.demo@` y
+`limpieza.demo@wimbledon.test`. Todo queda marcado (`reservas.notas = 'demo-seed'`) y, si los datos
+tienen más de un día, se regeneran solos al arrancar, así que la ventana siempre es "hasta hoy".
