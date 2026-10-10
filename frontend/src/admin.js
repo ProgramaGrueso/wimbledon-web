@@ -1,4 +1,6 @@
 import { api } from './services/api.js';
+import { initCursorGato } from './cursorGato.js';
+import { initTelon, initProgreso, initBrasas, initAmbiente, initInteracciones, observarNuevos } from './fx.js';
 
 /**
  * Hotel Wimbledon — Sistema de Gestión y Administración Interna (Spring Boot + MySQL)
@@ -2219,3 +2221,12 @@ renderAdminApp();
 window.addEventListener('wimbledon:booking-created', () => {
   if (currentStaffSession) renderAdminApp();
 });
+
+// Efectos de Halloween del panel (sobrios): gato, brasas y transiciones
+initCursorGato();
+initTelon('WIMBLEDON');
+initProgreso();
+initBrasas({ intensidad: 0.6 });
+initAmbiente();
+const raizAdmin = document.getElementById('adminApp');
+if (raizAdmin) { initInteracciones(raizAdmin); observarNuevos(raizAdmin); }

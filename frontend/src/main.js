@@ -1,6 +1,7 @@
 import { initSmoothScroll, scrollToSection, initHeroPinAnimation, initServicesHoverAnimation, initHorizontalSuitesScroll, refreshHorizontalSuitesScroll, initMagneticButton } from './smoothScroll.js';
 import { abrirGaleria } from './galeria.js';
 import { initCursorGato } from './cursorGato.js';
+import { initTelon, initProgreso, initBrasas, initAmbiente, initInteracciones, observarNuevos } from './fx.js';
 import { initReserva, openCheckoutModal, getDecoSeleccionado, setDecoSeleccionado, EXTRAS } from './reserva.js';
 
 let roomsData = [];
@@ -82,6 +83,7 @@ function roomMatchesFilter(room, filterKey) {
 }
 
 async function initApp() {
+  initTelon();
   try {
     const [resRooms, resSpecs] = await Promise.all([
       fetch('/data/catalogo_habitaciones.json').then(r => r.json()),
@@ -109,6 +111,12 @@ async function initApp() {
     setupTestimonialsInteractions();
     setupDecoracionesListeners();
     initCursorGato();
+    setupHeroVideo();
+    initProgreso();
+    initBrasas();
+    initAmbiente();
+    initInteracciones();
+    observarNuevos(document.getElementById('app'));
   } catch (error) {
     console.error('Error al cargar datos:', error);
     document.getElementById('app').innerHTML = `
@@ -128,6 +136,7 @@ function renderEditorialApp() {
         <!-- Slide 1: Dark Fantasies -->
         <div class="hero-slide active" data-index="0">
           <img src="/images/hero/hero-dark-fantasies.jpg" alt="Dark Fantasies Suite - Hotel Wimbledon" class="hero-slide-bg" />
+          <video class="hero-slide-bg hero-slide-video" id="heroVideo" muted loop playsinline preload="metadata" aria-hidden="true" tabindex="-1" disablepictureinpicture></video>
           <div class="hero-slide-overlay"></div>
           <div class="hero-slide-content">
             <span class="hero-editorial-tag">HOTEL WIMBLEDON • SAN MIGUEL</span>
@@ -260,6 +269,11 @@ function renderEditorialApp() {
       </div>
     </section>
     <!-- EDITORIAL CONCEPT SECTION WITH VIDEO BACKGROUND -->
+    <figure class="fx-luna" aria-label="Noche de brujas en Hotel Wimbledon">
+      <img src="/images/halloween/noche.webp" alt="Hotel Wimbledon bajo la luna de Halloween" loading="lazy" />
+      <figcaption class="fx-luna__texto"><span>31 de octubre</span><strong>Noche de brujas frente al mar</strong></figcaption>
+    </figure>
+
     <section id="concepto" class="section-editorial section-video-bg">
       <div class="video-bg-container">
         <video autoplay loop muted playsinline class="video-bg-media">
@@ -1600,11 +1614,13 @@ function setupHeroSlider() {
 
   function startAutoplay() {
     stopAutoplay();
-    sliderTimer = setInterval(nextSlide, 5000);
+    // La primera diapositiva lleva el video (7,3 s): se le da tiempo de verse completo
+    const espera = currentSlide === 0 ? 8000 : 5000;
+    sliderTimer = setTimeout(() => { nextSlide(); startAutoplay(); }, espera);
   }
 
   function stopAutoplay() {
-    if (sliderTimer) clearInterval(sliderTimer);
+    if (sliderTimer) clearTimeout(sliderTimer);
   }
 
   if (btnNext) {
@@ -2052,3 +2068,36 @@ function setupPromoVideo() {
   updateAudioState();
 }
 initApp();
+
+/**
+ * Video del hero (casa embrujada frente al mar). Dos encuadres: vertical para celular y
+ * horizontal para pantallas anchas. Solo se pide si el dispositivo lo tolera: sin ahorro de datos,
+ * sin conexión 2G y sin "reducir movimiento" (en esos casos queda la foto del hero).
+ */
+function setupHeroVideo() {
+  const video = document.getElementById('heroVideo');
+  if (!video) return;
+  const conn = navigator.connection || {};
+  const sinVideo = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    || conn.saveData || /(^|-)2g$/.test(conn.effectiveType || '');
+  if (sinVideo) { video.remove(); return; }
+  const vertical = window.matchMedia('(max-aspect-ratio: 1/1)');
+  const cargar = () => {
+    const sufijo = vertical.matches ? 'v' : 'h';
+    if (video.dataset.enc === sufijo) return;
+    video.dataset.enc = sufijo;
+    video.classList.remove('listo');
+    video.poster = `/video/hero-noche-${sufijo}.jpg`;
+    video.src = `/video/hero-noche-${sufijo}.mp4`;
+    video.load();
+    video.play().catch(() => {});
+  };
+  video.addEventListener('playing', () => video.classList.add('listo'));
+  cargar();
+  vertical.addEventListener('change', cargar);
+  // Ahorra batería: pausa si el hero sale de pantalla o la pestaña queda oculta
+  const hero = document.getElementById('hero');
+  const io = new IntersectionObserver(([e]) => { e.isIntersecting ? video.play().catch(() => {}) : video.pause(); }, { threshold: 0.05 });
+  if (hero) io.observe(hero);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) video.pause(); else video.play().catch(() => {}); });
+}
