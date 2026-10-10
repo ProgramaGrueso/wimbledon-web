@@ -3937,3 +3937,172 @@ html.has-cat-cursor :is(input:not([type=checkbox]):not([type=radio]):not([type=b
 @media (prefers-reduced-motion: reduce) {
   .cat-cursor__spin { background-image: url('/images/cursor/maxwell-quieto.png'); }
 }
+
+/* ==========================================================================
+   NOCHE DE BRUJAS — capa de efectos (fx.js) y gato mejorado
+   ========================================================================== */
+:root {
+  --fx-naranja: #ff7a1a;
+  --fx-violeta: #9d5cff;
+  --fx-brasa: rgba(255, 122, 26, 0.35);
+}
+html.fx-bloqueado, html.fx-bloqueado body { overflow: hidden; }
+
+/* Gato: capas de inclinación y estela */
+.cat-cursor__tilt { position: absolute; left: 0; top: 0; width: 0; height: 0; will-change: transform; }
+.cat-cursor__spin {
+  filter: drop-shadow(0 0 6px rgba(255, 122, 26, 0.9)) drop-shadow(0 0 14px rgba(157, 92, 255, 0.55)) drop-shadow(0 0 1px #fff3dd);
+}
+.cat-cursor.sobre-enlace .cat-cursor__spin { filter: drop-shadow(0 0 10px rgba(255, 170, 60, 1)) drop-shadow(0 0 22px rgba(255, 122, 26, 0.7)); }
+.cat-trail { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; }
+
+/* Telón de entrada */
+.fx-telon {
+  position: fixed; inset: 0; z-index: 20000; display: grid; place-items: center;
+  background: radial-gradient(ellipse at 50% 55%, #2a1146 0%, #0b0612 55%, #000 100%);
+  clip-path: circle(150% at 50% 50%);
+}
+.fx-telon__marca { text-align: center; color: #fff3dd; }
+.fx-telon__marca b { display: block; font: 300 clamp(2rem, 7vw, 5rem)/1 var(--font-serif); text-shadow: 0 0 30px var(--fx-naranja), 0 0 80px rgba(157, 92, 255, 0.6); }
+.fx-telon__marca i { display: block; margin-top: 1.2rem; font: 500 0.8rem/1 var(--font-sans); letter-spacing: 0.5em; text-transform: uppercase; color: var(--fx-naranja); }
+.fx-telon__ojo { display: block; width: 120px; height: 2px; margin: 0 auto 1.6rem; background: linear-gradient(90deg, transparent, var(--fx-naranja), transparent); box-shadow: 0 0 20px var(--fx-naranja); transform-origin: center; }
+
+/* Progreso de scroll */
+.fx-progreso {
+  position: fixed; left: 0; top: 0; z-index: 9998; width: 100%; height: 3px; transform: scaleX(0); transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--fx-violeta), var(--fx-naranja), #ffd58a); box-shadow: 0 0 14px var(--fx-naranja);
+  pointer-events: none;
+}
+
+/* Brasas 3D, relámpago y murciélagos */
+.fx-brasas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 5; pointer-events: none; mix-blend-mode: screen; opacity: 0.9; }
+.fx-relampago { position: fixed; inset: 0; z-index: 9990; pointer-events: none; opacity: 0; background: radial-gradient(ellipse at 70% 0%, #d9c8ff, rgba(157, 92, 255, 0.4) 40%, transparent 70%); mix-blend-mode: screen; }
+.fx-murcielago {
+  position: fixed; left: 0; z-index: 9985; width: 46px; height: 24px; pointer-events: none; opacity: 0.85;
+  background: #0a0612;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 46 24'><path d='M23 20c-1.2-2-2.2-3.3-3.6-3.6-1.2 1.6-3 2.6-5.3 2.2C9 18.4 4.6 14.4 1 7c3 1.6 6 1.8 8 .6 1.6-1.4 2.6-3.6 4-6 1.2 2 3 3.3 5 3.6 1.6.2 2.6-.4 5-1.4 2.4 1 3.4 1.6 5 1.4 2-.3 3.8-1.6 5-3.6 1.4 2.4 2.4 4.6 4 6 2 1.2 5 1 8-.6-3.6 7.4-8 11.4-13.1 13.800-2.3.4-4.1-.6-5.3-2.2-1.4.3-2.400 1.600-3.600 3.600z'/></svg>") center / contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 46 24'><path d='M23 20c-1.2-2-2.2-3.3-3.6-3.6-1.2 1.6-3 2.6-5.3 2.2C9 18.4 4.6 14.4 1 7c3 1.6 6 1.8 8 .6 1.6-1.4 2.6-3.6 4-6 1.2 2 3 3.3 5 3.6 1.6.2 2.6-.4 5-1.4 2.4 1 3.4 1.6 5 1.4 2-.3 3.8-1.6 5-3.6 1.4 2.4 2.4 4.6 4 6 2 1.2 5 1 8-.6-3.6 7.4-8 11.4-13.1 13.800-2.3.4-4.1-.6-5.3-2.2-1.4.3-2.400 1.600-3.600 3.600z'/></svg>") center / contain no-repeat;
+  filter: drop-shadow(0 0 6px rgba(157, 92, 255, 0.8));
+}
+
+/* Tarjetas inclinables con brillo */
+.fx-tilt { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.35s var(--easing-lux), box-shadow 0.4s ease, border-color 0.4s ease; position: relative; }
+.fx-tilt::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.4s ease;
+  background: radial-gradient(420px circle at var(--gx, 50%) var(--gy, 50%), rgba(255, 140, 50, 0.16), rgba(157, 92, 255, 0.08) 40%, transparent 65%);
+}
+.fx-tilt:hover { box-shadow: 0 25px 60px -18px rgba(255, 122, 26, 0.28), 0 0 0 1px rgba(255, 140, 50, 0.25); }
+.fx-tilt:hover::after { opacity: 1; }
+
+/* Botones: brillo que recorre */
+.btn-hero-primary, .btn-editorial, .btn-editorial-light { position: relative; overflow: hidden; }
+.btn-hero-primary::before, .btn-editorial::before {
+  content: ''; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%; pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.35), transparent); transform: skewX(-20deg);
+  transition: left 0.7s var(--easing-lux);
+}
+.btn-hero-primary:hover::before, .btn-editorial:hover::before { left: 130%; }
+
+/* Marca y menú con resplandor de brasa */
+.brand-name, .hero-editorial-title { text-shadow: 0 0 28px rgba(255, 122, 26, 0.25); }
+.editorial-header.scrolled { box-shadow: 0 10px 40px -12px rgba(157, 92, 255, 0.35); border-bottom: 1px solid rgba(255, 122, 26, 0.2); }
+.drawer-nav-link { transition: transform 0.5s var(--easing-lux), color 0.3s ease, text-shadow 0.3s ease; }
+.drawer-nav-link:hover { transform: translateX(14px); text-shadow: 0 0 24px var(--fx-naranja); }
+.luxury-drawer-overlay.open .drawer-nav-link { animation: fx-entra-menu 0.8s var(--easing-lux) both; }
+.luxury-drawer-overlay.open .drawer-nav-link:nth-child(2) { animation-delay: 0.05s; }
+.luxury-drawer-overlay.open .drawer-nav-link:nth-child(3) { animation-delay: 0.1s; }
+.luxury-drawer-overlay.open .drawer-nav-link:nth-child(4) { animation-delay: 0.15s; }
+.luxury-drawer-overlay.open .drawer-nav-link:nth-child(5) { animation-delay: 0.2s; }
+.luxury-drawer-overlay.open .drawer-nav-link:nth-child(6) { animation-delay: 0.25s; }
+.luxury-drawer-overlay.open .drawer-nav-link:nth-child(7) { animation-delay: 0.3s; }
+.luxury-drawer-overlay.open .drawer-nav-link:nth-child(8) { animation-delay: 0.35s; }
+.luxury-drawer-overlay.open .drawer-nav-link:nth-child(9) { animation-delay: 0.4s; }
+@keyframes fx-entra-menu { from { opacity: 0; transform: translateY(30px) skewY(3deg); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+
+/* Revelado de secciones más rico */
+.reveal { transform: translateY(46px) scale(0.985); filter: blur(6px); transition: opacity 1.2s var(--easing-lux), transform 1.2s var(--easing-lux), filter 1.2s var(--easing-lux); }
+.reveal.active { transform: none; filter: none; }
+
+/* Promoción Halloween: niebla y luna */
+.section-promo { position: relative; isolation: isolate; }
+.section-promo::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0.55;
+  background: url('/images/halloween/niebla.webp') center / cover no-repeat; mix-blend-mode: screen;
+  animation: fx-niebla 38s ease-in-out infinite alternate;
+}
+@keyframes fx-niebla { from { transform: scale(1.05) translateX(-2%); } to { transform: scale(1.18) translateX(3%); } }
+.fx-luna {
+  position: relative; width: 100%; aspect-ratio: 16 / 7; margin: 0; overflow: hidden; background: #05030a;
+}
+.fx-luna img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; }
+.fx-luna::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, var(--color-black), transparent 25%, transparent 70%, var(--color-black)); }
+.fx-luna__texto {
+  position: absolute; inset: 0; z-index: 2; display: grid; place-content: center; text-align: center; gap: 0.6rem; color: #fff3dd; padding: 0 1.5rem;
+}
+.fx-luna__texto span { font: 500 0.75rem/1 var(--font-sans); letter-spacing: 0.5em; text-transform: uppercase; color: var(--fx-naranja); }
+.fx-luna__texto strong { font: 300 clamp(1.8rem, 5vw, 4rem)/1.1 var(--font-serif); text-shadow: 0 0 40px rgba(255, 122, 26, 0.6); }
+
+/* Panel administrativo: mismas brasas pero más sobrias */
+body:has(#adminApp) .fx-brasas { opacity: 0.45; }
+.analytics-panel-card, .kpi-luxe-card, .rack-room-card { transition: transform 0.35s var(--easing-lux), box-shadow 0.4s ease, border-color 0.4s ease; }
+#adminApp > * { animation: fx-admin-entra 0.7s var(--easing-lux) both; }
+@keyframes fx-admin-entra { from { opacity: 0; transform: translateY(24px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+.rack-room-card { animation: fx-admin-entra 0.6s var(--easing-lux) both; }
+.rack-room-card:nth-child(3n+2) { animation-delay: 0.06s; }
+.rack-room-card:nth-child(3n) { animation-delay: 0.12s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { filter: none; }
+  .section-promo::before, #adminApp > *, .rack-room-card { animation: none; }
+  .fx-tilt { transform: none; }
+}
+@media (hover: none), (pointer: coarse) {
+  .fx-tilt { transform: none; }
+  .fx-murcielago { width: 34px; height: 18px; }
+}
+
+/* ==========================================================================
+   ACCESIBILIDAD Y RESPONSIVE — celular, tablet y escritorio
+   ========================================================================== */
+.promo-grid > *, .promo-info-col, .promo-video-col { min-width: 0; }
+@media (max-width: 1080px) {
+  .promo-grid { grid-template-columns: minmax(0, 1fr); }
+  .promo-video-card, .promo-video-col { width: 100%; max-width: 100%; }
+}
+/* Objetivos táctiles de al menos 44 px y texto legible en pantallas táctiles */
+@media (hover: none), (pointer: coarse) {
+  .sandwich-menu-btn, .promo-audio-btn, .view-toggle-btn, .amenity-chip-btn, .gastro-nav-tab, .services-nav-chip,
+  .testimonials-filter-chip, .carousel-nav-btn, .service-arrow-btn, .hero-slider-arrow { min-height: 44px; min-width: 44px; }
+  .brand-logo { min-height: 44px; align-items: center; }
+  .hero-slider-dot { position: relative; }
+  .hero-slider-dot::after { content: ''; position: absolute; inset: -16px -8px; }
+  .whatsapp-pill-badge, .libro-sub, .brand-sub { font-size: 0.75rem; }
+}
+/* La pantalla no debe quedar tapada por la muesca ni por la barra del navegador */
+@supports (height: 100svh) { .hero-slider-section, .hero-slider-wrapper { min-height: 100svh; } }
+.editorial-header { padding-top: env(safe-area-inset-top); }
+.floating-whatsapp-container { bottom: calc(1.25rem + env(safe-area-inset-bottom)); }
+:focus-visible { outline: 2px solid var(--fx-naranja); outline-offset: 3px; }
+@media (max-width: 560px) {
+  .fx-luna { aspect-ratio: 4 / 3; }
+  .fx-brasas { opacity: 0.7; }
+}
+
+/* Video del hero: aparece con un fundido sobre la foto */
+.hero-slide-video { opacity: 0; transition: opacity 1.2s ease, transform 6s ease-out; filter: brightness(0.62) saturate(1.1); }
+.hero-slide-video.listo { opacity: 1; }
+/* En celular el botón de WhatsApp es solo el ícono: no tapa los botones del hero */
+@media (max-width: 680px) {
+  .whatsapp-tooltip-pill { display: none; }
+  .floating-whatsapp-container { right: 1rem; }
+}
+.parking-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.parking-layout > * { min-width: 0; }
+@media (max-width: 900px) { .parking-layout { grid-template-columns: minmax(0, 1fr); } }
+@media (hover: none), (pointer: coarse) {
+  .service-nav-chip, .btn-compact-reserve, .btn-compact-details, .btn-editorial-outline, .btn-editorial-light, .gastro-tab-btn,
+  .testimonial-chip, .period-tab-btn { min-height: 44px; }
+}
+@media (hover: none), (pointer: coarse) {
+  .social-link-editorial, footer a { display: inline-flex; align-items: center; min-height: 44px; }
+}
