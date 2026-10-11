@@ -69,11 +69,18 @@ public class AdminService {
     @Value("${wimbledon.portal.url:https://wimbledon-web.vercel.app}")
     private String portalUrl;
 
-    // Claves simuladas o configurables de pasarela y mensajería
-    private String pasarelaApiKey = "sk_live_wimbledon_9f82d471b03e48a2";
-    private String pasarelaWebhookSecret = "whsec_wimbledon_secret_hash_2026";
-    private String whatsappApiKey = "EAAO7ZB...wimbledon_cloud_api";
-    private String whatsappNumero = "+51987654321";
+    // Claves de pasarela y mensajería: nunca en el código; se leen del entorno (vacías = NO_CONFIGURADA)
+    @Value("${wimbledon.pasarela.api-key:}")
+    private String pasarelaApiKey;
+
+    @Value("${wimbledon.pasarela.webhook-secret:}")
+    private String pasarelaWebhookSecret;
+
+    @Value("${wimbledon.whatsapp.api-key:}")
+    private String whatsappApiKey;
+
+    @Value("${wimbledon.whatsapp.numero:}")
+    private String whatsappNumero;
 
     // ── 1. Dashboard de KPIs ─────────────────────────────────────────────────
 
