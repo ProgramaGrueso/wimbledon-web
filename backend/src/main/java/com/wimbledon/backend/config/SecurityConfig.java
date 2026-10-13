@@ -2,7 +2,6 @@ package com.wimbledon.backend.config;
 
 import com.wimbledon.backend.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,7 +17,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -44,8 +42,6 @@ public class SecurityConfig {
     private final com.wimbledon.backend.security.ReservaRateLimitingFilter rateLimitingFilter;
     private final AuthenticationProvider authenticationProvider;
 
-    @Value("${wimbledon.cors.allowed-origins}")
-    private String allowedOriginsRaw;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -53,7 +49,7 @@ public class SecurityConfig {
             // ── CSRF desactivado: API REST stateless no necesita cookie CSRF ──
             .csrf(AbstractHttpConfigurer::disable)
 
-            // ── CORS configurado para Vercel + localhost del frontend ──────────
+            // ── CORS abierto (proyecto universitario) ──────────
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
             // ── Reglas de autorización por ruta ────────────────────────────────
@@ -115,9 +111,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Orígenes permitidos desde application.properties (localhost dev + Vercel prod)
-        List<String> origins = Arrays.asList(allowedOriginsRaw.split(","));
-        config.setAllowedOrigins(origins);
+        // Proyecto universitario: se acepta cualquier origen (túnel, localhost, Vercel).
+        config.setAllowedOriginPatterns(List.of("*"));
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Idempotency-Key"));
