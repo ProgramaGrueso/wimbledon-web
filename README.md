@@ -33,7 +33,6 @@ wimbledon-web/
 │       ├── domain/         # Entidades JPA y enums
 │       └── repository/     # Repositorios Spring Data
 │
-├── docs/diagramas/         # Diagrama entidad-relación y diagrama de clases UML (Mermaid)
 ├── scripts/demo.sh         # Levanta MySQL, backend, frontend y un túnel público para demos
 ├── package.json            # Scripts raíz (dev/build) usados por el despliegue en Vercel
 └── vercel.json             # Build y rewrites del despliegue del frontend
@@ -141,4 +140,3 @@ El esquema lo genera Hibernate a partir de las entidades JPA de `backend/src/mai
 (`spring.jpa.hibernate.ddl-auto=update`); no hay un script SQL que mantener a mano.
 Hibernate agrega columnas nuevas pero no relaja restricciones: en una base existente, el email de la
 reserva (ahora opcional) requiere una vez `ALTER TABLE reservas MODIFY email VARCHAR(150) NULL;`.
-Los diagramas del modelo están en `docs/diagramas/`.
