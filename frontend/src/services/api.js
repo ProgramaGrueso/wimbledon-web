@@ -287,6 +287,27 @@ export const api = {
     });
   },
 
+  async listarPersonalAdmin(jwtToken) {
+    return request('/api/admin/usuarios', {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${jwtToken}` },
+    });
+  },
+
+  async cambiarActivoUsuarioAdmin(id, activo, jwtToken) {
+    return request(`/api/admin/usuarios/${id}/activo?activo=${activo}`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${jwtToken}` },
+    });
+  },
+
+  async eliminarUsuarioAdmin(id, jwtToken) {
+    return request(`/api/admin/usuarios/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${jwtToken}` },
+    });
+  },
+
   async aprobarUsuario(id, jwtToken) {
     const headers = jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {};
     return request(`/api/admin/usuarios/${id}/aprobar`, {

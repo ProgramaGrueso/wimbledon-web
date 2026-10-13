@@ -18,6 +18,8 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
 
     boolean existsByHabitacion(Habitacion habitacion);
 
+    boolean existsByCliente(Usuario cliente);
+
     /** Módulo 6 — resolución del token QR en check-in. Solo lectura, SIN bloqueo. */
     Optional<Reserva> findByQrToken(String qrToken);
 

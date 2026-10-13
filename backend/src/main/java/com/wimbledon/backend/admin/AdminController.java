@@ -164,6 +164,18 @@ public class AdminController {
         return ResponseEntity.ok(adminService.cambiarEstadoActivoStaff(id, activo, actor));
     }
 
+    /**
+     * Elimina una cuenta del personal (solo SUPER_ADMIN). Devuelve {"eliminado": false}
+     * si tenía historial y solo se desactivó.
+     */
+    @DeleteMapping("/usuarios/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<java.util.Map<String, Boolean>> eliminarUsuario(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal Usuario actor) {
+        return ResponseEntity.ok(java.util.Map.of("eliminado", adminService.eliminarUsuario(id, actor)));
+    }
+
     // ── 5. Gestión de Turnos ─────────────────────────────────────────────────
 
     /**

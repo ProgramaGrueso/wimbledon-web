@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TurnoRepository extends JpaRepository<Turno, Integer> {
+
+    boolean existsByUsuario(Usuario usuario);
     /** Turno del día actual de un empleado específico (para /api/limpieza/mi-turno). */
     Optional<Turno> findByUsuarioAndFecha(Usuario usuario, LocalDate fecha);
 

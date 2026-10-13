@@ -367,6 +367,35 @@ public class AdminService {
         return UsuarioAdminResponse.from(guardado);
     }
 
+    /**
+     * Elimina una cuenta del personal. Solo SUPER_ADMIN (lo exige el controlador).
+     * Si la cuenta tiene reservas, turnos o incidencias se desactiva para conservar el historial.
+     *
+     * @return true si se borró de la base, false si solo se desactivó
+     */
+    @Transactional
+    public boolean eliminarUsuario(Integer id, Usuario actor) {
+        Usuario target = usuarioRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + id));
+
+        if (target.getId().equals(actor.getId())) {
+            throw new IllegalArgumentException("No puedes eliminar tu propia cuenta.");
+        }
+
+        if (reservaRepository.existsByCliente(target)
+                || turnoRepository.existsByUsuario(target)
+                || incidenciaRepository.existsByReportadoPor(target)) {
+            target.setActivo(false);
+            usuarioRepository.save(target);
+            log.info("Usuario {} tiene historial; se desactivó (por {})", target.getEmail(), actor.getEmail());
+            return false;
+        }
+
+        usuarioRepository.delete(target);
+        log.info("Usuario {} eliminado por {}", target.getEmail(), actor.getEmail());
+        return true;
+    }
+
     // ── 5. Gestión de Turnos ─────────────────────────────────────────────────
 
     @Transactional(readOnly = true)

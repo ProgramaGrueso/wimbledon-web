@@ -99,8 +99,9 @@ async function syncAdminDataFromBackend() {
 let currentStaffSession = null;
 let activeFloorFilter = 'all';
 let currentAdminAuthView = 'login'; // 'login' | 'register'
-let currentGerenteSubView = 'dashboard'; // 'dashboard' | 'habitaciones' | 'solicitudes'
+let currentGerenteSubView = 'dashboard'; // 'dashboard' | 'habitaciones' | 'solicitudes' | 'usuarios'
 let usuariosPendientesCache = [];
+let personalCache = [];
 let habitacionesAdminCache = [];
 let habitacionesAdminError = null;
 let habitacionEditandoId = null; // null = sin formulario, 'nueva' = alta, número = edición
@@ -450,7 +451,7 @@ function renderAdminApp() {
           <div>
             <span style="font-size: 0.72rem; color: #A8A29A; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">PANEL HOTEL WIMBLEDON EN VIVO</span>
             <h2 style="font-family: var(--font-serif); font-size: 2rem; color: #fff; margin-top: 0.2rem;">
-              ${role === 'gerente' ? (currentGerenteSubView === 'solicitudes' ? '👥 Aprobación de Altas de Personal' : (currentGerenteSubView === 'habitaciones' ? '🛏️ Catálogo de Habitaciones' : '📊 Gerencia & Indicadores de Negocio')) : (role === 'recepcion' ? '🛎️ Recepción, Check-in & Rack Operativo' : '🧹 Gestión de Limpieza & Mantenimiento')}
+              ${role === 'gerente' ? (currentGerenteSubView === 'usuarios' ? '🔑 Cuentas del Personal' : currentGerenteSubView === 'solicitudes' ? '👥 Aprobación de Altas de Personal' : (currentGerenteSubView === 'habitaciones' ? '🛏️ Catálogo de Habitaciones' : '📊 Gerencia & Indicadores de Negocio')) : (role === 'recepcion' ? '🛎️ Recepción, Check-in & Rack Operativo' : '🧹 Gestión de Limpieza & Mantenimiento')}
             </h2>
             <div style="display: flex; align-items: center; gap: 0.6rem; margin-top: 0.35rem;">
               <span class="avail-dot"></span>
@@ -479,6 +480,12 @@ function renderAdminApp() {
                 >
                   👥 Solicitudes de Acceso (Personal)
                 </button>
+                <button 
+                  id="btnSubViewUsuarios" 
+                  style="padding: 0.45rem 1rem; font-size: 0.8rem; font-weight: 600; border-radius: 8px; cursor: pointer; border: 1px solid ${currentGerenteSubView === 'usuarios' ? '#f472b6' : '#2E2C33'}; background: ${currentGerenteSubView === 'usuarios' ? 'rgba(244, 114, 182, 0.15)' : '#16161B'}; color: ${currentGerenteSubView === 'usuarios' ? '#f472b6' : '#A8A29A'};"
+                >
+                  🔑 Usuarios
+                </button>
               </div>
             ` : ''}
           </div>
@@ -494,7 +501,7 @@ function renderAdminApp() {
 
         <!-- CONTENIDO ESPECÍFICO SEGÚN ROL -->
         ${role === 'gerente' 
-          ? (currentGerenteSubView === 'solicitudes' ? renderSolicitudesAccesoWorkspace() : (currentGerenteSubView === 'habitaciones' ? renderHabitacionesWorkspace() : renderGerenteWorkspace())) 
+          ? (currentGerenteSubView === 'usuarios' ? renderUsuariosWorkspace() : currentGerenteSubView === 'solicitudes' ? renderSolicitudesAccesoWorkspace() : (currentGerenteSubView === 'habitaciones' ? renderHabitacionesWorkspace() : renderGerenteWorkspace())) 
           : (role === 'recepcion' ? renderRecepcionWorkspace() : renderLimpiezaWorkspace())}
       </div>
     `;
@@ -536,7 +543,18 @@ function renderAdminApp() {
         };
       }
 
-      if (currentGerenteSubView === 'solicitudes') {
+      const btnUsr = document.getElementById('btnSubViewUsuarios');
+      if (btnUsr) {
+        btnUsr.onclick = async () => {
+          currentGerenteSubView = 'usuarios';
+          await cargarPersonal();
+          renderAdminApp();
+        };
+      }
+
+      if (currentGerenteSubView === 'usuarios') {
+        setupUsuariosEvents();
+      } else if (currentGerenteSubView === 'solicitudes') {
         setupSolicitudesEvents();
       } else if (currentGerenteSubView === 'habitaciones') {
         setupHabitacionesEvents();
@@ -2056,6 +2074,88 @@ function setupHabitacionesEvents() {
       } catch (err) {
         alert(`❌ No se pudo eliminar:\n${err.message}`);
         b.disabled = false;
+      }
+    };
+  });
+}
+
+async function cargarPersonal() {
+  try {
+    personalCache = await api.listarPersonalAdmin(currentStaffSession?.jwtToken);
+  } catch (err) {
+    console.warn('Error al obtener el personal:', err);
+    personalCache = [];
+  }
+}
+
+function renderUsuariosWorkspace() {
+  const esSuper = currentStaffSession?.cargo === 'SUPER_ADMIN';
+  const miEmail = currentStaffSession?.email;
+  const th = 'padding: 0.75rem;';
+  const btn = 'padding: 0.3rem 0.7rem; font-size: 0.75rem; border-radius: 6px; cursor: pointer; background: transparent; margin-left: 0.4rem;';
+  return `
+    <div style="animation: cardFadeIn 0.35s ease;">
+      <h3 style="font-family: var(--font-serif); font-size: 1.75rem; color: #fff; margin: 0 0 0.25rem 0;">Cuentas del Personal</h3>
+      <p style="color: #A8A29A; font-size: 0.85rem; margin-bottom: 1.5rem;">
+        Desactiva o elimina cuentas. Si una cuenta tiene reservas, turnos o incidencias, se desactiva en lugar de borrarse para conservar el historial.
+      </p>
+      <div class="analytics-panel-card">
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 1px solid #2E2C33; color: #A8A29A; font-size: 0.75rem; text-transform: uppercase;">
+                <th style="${th}">Nombre</th><th style="${th}">Correo</th><th style="${th}">Rol</th>
+                <th style="${th}">Estado</th><th style="${th} text-align: right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${personalCache.map(u => {
+                const yo = u.email === miEmail;
+                return `
+                <tr style="border-bottom: 1px solid #1c1c22; color: #E7E5E4;">
+                  <td style="${th}">${u.nombre}</td>
+                  <td style="${th}">${u.email}</td>
+                  <td style="${th}">${u.rol}</td>
+                  <td style="${th} color: ${u.activo ? '#10b981' : '#f43f5e'};">${u.activo ? 'Activo' : 'Desactivado'}</td>
+                  <td style="${th} text-align: right;">
+                    ${yo ? '<span style="color:#A8A29A;">(tú)</span>' : `
+                      <button class="js-usr-activo" data-id="${u.id}" data-activo="${!u.activo}" style="${btn} border: 1px solid #D4AF37; color: #D4AF37;">${u.activo ? 'Desactivar' : 'Activar'}</button>
+                      ${esSuper ? `<button class="js-usr-eliminar" data-id="${u.id}" data-email="${u.email}" style="${btn} border: 1px solid #f43f5e; color: #f43f5e;">Eliminar</button>` : ''}
+                    `}
+                  </td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function setupUsuariosEvents() {
+  const token = currentStaffSession?.jwtToken;
+  document.querySelectorAll('.js-usr-activo').forEach(b => {
+    b.onclick = async () => {
+      try {
+        await api.cambiarActivoUsuarioAdmin(b.dataset.id, b.dataset.activo, token);
+        await cargarPersonal();
+        renderAdminApp();
+      } catch (err) {
+        alert(`❌ No se pudo cambiar el estado:\n${err.message}`);
+      }
+    };
+  });
+  document.querySelectorAll('.js-usr-eliminar').forEach(b => {
+    b.onclick = async () => {
+      if (!confirm(`¿Eliminar la cuenta ${b.dataset.email}?\n\nSi tiene historial se desactivará en lugar de borrarse.`)) return;
+      try {
+        const r = await api.eliminarUsuarioAdmin(b.dataset.id, token);
+        if (r && r.eliminado === false) alert('ℹ️ La cuenta tiene historial, así que se desactivó en lugar de borrarse.');
+        await cargarPersonal();
+        renderAdminApp();
+      } catch (err) {
+        alert(`❌ No se pudo eliminar:\n${err.message}`);
       }
     };
   });
