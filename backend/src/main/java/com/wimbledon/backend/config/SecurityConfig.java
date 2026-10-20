@@ -68,6 +68,9 @@ public class SecurityConfig {
                 // Cancelar reserva PENDIENTE por el propio invitado — público (protegido por qrToken en body)
                 .requestMatchers(HttpMethod.POST, "/api/reservas/{id}/cancelar-pendiente").permitAll()
 
+                // Asistente de IA del portal — público, con límites por IP en IaLimitador
+                .requestMatchers(HttpMethod.POST, "/api/ia/chat").permitAll()
+
                 // Ruta interna de errores de Spring
                 .requestMatchers("/error").permitAll()
 

@@ -2,6 +2,7 @@ import { initSmoothScroll, scrollToSection, initHeroPinAnimation, initServicesHo
 import { abrirGaleria } from './galeria.js';
 import { initCursorGato } from './cursorGato.js';
 import { initTelon, initProgreso, initBrasas, initAmbiente, initInteracciones, observarNuevos } from './fx.js';
+import { initAsistente } from './asistente.js';
 import { initReserva, openCheckoutModal, getDecoSeleccionado, setDecoSeleccionado, EXTRAS } from './reserva.js';
 
 let roomsData = [];
@@ -111,6 +112,7 @@ async function initApp() {
     setupTestimonialsInteractions();
     setupDecoracionesListeners();
     initCursorGato();
+    initAsistente();
     setupHeroVideo();
     initProgreso();
     initBrasas();

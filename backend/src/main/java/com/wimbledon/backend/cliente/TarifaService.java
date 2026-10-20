@@ -14,16 +14,21 @@ import java.math.RoundingMode;
 public class TarifaService {
 
     public BigDecimal calcularTarifa(Habitacion habitacion, ModalidadEstadia modalidad) {
-        if (habitacion == null || habitacion.getTarifaBase() == null) {
+        return tarifaSobreBase(habitacion == null ? null : habitacion.getTarifaBase(), modalidad);
+    }
+
+    /** Misma regla sobre la tarifa base (bloque de 6 horas), para quien no tiene la entidad a mano. */
+    public BigDecimal tarifaSobreBase(BigDecimal tarifaBase, ModalidadEstadia modalidad) {
+        if (tarifaBase == null) {
             return BigDecimal.ZERO;
         }
         if (modalidad == null || modalidad == ModalidadEstadia.SEIS_HORAS) {
-            return habitacion.getTarifaBase();
+            return tarifaBase;
         }
         return switch (modalidad) {
-            case TRES_HORAS -> habitacion.getTarifaBase().multiply(new BigDecimal("0.65")).setScale(2, RoundingMode.HALF_UP);
-            case SEIS_HORAS -> habitacion.getTarifaBase();
-            case DOCE_HORAS -> habitacion.getTarifaBase().multiply(new BigDecimal("1.60")).setScale(2, RoundingMode.HALF_UP);
+            case TRES_HORAS -> tarifaBase.multiply(new BigDecimal("0.65")).setScale(2, RoundingMode.HALF_UP);
+            case SEIS_HORAS -> tarifaBase;
+            case DOCE_HORAS -> tarifaBase.multiply(new BigDecimal("1.60")).setScale(2, RoundingMode.HALF_UP);
         };
     }
 }

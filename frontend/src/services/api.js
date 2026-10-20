@@ -95,6 +95,14 @@ export const api = {
     return request(`/api/publico/habitaciones/${habitacionId}/horarios?${params}`, { method: 'GET' });
   },
 
+  /** Chat del asistente: `mensajes` = [{ rol: 'user'|'assistant', contenido }]. */
+  async chatIa(mensajes) {
+    return request('/api/ia/chat', {
+      method: 'POST',
+      body: JSON.stringify({ mensajes }),
+    });
+  },
+
   async obtenerDatosPago() {
     return request('/api/publico/pago', { method: 'GET' });
   },

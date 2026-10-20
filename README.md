@@ -97,6 +97,7 @@ se pueden pasar también como variables de entorno:
 | `SEED_ADMIN_PASSWORD` | Contraseña inicial del superadmin/admin (solo si la BD está vacía) |
 | `SEED_DEMO_DATA`, `DEMO_PASSWORD` | Opcional: genera reservas y cobros de los últimos 90 días y cuentas `@wimbledon.test` |
 | `RENIEC_API_TOKEN` | Token del proveedor de consulta de DNI; el backend hace de proxy con caché y, sin token válido, usa un padrón de prueba |
+| `DEEPSEEK_API_KEY` | Clave de DeepSeek para el asistente de chat (`/api/ia/chat`); solo vive en el backend. Sin ella el chat responde «no disponible» |
 | `SERVER_PORT` | Puerto de la API (8081 por defecto) |
 
 En desarrollo, Vite redirige `/api` al backend en `localhost:8081`. La clave JWT (`wimbledon.jwt.secret`)

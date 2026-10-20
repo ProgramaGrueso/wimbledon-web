@@ -12,3 +12,6 @@ spring.config.import=optional:application-local.properties
 # ── SMTP ─────────────────────────────────────────────────────────────
 # spring.mail.username=mi_usuario_mailtrap
 # spring.mail.password=mi_clave_mailtrap
+
+# ── Asistente de IA (DeepSeek) ───────────────────────────────────────
+# wimbledon.ia.api-key=<tu-clave-de-deepseek>
