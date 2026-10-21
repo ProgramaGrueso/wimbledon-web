@@ -74,6 +74,37 @@ function alternar(abrir) {
   if (abierto) caja.focus();
 }
 
+/**
+ * La carita se anima en una mini-pagina aparte (/cara/avatar.html) para no mezclar su WebGL con el sitio.
+ * La imagen estatica queda debajo: es lo que se ve mientras carga, sin WebGL2 o con movimiento reducido.
+ * El iframe no recibe el mouse (pointer-events: none), asi que le pasamos la posicion del cursor.
+ */
+function animarCara(contenedor) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const marco = document.createElement('iframe');
+  marco.className = 'asistente__cara';
+  marco.title = '';
+  marco.setAttribute('aria-hidden', 'true');
+  marco.tabIndex = -1;
+  contenedor.appendChild(marco);
+
+  let cuadro = 0, ultimo = null;
+  const enviar = () => {
+    cuadro = 0;
+    const r = marco.getBoundingClientRect();
+    marco.contentWindow?.postMessage({ t: 'p', x: ultimo.clientX - r.left, y: ultimo.clientY - r.top }, location.origin);
+  };
+  addEventListener('pointermove', e => {
+    ultimo = e;
+    if (!cuadro) cuadro = requestAnimationFrame(enviar);
+  }, { passive: true });
+
+  // se carga despues de la pagina para no competir con lo importante
+  const cargar = () => { marco.src = '/cara/avatar.html'; };
+  if (document.readyState === 'complete') setTimeout(cargar, 600);
+  else addEventListener('load', () => setTimeout(cargar, 600), { once: true });
+}
+
 export function initAsistente() {
   if (document.getElementById('asistente')) return;
   cargarHistorial();
@@ -90,9 +121,10 @@ export function initAsistente() {
   const foto = document.createElement('img');
   foto.src = '/images/asistente.webp';
   foto.alt = '';
-  foto.width = 64;
-  foto.height = 64;
+  foto.width = 120;
+  foto.height = 120;
   boton.appendChild(foto);
+  animarCara(boton);
 
   panel = document.createElement('section');
   panel.className = 'asistente__panel';
