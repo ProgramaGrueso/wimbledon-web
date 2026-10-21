@@ -3,6 +3,8 @@ package com.wimbledon.backend.ia;
 import com.wimbledon.backend.security.IpCliente;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +31,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class IaChatController {
 
+    private static final Logger log = LoggerFactory.getLogger(IaChatController.class);
     private static final int MAX_MENSAJES = 12;
     private static final Set<String> ROLES = Set.of("user", "assistant");
 
@@ -38,6 +41,10 @@ public class IaChatController {
 
     @Value("${wimbledon.ia.max-caracteres-mensaje:500}")
     private int maxCaracteresMensaje;
+
+    /** Apagado por defecto: solo para revisar qué escriben los probadores en una demo. */
+    @Value("${wimbledon.ia.registrar-conversaciones:false}")
+    private boolean registrarConversaciones;
 
     public record ChatRequest(List<AgenteIa.Mensaje> mensajes) {}
 
@@ -76,7 +83,11 @@ public class IaChatController {
         }
 
         try {
-            return respuesta(HttpStatus.OK, agente.responder(mensajes, ip));
+            String texto = agente.responder(mensajes, ip);
+            if (registrarConversaciones) {
+                log.info("IA-CHAT usuario=\"{}\" asistente=\"{}\"", mensajes.get(mensajes.size() - 1).contenido(), texto);
+            }
+            return respuesta(HttpStatus.OK, texto);
         } catch (IaNoDisponibleException e) {
             return respuesta(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
         }
