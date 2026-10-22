@@ -255,9 +255,12 @@ function setExpr(e, opts = {}) {
   for (const k in T) S[k].t = T[k];
 }
 
+let hablando = false;   // la pagina avisa cuando suena la voz del asistente
 // ---------- input: la pagina que nos contiene manda la posicion del cursor (px CSS relativos al avatar) ----------
 addEventListener('message', e => {
-  if (e.origin !== location.origin || !e.data || e.data.t !== 'p') return;
+  if (e.origin !== location.origin || !e.data) return;
+  if (e.data.t === 'voz') { hablando = !!e.data.hablando; return; }
+  if (e.data.t !== 'p') return;
   mouse.x = +e.data.x || 0; mouse.y = +e.data.y || 0; mouse.has = true; mouse.last = performance.now() / 1000;
 });
 
@@ -283,6 +286,12 @@ function frame() {
   S.gx.t = tx + sacc[0]; S.gy.t = ty + sacc[1];
   S.hx.t = nx * 7; S.hy.t = ny * 4.5; S.lean.t = -nx * .012;
   S.px.t = nx; S.py.t = ny;
+  if (hablando) {
+    // al hablar la sonrisa late (comisuras y mejillas) y la cabeza asiente un poco
+    const m = .5 + .5 * Math.sin(tNow * 11) * Math.sin(tNow * 4.3 + 1.2);
+    S.smileL.t = S.smileR.t = .38 + .62 * m;
+    S.hy.t += Math.sin(tNow * 5.2) * 1.4;
+  } else if (expr === 'smile') { S.smileL.t = S.smileR.t = 1; }
   for (const k in S) S[k].step(dt);
 
   // blinks

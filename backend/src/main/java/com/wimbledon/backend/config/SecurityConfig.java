@@ -70,6 +70,8 @@ public class SecurityConfig {
 
                 // Asistente de IA del portal — público, con límites por IP en IaLimitador
                 .requestMatchers(HttpMethod.POST, "/api/ia/chat").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/ia/voz").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/ia/voz/estado").permitAll()
 
                 // Ruta interna de errores de Spring
                 .requestMatchers("/error").permitAll()

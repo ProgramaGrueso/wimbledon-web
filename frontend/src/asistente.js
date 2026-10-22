@@ -1,4 +1,5 @@
 import api from './services/api.js';
+import { crearMicrofono, crearVoz, vozDisponible } from './voz.js';
 
 /**
  * Asistente flotante del hotel: una carita que abre un chat con el agente de negocio.
@@ -14,6 +15,10 @@ const SALUDO = 'Hola, soy la asistente del Hotel Wimbledon. Te ayudo con habitac
 let historial = [];
 let enviando = false;
 let panel, lista, caja, boton;
+let marcoCara = null;   // iframe del avatar animado
+let voz = null;         // voz del asistente (solo si el backend la tiene activa)
+let altavozActivo = false;
+let botonAltavoz = null;
 
 function cargarHistorial() {
   try {
@@ -47,15 +52,18 @@ async function enviar() {
 
   const escribiendo = burbuja('assistant', 'Escribiendo…');
   escribiendo.classList.add('asistente__msg--pendiente');
+  const turnoVoz = voz && altavozActivo ? voz.empezar() : null;
 
   try {
     const { respuesta } = await api.chatIa(historial);
     escribiendo.textContent = respuesta;
     historial.push({ rol: 'assistant', contenido: respuesta });
+    if (turnoVoz) voz.decir(respuesta, turnoVoz);
   } catch (err) {
     escribiendo.textContent = err.message || 'No pude responder ahora. Intenta de nuevo.';
     escribiendo.classList.add('asistente__msg--error');
     historial.pop(); // el mensaje sin respuesta no se reenvía
+    if (turnoVoz) voz.fallo(turnoVoz);
   } finally {
     escribiendo.classList.remove('asistente__msg--pendiente');
     historial = historial.slice(-MAX_HISTORIAL);
@@ -82,6 +90,7 @@ function alternar(abrir) {
 function animarCara(contenedor) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const marco = document.createElement('iframe');
+  marcoCara = marco;
   marco.className = 'asistente__cara';
   marco.title = '';
   marco.setAttribute('aria-hidden', 'true');
@@ -103,6 +112,51 @@ function animarCara(contenedor) {
   const cargar = () => { marco.src = '/cara/avatar.html'; };
   if (document.readyState === 'complete') setTimeout(cargar, 600);
   else addEventListener('load', () => setTimeout(cargar, 600), { once: true });
+}
+
+function avatarHablando(hablando) {
+  marcoCara?.contentWindow?.postMessage({ t: 'voz', hablando }, location.origin);
+}
+
+/** Botones de micrófono y altavoz: solo aparecen si el backend tiene la voz activa. */
+async function prepararVoz(cabecera, formulario) {
+  if (!(await vozDisponible())) return;
+  voz = crearVoz({ alHablar: avatarHablando });
+
+  botonAltavoz = document.createElement('button');
+  botonAltavoz.type = 'button';
+  botonAltavoz.className = 'asistente__altavoz';
+  const pintarAltavoz = () => {
+    botonAltavoz.textContent = altavozActivo ? '🔊' : '🔇';
+    botonAltavoz.setAttribute('aria-pressed', String(altavozActivo));
+    botonAltavoz.setAttribute('aria-label', altavozActivo ? 'Silenciar la voz del asistente' : 'Activar la voz del asistente');
+  };
+  pintarAltavoz();
+  botonAltavoz.addEventListener('click', () => {
+    altavozActivo = !altavozActivo;
+    if (!altavozActivo) voz.cortar();
+    pintarAltavoz();
+  });
+  cabecera.insertBefore(botonAltavoz, cabecera.lastChild);
+
+  const microfono = crearMicrofono({
+    alTexto: (texto) => {
+      altavozActivo = true; pintarAltavoz();   // si hablas, te contesta con voz
+      caja.value = texto;
+      enviar();
+    },
+    alEstado: (escuchando) => botonMic?.classList.toggle('asistente__mic--escuchando', escuchando),
+  });
+  let botonMic = null;
+  if (microfono) {
+    botonMic = document.createElement('button');
+    botonMic.type = 'button';
+    botonMic.className = 'asistente__mic';
+    botonMic.textContent = '🎤';
+    botonMic.setAttribute('aria-label', 'Hablar con el asistente');
+    botonMic.addEventListener('click', () => { voz.cortar(); microfono.alternar(); });
+    formulario.insertBefore(botonMic, caja);
+  }
 }
 
 export function initAsistente() {
@@ -163,6 +217,7 @@ export function initAsistente() {
   raiz.append(panel, boton);
   document.body.appendChild(raiz);
 
+  prepararVoz(cabecera, formulario);
   burbuja('assistant', SALUDO);
   historial.forEach(m => burbuja(m.rol, m.contenido));
 

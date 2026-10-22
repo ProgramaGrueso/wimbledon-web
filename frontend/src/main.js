@@ -3,6 +3,8 @@ import { abrirGaleria } from './galeria.js';
 import { initCursorGato } from './cursorGato.js';
 import { initTelon, initProgreso, initBrasas, initAmbiente, initInteracciones, observarNuevos } from './fx.js';
 import { initAsistente } from './asistente.js';
+import { initSpots } from './videos.js';
+import { initCuartos } from './cuartos.js';
 import { initReserva, openCheckoutModal, getDecoSeleccionado, setDecoSeleccionado, EXTRAS } from './reserva.js';
 
 let roomsData = [];
@@ -10,10 +12,18 @@ let specsData = {};
 let cleanupSmoothScroll = null;
 let heroMatchMedia = null;
 let horizontalSuitesMatchMedia = null;
+let cuartos = null;
 
-let catalogViewMode = 'cinematic'; // 'cinematic' or 'grid'
-let currentAmenityFilter = 'all';
 let currentGastroTab = 'gourmet';
+
+const FILTROS_SUITES = [
+  { key: 'all', label: 'Todas' },
+  { key: 'presidencial', label: 'Presidenciales' },
+  { key: 'jacuzzi', label: 'Jacuzzi privado' },
+  { key: 'cochera', label: 'Cochera directa' },
+  { key: 'camara-seca', label: 'Cámara seca' },
+  { key: 'vista-mar', label: 'Vista al mar' }
+];
 
 const GASTRO_CATEGORIES = {
   gourmet: [
@@ -43,22 +53,6 @@ const GASTRO_CATEGORIES = {
   ]
 };
 
-function parseAmenitiesText(desc) {
-  const text = (desc || '').toLowerCase();
-  const amenities = [];
-  if (text.includes('cama redonda')) amenities.push('Cama Redonda');
-  else if (text.includes('king')) amenities.push('Cama King Size');
-  else if (text.includes('queen')) amenities.push('Cama Queen Size');
-  else amenities.push('Cama Confort 100%');
-  if (text.includes('jacuzzi')) amenities.push('Jacuzzi Privado');
-  if (text.includes('cámara seca') || text.includes('camara seca')) amenities.push('Cámara Seca / Sauna');
-  if (text.includes('pole dance')) amenities.push('Pole Dance');
-  if (text.includes('tántrico') || text.includes('tantrico')) amenities.push('Sillón Tántrico');
-  if (text.includes('ducha española')) amenities.push('Ducha Española');
-  if (text.includes('vista al mar')) amenities.push('Vista al Océano');
-  if (text.includes('frigobar') || text.includes('frigo bar')) amenities.push('Frigobar Gourmet');
-  return amenities;
-}
 function roomMatchesFilter(room, filterKey) {
   if (!filterKey || filterKey === 'all') return true;
   const title = (room.nombre || '').toLowerCase();
@@ -93,6 +87,7 @@ async function initApp() {
     roomsData = resRooms;
     specsData = resSpecs;
     renderEditorialApp();
+    cuartos = initCuartos({ seccion: document.getElementById('habitaciones'), rooms: roomsData, specs: specsData, filtros: FILTROS_SUITES, coincide: roomMatchesFilter, abrir: openDrawer, reservar: openCheckoutModal });
     cleanupSmoothScroll = initSmoothScroll();
     heroMatchMedia = initHeroPinAnimation();
     initServicesHoverAnimation();
@@ -104,10 +99,9 @@ async function initApp() {
     setupDrawerModalStaticListeners();
     initReserva({ getRooms: () => roomsData, toast: showToastNotification, openTerms: openFullTermsModal });
     setupCheckoutModalListeners();
-    setupCatalogControls();
+    setupFiltrosSuites();
     setupGastroTabs();
     setupHeroSlider();
-    setupCompactSuitesCarousel();
     setupLargeServicesCarousel();
     setupTestimonialsInteractions();
     setupDecoracionesListeners();
@@ -346,7 +340,7 @@ function renderEditorialApp() {
               <div class="promo-video-header">
                 <div class="promo-tag-pill">
                   <span class="promo-pulse-dot"></span>
-                  <span>SPOT HALLOWEEN</span>
+                  <span id="promoSpotTag">SPOT HALLOWEEN</span>
                 </div>
                 <span class="promo-badge-tag">HOTEL WIMBLEDON</span>
               </div>
@@ -369,10 +363,11 @@ function renderEditorialApp() {
                   Tu navegador no soporta la reproducción de video.
                 </video>
               </div>
+              <div class="promo-spots" id="promoSpots"></div>
               <div class="promo-video-footer">
                 <div class="promo-video-meta">
-                  <span class="promo-video-title">Hotel & Suites Wimbledon</span>
-                  <span class="promo-video-sub">Av. Costanera 2098 • San Miguel, Lima</span>
+                  <span class="promo-video-title" id="promoSpotTitle">Halloween</span>
+                  <span class="promo-video-sub" id="promoSpotSub">31 de octubre • disfraz de cortesía</span>
                 </div>
                 <button id="promoAudioToggle" class="promo-audio-btn" type="button" aria-label="Activar o silenciar sonido">
                   <span id="promoAudioIcon">🔇</span>
@@ -384,55 +379,7 @@ function renderEditorialApp() {
         </div>
       </div>
     </section>
-    <!-- SECCIÓN NUESTRAS HABITACIONES (CARRUSEL COMPACTO QUE NO SECUESTRA LA PÁGINA) -->
-    <section id="habitaciones" class="section-editorial" style="background: #0B0B0D; padding-top: 5rem; padding-bottom: 4rem; border-top: 1px solid rgba(255,255,255,0.08); position: relative;">
-      <div class="editorial-container" style="padding-bottom: 0.5rem;">
-        <div class="suites-horizontal-header" style="text-align: center; margin-bottom: 1.5rem;">
-          <span class="editorial-tag text-gold">COLECCIÓN EXCLUSIVA DE SUITES</span>
-          <h2 class="editorial-headline" style="color: var(--color-white); margin-top: 0.5rem;">Nuestras habitaciones</h2>
-          <p style="color: #A8A29A; max-width: 760px; margin: 0.75rem auto 0; font-size: 1rem; line-height: 1.6;">
-            Planifica tu estadía con nosotros, contamos con habitaciones de lujo, habitaciones temáticas, estacionamiento directo a algunas habitaciones, nuestra carta de comidas y bebidas que complementan tu visita.
-          </p>
-        </div>
-
-        <!-- CONTROLES: SELECTOR DE MODO Y FILTROS RÁPIDOS -->
-        <div class="catalog-controls-bar">
-          <div class="view-mode-toggle">
-            <button id="btnViewCinematic" class="view-toggle-btn active">✦ Carrusel Compacto</button>
-            <button id="btnViewGrid" class="view-toggle-btn">⊞ Mosaico Grid</button>
-          </div>
-          <div class="amenity-filters-row" id="amenityFiltersRow">
-            <button class="amenity-chip-btn active" data-filter="all">Todas</button>
-            <button class="amenity-chip-btn" data-filter="presidencial">Presidenciales</button>
-            <button class="amenity-chip-btn" data-filter="jacuzzi">Jacuzzi privado</button>
-            <button class="amenity-chip-btn" data-filter="cochera">Cochera directa</button>
-            <button class="amenity-chip-btn" data-filter="camara-seca">Cámara seca</button>
-            <button class="amenity-chip-btn" data-filter="vista-mar">Vista al mar</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- CARRUSEL COMPACTO DE HABITACIONES (SIN PIN NI SCROLLJACKING FORZADO) -->
-      <div id="suitesCarouselWrapper" class="editorial-container suites-carousel-wrapper">
-        <div class="suites-carousel-controls">
-          <span style="font-size: 0.85rem; color: #A8A29A; letter-spacing: 0.05em;">Desliza horizontalmente o usa las flechas:</span>
-          <div style="display: flex; gap: 0.6rem;">
-            <button id="btnCarouselPrev" class="carousel-nav-btn" aria-label="Habitaciones anteriores">❮</button>
-            <button id="btnCarouselNext" class="carousel-nav-btn" aria-label="Habitaciones siguientes">❯</button>
-          </div>
-        </div>
-        <div id="suitesCarouselTrackContainer" class="suites-carousel-track-container">
-          <!-- Inyectado dinámicamente: suite-card-compact -->
-        </div>
-      </div>
-
-      <!-- VISTA GRID ALTERNATIVA -->
-      <div id="suitesGridSection" class="editorial-container view-mode-hidden" style="display: none; padding-bottom: 3rem; margin-top: 2rem;">
-        <div id="suitesGridView" class="suites-grid-layout">
-          <!-- Inyectado dinámicamente -->
-        </div>
-      </div>
-    </section>
+    <section id="habitaciones" class="cuartos" aria-label="Habitaciones del hotel"></section>
 
     <!-- SECCIÓN PARKING DIRECTO A LA HABITACIÓN (DE LA WEB OFICIAL) -->
     <section id="parking" class="section-editorial section-parking">
@@ -1137,119 +1084,10 @@ function renderEditorialApp() {
       </a>
     </div>
   `;
-  renderSuitesList('all');
+  setupDecoracionesListeners();
   renderGastronomiaList();
   setupPromoVideo();
 }
-const EDITORIAL_ROOM_COPY = {
-  860: { num: "I", resumen: "Un santuario concebido para el descanso más exclusivo. Equipada con jacuzzi de hidromasaje, cámara seca y detalles de arquitectura sutil diseñados para una privacidad absoluta frente al mar." },
-  528: { num: "II", resumen: "Una atmósfera de serenidad y confort elevado. Diseñada para aislar el ruido exterior y permitir que el tiempo transcurra a su propio ritmo en una velada íntima." },
-  526: { num: "III", resumen: "Inspirada en el fluir del agua y la arquitectura sensorial. Un refugio espacioso con vista panorámica, sillón tántrico y iluminación tenue para el encuentro íntimo." },
-  523: { num: "IV", resumen: "La máxima expresión del bienestar privado. Un espacio de relajación térmica integral que combina sauna seco, jacuzzi y acabados de lujo." },
-  227: { num: "V", resumen: "Sombras elegantes y diseño envolvente. Una suite temática creada para explorar la intimidad en un ambiente de sofisticación sobria y misterio." },
-  43:  { num: "VI", resumen: "Confort sobrio y funcionalidad discreta. Un refugio pensado para la conversación pausada y el descanso reparador en un entorno de calma total." },
-  35:  { num: "VII", resumen: "Líneas puras y texturas reconfortantes. Equipamiento completo para una desconexión serena en el corazón de San Miguel." },
-  33:  { num: "VIII", resumen: "Calidez botánica y ambientes amplios. Un refugio temático concebido para transportarse a un estado de relajación costera." },
-  31:  { num: "IX", resumen: "La combinación perfecta entre sencillez y bienestar. Jacuzzi privado con sistema de hidromasaje en una atmósfera de absoluta privacidad." },
-  29:  { num: "X", resumen: "Luz natural y la perspectiva ininterrumpida del océano Pacífico. Un entorno sereno para la contemplación del horizonte costero." },
-  27:  { num: "XI", resumen: "Una velada concebida alrededor del agua y la calma. Jacuzzi privado, climatización regulada y texturas suaves para una estancia reconfortante." },
-  24:  { num: "XII", resumen: "Armonía entre calor, vapor y privacidad. Un circuito de relajación privado en la intimidad de su suite." },
-  22:  { num: "XIII", resumen: "Líneas fluidas y sobriedad táctil. Diseñada para brindar confort pleno y una atmósfera cálida durante su estadía." },
-  20:  { num: "XIV", resumen: "Detalles delicados y ambientación acogedora. Un refugio pensado para la pausa y el encuentro íntimo sin interrupciones." },
-  16:  { num: "XV", resumen: "Elegancia atemporal con el rumor del mar de fondo. Equipamiento de primera clase y vistas seleccionadas hacia la costa." },
-  14:  { num: "XVI", resumen: "La cúspide de la hospitalidad discreta. Amplitud, jacuzzi con hidromasaje y vista privileged sobre la bahía de Lima." }
-};
-function renderSuitesList(filterCategory = 'all') {
-  currentAmenityFilter = filterCategory;
-  const trackContainer = document.getElementById('suitesCarouselTrackContainer') || document.getElementById('suitesHorizontalTrack');
-  const gridContainer = document.getElementById('suitesGridView');
-
-  const filtered = roomsData.filter(room => roomMatchesFilter(room, filterCategory));
-
-  // 1. Render Carrusel Compacto de Suites (Foto real 800x600, tarjeta elegante, no secuestra la pantalla)
-  if (trackContainer) {
-    if (filtered.length === 0) {
-      trackContainer.innerHTML = `<div style="padding: 3rem; text-align: center; color: #A8A29A; width: 100%;">No hay suites disponibles con este filtro.</div>`;
-    } else {
-      trackContainer.innerHTML = filtered.map((room, index) => {
-        const amenities = parseAmenitiesText(room.descripcion);
-        const categoryName = room.categoria_nombre || 'Suite de Lujo';
-        const priceDisplay = room.precio ? `${room.precio}` : 'S/ 150';
-        return `
-          <div class="suite-card-compact" data-id="${room.id}">
-            <div class="suite-compact-media js-open-drawer" data-id="${room.id}" title="Ver Ficha Técnica y Galería">
-              <img src="${room.imagen_url || '/images/suites/suite-presidencial.jpg'}" onerror="this.onerror=null; this.src='/images/suites/suite-presidencial.jpg';" alt="${room.nombre}" class="suite-compact-img" loading="lazy" />
-              <span class="suite-compact-price-pill">${priceDisplay} / 6h</span>
-              <span class="suite-compact-cat-pill">${categoryName}</span>
-            </div>
-            <div class="suite-compact-body">
-              <h3 class="suite-compact-title">${room.nombre}</h3>
-              <div class="suite-compact-pills">
-                ${amenities.slice(0, 2).map(a => `<span class="suite-compact-pill">${a}</span>`).join('')}
-              </div>
-              <div class="suite-compact-actions">
-                <button class="btn-compact-reserve js-direct-checkout" data-id="${room.id}">
-                  Reservar
-                </button>
-                <button class="btn-compact-details js-open-drawer" data-id="${room.id}">
-                  Detalles
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-  }
-
-  // 2. Render Grid View Responsivo Alternativo
-  if (gridContainer) {
-    if (filtered.length === 0) {
-      gridContainer.innerHTML = `<div style="padding: 3rem; text-align: center; color: #A8A29A; grid-column: 1 / -1;">No hay suites disponibles con este filtro.</div>`;
-    } else {
-      gridContainer.innerHTML = filtered.map((room) => {
-        const amenities = parseAmenitiesText(room.descripcion);
-        const categoryName = room.categoria_nombre || 'Suite de Lujo';
-        const priceDisplay = room.precio ? `${room.precio}` : 'S/ 150';
-        const copyText = EDITORIAL_ROOM_COPY[room.id]?.resumen || room.resumen || room.descripcion || 'Confort de lujo y privacidad total.';
-        return `
-          <div class="suite-grid-card" data-id="${room.id}">
-            <div class="suite-grid-img-wrap js-open-drawer" data-id="${room.id}" style="cursor: pointer;" title="Ver Ficha Técnica">
-              <img src="${room.imagen_url || '/images/suites/suite-presidencial.jpg'}" onerror="this.onerror=null; this.src='/images/suites/suite-presidencial.jpg';" alt="${room.nombre}" class="suite-grid-img" loading="lazy" />
-              <span class="suite-grid-badge">${categoryName}</span>
-              <span class="suite-grid-avail">
-                <span class="avail-dot"></span>
-                <span>Disponible Inmediato</span>
-              </span>
-            </div>
-            <div class="suite-grid-body">
-              <div class="suite-grid-header">
-                <h3 class="suite-grid-title">${room.nombre}</h3>
-                <span class="suite-grid-price">${priceDisplay}</span>
-              </div>
-              <p class="suite-grid-desc">${copyText}</p>
-              <div class="suite-grid-amenities">
-                ${amenities.slice(0, 3).map(a => `<span class="suite-amenity-tag">✦ ${a}</span>`).join('')}
-              </div>
-              <div class="suite-grid-actions">
-                <button class="btn-grid-details js-open-drawer" data-id="${room.id}">Ficha Técnica</button>
-                <button class="btn-grid-book js-direct-checkout" data-id="${room.id}">RESERVAR AHORA</button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-  }
-
-  setupDrawerListeners();
-  setupDirectCheckoutListeners();
-  setupDecoracionesListeners();
-
-  // Asegurar que solo la vista activa esté visible sin duplicados
-  applyCatalogViewMode(catalogViewMode);
-}
-
 function renderGastronomiaList(categoryKey = 'gourmet') {
   currentGastroTab = categoryKey;
   const container = document.getElementById('gastronomiaList');
@@ -1368,21 +1206,6 @@ function openDrawer(roomId) {
     };
   }
 }
-function setupDrawerListeners() {
-  document.querySelectorAll('.js-open-drawer').forEach(btn => {
-    btn.onclick = (e) => {
-      const id = e.currentTarget.getAttribute('data-id');
-      if (id) openDrawer(id);
-    };
-  });
-  document.querySelectorAll('.js-reserve-now').forEach(btn => {
-    btn.onclick = (e) => {
-      const id = e.currentTarget.getAttribute('data-id');
-      if (id) openCheckoutModal(id);
-    };
-  });
-}
-
 function setupDrawerModalStaticListeners() {
   const drawerClose = document.getElementById('drawerClose');
   const drawer = document.getElementById('roomDrawer');
@@ -1409,15 +1232,6 @@ function setupCheckoutModalListeners() {
     promoReserveBtn.onclick = () => window.open(WHATSAPP_HALLOWEEN, '_blank', 'noopener');
   }
 }
-function setupDirectCheckoutListeners() {
-  document.querySelectorAll('.js-direct-checkout').forEach(btn => {
-    btn.onclick = (e) => {
-      const id = e.currentTarget.getAttribute('data-id');
-      if (id) openCheckoutModal(id);
-    };
-  });
-}
-
 // ==========================================================================
 // MODAL OFICIAL: ACTA DE ENTREGA DE LLAVE Y REGLAMENTO INTERNO
 // ==========================================================================
@@ -1557,32 +1371,6 @@ function openFullTermsModal() {
   }
 }
 
-function applyCatalogViewMode(mode) {
-  catalogViewMode = mode;
-  const btnCinematic = document.getElementById('btnViewCinematic');
-  const btnGrid = document.getElementById('btnViewGrid');
-  const trackWrapper = document.getElementById('suitesCarouselWrapper') || document.getElementById('suitesHorizontalPinWrapper');
-  const gridSection = document.getElementById('suitesGridSection');
-
-  if (btnCinematic && btnGrid && trackWrapper && gridSection) {
-    if (mode === 'cinematic') {
-      btnCinematic.classList.add('active');
-      btnGrid.classList.remove('active');
-      trackWrapper.classList.remove('view-mode-hidden');
-      trackWrapper.style.display = 'block';
-      gridSection.classList.add('view-mode-hidden');
-      gridSection.style.display = 'none';
-    } else {
-      btnGrid.classList.add('active');
-      btnCinematic.classList.remove('active');
-      trackWrapper.classList.add('view-mode-hidden');
-      trackWrapper.style.display = 'none';
-      gridSection.classList.remove('view-mode-hidden');
-      gridSection.style.display = 'block';
-    }
-  }
-}
-
 function setupHeroSlider() {
   const slides = document.querySelectorAll('.hero-slide');
   const dots = document.querySelectorAll('.hero-slider-dot');
@@ -1662,20 +1450,6 @@ function setupHeroSlider() {
   });
 
   startAutoplay();
-}
-
-function setupCompactSuitesCarousel() {
-  const container = document.getElementById('suitesCarouselTrackContainer');
-  const btnPrev = document.getElementById('btnCarouselPrev');
-  const btnNext = document.getElementById('btnCarouselNext');
-  if (container && btnPrev && btnNext) {
-    btnPrev.onclick = () => {
-      container.scrollBy({ left: -330, behavior: 'smooth' });
-    };
-    btnNext.onclick = () => {
-      container.scrollBy({ left: 330, behavior: 'smooth' });
-    };
-  }
 }
 
 function setupLargeServicesCarousel() {
@@ -1921,28 +1695,7 @@ function renderDecoState() {
   bar.classList.add('visible');
 }
 
-function setupCatalogControls() {
-  const btnCinematic = document.getElementById('btnViewCinematic');
-  const btnGrid = document.getElementById('btnViewGrid');
-
-  if (btnCinematic && btnGrid) {
-    btnCinematic.onclick = () => {
-      applyCatalogViewMode('cinematic');
-    };
-
-    btnGrid.onclick = () => {
-      applyCatalogViewMode('grid');
-    };
-  }
-
-  // Filtros de Amenidades (el conteo sale del catálogo, no de un número fijo)
-  const chips = document.querySelectorAll('.amenity-chip-btn');
-  chips.forEach(chip => {
-    const filter = chip.getAttribute('data-filter');
-    chip.textContent = `${chip.textContent.trim()} (${roomsData.filter(r => roomMatchesFilter(r, filter)).length})`;
-    chip.onclick = () => aplicarFiltroSuites(filter, false);
-  });
-
+function setupFiltrosSuites() {
   // Botones "Ver suites con…" del carrusel de servicios: filtran y llevan al catálogo
   document.querySelectorAll('.js-filtro-suites').forEach(link => {
     link.onclick = (e) => {
@@ -1965,9 +1718,7 @@ function setupCatalogControls() {
 }
 
 function aplicarFiltroSuites(filter, scroll) {
-  document.querySelectorAll('.amenity-chip-btn').forEach(c =>
-    c.classList.toggle('active', c.getAttribute('data-filter') === filter));
-  renderSuitesList(filter);
+  cuartos.filtrar(filter);
   if (scroll) scrollToSection('habitaciones');
 }
 
@@ -2068,6 +1819,7 @@ function setupPromoVideo() {
 
   video.addEventListener('volumechange', updateAudioState);
   updateAudioState();
+  initSpots();
 }
 initApp();
 
