@@ -376,11 +376,11 @@ function renderEditorialApp() {
         </div>
       </div>
     </section>
-    <section id="gummy" class="section-gummy" aria-label="Gummy bears navideños">
+    <section id="gummy" class="section-gummy" aria-label="Ositos de Navidad de Hotel Wimbledon">
       <div class="editorial-container">
-        <span class="editorial-tag text-gold">UN DETALLE DULCE</span>
-        <h2 class="editorial-headline text-white lux-heading">Juega con los <span class="promo-title-sub">Gummy Bears</span></h2>
-        <iframe class="gummy-frame" src="/gummy/index.html" title="Gummy bears interactivos" loading="lazy" allowfullscreen></iframe>
+        <span class="editorial-tag text-gold">NAVIDAD EN HOTEL WIMBLEDON</span>
+        <h2 class="editorial-headline text-white lux-heading">Un Detalle Dulce de <span class="promo-title-sub">Wimbledon</span></h2>
+        <iframe class="gummy-frame" src="/gummy/index.html" title="Ositos de Navidad interactivos de Hotel Wimbledon" loading="lazy" allowfullscreen></iframe>
       </div>
     </section>
 
