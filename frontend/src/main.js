@@ -1,7 +1,7 @@
 import { initSmoothScroll, scrollToSection, initHeroPinAnimation, initServicesHoverAnimation, initHorizontalSuitesScroll, refreshHorizontalSuitesScroll, initMagneticButton } from './smoothScroll.js';
 import { abrirGaleria } from './galeria.js';
 import { initCursorGato } from './cursorGato.js';
-import { initTelon, initProgreso, initBrasas, initLaterales, initAmbiente, initInteracciones, observarNuevos } from './fx.js';
+import { initTelon, initProgreso, initBrasas, initNieve, initLaterales, initAmbiente, initInteracciones, observarNuevos } from './fx.js';
 import { initAsistente } from './asistente.js';
 import { initSpots } from './videos.js';
 import { initCuartos } from './cuartos.js';
@@ -110,6 +110,7 @@ async function initApp() {
     setupHeroVideo();
     initProgreso();
     initBrasas();
+    initNieve();
     initLaterales();
     initAmbiente();
     initInteracciones();
@@ -1197,7 +1198,6 @@ function openDrawer(roomId) {
   if (drawerBtn) {
     drawerBtn.onclick = () => {
       drawer.classList.remove('open');
-      if (backdrop) backdrop.classList.remove('open');
       drawer.setAttribute('aria-hidden', 'true');
       openCheckoutModal(room.id);
     };
@@ -1768,6 +1768,7 @@ function setupMobileNav() {
 
     const closeDrawer = () => {
       drawer.classList.remove('open');
+      if (backdrop) backdrop.classList.remove('open');
       drawer.setAttribute('aria-hidden', 'true');
       document.body.style.overflow = '';
     };

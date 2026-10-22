@@ -3965,3 +3965,6 @@ body:has(#adminApp) .fx-brasas { opacity: 0.45; }
 .nav-lateral--der { right: 1vw; }
 .nav-lateral--oso { width: min(200px, calc((100vw - 1380px) / 2 - 40px)); }
 @media (min-width: 1700px) { .nav-lateral { display: block; } }
+
+/* Nieve de fondo: por encima del fondo, debajo de los textos interactivos */
+.fx-nieve { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 4; }

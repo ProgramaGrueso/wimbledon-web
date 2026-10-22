@@ -267,3 +267,51 @@ export function initLaterales() {
       .to(el, { opacity: 0, x: desde, scale: 0.92, duration: 0.3, ease: 'power2.in' });
   });
 }
+
+/* ---------- Copos de nieve de fondo (canvas 2D, el viento sigue al mouse) ---------- */
+export function initNieve() {
+  if (calmado()) return;
+  const lienzo = document.createElement('canvas');
+  lienzo.className = 'fx-nieve';
+  lienzo.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(lienzo);
+  const ctx = lienzo.getContext('2d');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const N = tactil() ? 70 : 160;
+  const copos = [];
+  const ajustar = () => {
+    lienzo.width = innerWidth * dpr;
+    lienzo.height = innerHeight * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  };
+  ajustar();
+  window.addEventListener('resize', ajustar, { passive: true });
+  for (let i = 0; i < N; i++) {
+    const z = Math.random();
+    copos.push({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, r: 1 + z * 3.2, v: 0.35 + z * 1.4, fase: Math.random() * 6.28, bal: 0.3 + Math.random() * 0.9 });
+  }
+  let viento = 0, vientoMeta = 0;
+  window.addEventListener('pointermove', (e) => { vientoMeta = (e.clientX / innerWidth - 0.5) * 2.2; }, { passive: true });
+  let activo = true;
+  document.addEventListener('visibilitychange', () => { activo = !document.hidden; if (activo) requestAnimationFrame(bucle); });
+  function bucle(t) {
+    if (!activo) return;
+    viento += (vientoMeta - viento) * 0.03;
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    for (const c of copos) {
+      c.y += c.v;
+      c.x += Math.sin(t / 900 + c.fase) * c.bal * 0.6 + viento * c.r * 0.35;
+      if (c.y > innerHeight + 8) { c.y = -8; c.x = Math.random() * innerWidth; }
+      if (c.x > innerWidth + 8) c.x = -8; else if (c.x < -8) c.x = innerWidth + 8;
+      const g = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
+      g.addColorStop(0, 'rgba(255,255,255,0.95)');
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, c.r, 0, 6.2832);
+      ctx.fill();
+    }
+    requestAnimationFrame(bucle);
+  }
+  requestAnimationFrame(bucle);
+}
