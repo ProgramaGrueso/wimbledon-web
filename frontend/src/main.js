@@ -392,22 +392,22 @@ function renderEditorialApp() {
         <div class="parking-layout">
           <div>
             <span class="editorial-tag text-gold">DISCRECIÓN Y PRIVACIDAD ABSOLUTA</span>
-            <h2 class="editorial-headline" style="color: #ffffff; margin-top: 0.5rem;">Parking Directo a la Habitación</h2>
-            <p style="color: #D8D2C6; font-size: 1.05rem; line-height: 1.7; margin-top: 1.25rem;">
+            <h2 class="editorial-headline" style="color: var(--color-white); margin-top: 0.5rem;">Parking Directo a la Habitación</h2>
+            <p style="color: #3f6552; font-size: 1.05rem; line-height: 1.7; margin-top: 1.25rem;">
               Pensando en tu privacidad y hermetismo, contamos con <strong>Parking Directo a la habitación</strong>. Ingresas con tu vehículo a una cochera privada individual con portón automatizado cerrado, conectada directamente al interior de tu suite.
             </p>
             <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.85rem;">
-              <div style="display: flex; align-items: center; gap: 0.75rem; color: #D4AF37;">
+              <div style="display: flex; align-items: center; gap: 0.75rem; color: #d4141f;">
                 <span style="font-size: 1.2rem;">✓</span>
-                <span style="color: #e2e8f0; font-size: 0.95rem;">Cero contacto con recepción física ni zonas comunes.</span>
+                <span style="color: #2f5443; font-size: 0.95rem;">Cero contacto con recepción física ni zonas comunes.</span>
               </div>
-              <div style="display: flex; align-items: center; gap: 0.75rem; color: #D4AF37;">
+              <div style="display: flex; align-items: center; gap: 0.75rem; color: #d4141f;">
                 <span style="font-size: 1.2rem;">✓</span>
-                <span style="color: #e2e8f0; font-size: 0.95rem;">Portón cerrado individual exclusivo para tu habitación.</span>
+                <span style="color: #2f5443; font-size: 0.95rem;">Portón cerrado individual exclusivo para tu habitación.</span>
               </div>
-              <div style="display: flex; align-items: center; gap: 0.75rem; color: #D4AF37;">
+              <div style="display: flex; align-items: center; gap: 0.75rem; color: #d4141f;">
                 <span style="font-size: 1.2rem;">✓</span>
-                <span style="color: #e2e8f0; font-size: 0.95rem;">Atención y custodia perimetral discreta las 24 horas.</span>
+                <span style="color: #2f5443; font-size: 0.95rem;">Atención y custodia perimetral discreta las 24 horas.</span>
               </div>
             </div>
             <div style="margin-top: 2.5rem; display: flex; gap: 1rem;">
@@ -429,8 +429,8 @@ function renderEditorialApp() {
       <div class="editorial-container">
         <div class="editorial-header-block reveal" style="text-align: center; max-width: 820px; margin: 0 auto;">
           <span class="editorial-tag text-gold">OCASIONES INOLVIDABLES & ANIVERSARIOS</span>
-          <h2 class="editorial-headline" style="color: #ffffff; margin-top: 0.5rem;">Decoraciones Románticas Especiales</h2>
-          <p style="color: #A8A29A; margin-top: 0.75rem; font-size: 1.05rem; line-height: 1.6;">
+          <h2 class="editorial-headline" style="color: var(--color-white); margin-top: 0.5rem;">Decoraciones Románticas Especiales</h2>
+          <p style="color: #4d7260; margin-top: 0.75rem; font-size: 1.05rem; line-height: 1.6;">
             Enamórate de nuestras decoraciones que tenemos para ti; encontrarás diseños sencillos pero hermosos, y también ambientaciones modernas y elegantes para celebrar aniversarios, cumpleaños o noches especiales.
           </p>
         </div>
@@ -448,7 +448,7 @@ function renderEditorialApp() {
                 Arreglo temático con globos metalizados en tonos rojos y dorados, letrero luminoso LED, pétalos de rosa sobre la cama y copas de champaña para brindar.
               </p>
               <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #D4AF37; font-weight: 700; font-size: 1.1rem;">S/ 60.00</span>
+                <span style="color: #d4141f; font-weight: 700; font-size: 1.1rem;">S/ 60.00</span>
                 <button class="btn-compact-reserve js-add-deco" data-deco="1" style="padding: 0.55rem 1rem;">Solicitar con Reserva</button>
               </div>
             </div>
@@ -466,7 +466,7 @@ function renderEditorialApp() {
                 Ambientación sensorial con velas aromáticas LED alrededor de la tina de hidromasaje, sales minerales relajantes, pétalos y espumante helado en hielera.
               </p>
               <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #D4AF37; font-weight: 700; font-size: 1.1rem;">S/ 75.00</span>
+                <span style="color: #d4141f; font-weight: 700; font-size: 1.1rem;">S/ 75.00</span>
                 <button class="btn-compact-reserve js-add-deco" data-deco="2" style="padding: 0.55rem 1rem;">Solicitar con Reserva</button>
               </div>
             </div>
@@ -484,7 +484,7 @@ function renderEditorialApp() {
                 Decoración premium integral en suite con bouquet de flores naturales, caja de bombones finos Ferrero Rocher, iluminación tenue y botella de espumante Riccadonna.
               </p>
               <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #D4AF37; font-weight: 700; font-size: 1.1rem;">S/ 95.00</span>
+                <span style="color: #d4141f; font-weight: 700; font-size: 1.1rem;">S/ 95.00</span>
                 <button class="btn-compact-reserve js-add-deco" data-deco="3" style="padding: 0.55rem 1rem;">Solicitar con Reserva</button>
               </div>
             </div>
@@ -499,7 +499,7 @@ function renderEditorialApp() {
         <div class="editorial-header-block reveal">
           <span class="editorial-tag">INSTALACIONES SENSORIALES</span>
           <h2 id="experienciaTitle" class="editorial-headline" style="color: var(--color-white);">Servicios & Amenidades Exclusivas</h2>
-          <p style="color: #D8D2C6; margin-top: 0.75rem; font-size: 1.05rem; line-height: 1.6; max-width: 720px;">
+          <p style="color: #3f6552; margin-top: 0.75rem; font-size: 1.05rem; line-height: 1.6; max-width: 720px;">
             Instalaciones privadas de alto confort: jacuzzis climatizados, sauna finlandés, cochera directa y servicio gourmet las 24 horas.
           </p>
         </div>
@@ -705,12 +705,12 @@ function renderEditorialApp() {
       </div>
     </section>
     <!-- GASTRONOMÍA EDITORIAL DE LUJO (4 CATEGORÍAS EN VIVO) -->
-    <section id="gastronomia" class="section-editorial" style="background: #16382c; border-top: 1px solid rgba(255,255,255,0.08); padding: 6rem 0;">
+    <section id="gastronomia" class="section-editorial" style="background: #fff7ec; border-top: 1px solid rgba(255,255,255,0.08); padding: 6rem 0;">
       <div class="editorial-container">
         <div class="editorial-header-block reveal" style="text-align: center; margin-bottom: 2.5rem;">
           <span class="editorial-tag text-gold">ROOM SERVICE 24 HORAS CON MÁXIMA DISCRECIÓN</span>
-          <h2 class="editorial-headline" style="color: #ffffff; margin-top: 0.5rem;">Gastronomía, Coctelería & Minibar</h2>
-          <p style="color: #A8A29A; max-width: 650px; margin: 0.75rem auto 0; font-size: 0.95rem; line-height: 1.6;">
+          <h2 class="editorial-headline" style="color: var(--color-white); margin-top: 0.5rem;">Gastronomía, Coctelería & Minibar</h2>
+          <p style="color: #4d7260; max-width: 650px; margin: 0.75rem auto 0; font-size: 0.95rem; line-height: 1.6;">
             Disfruta de platos a la carta preparados al instante por nuestros chefs, selecta coctelería y servicio de bar directo a tu suite sin interrumpir tu intimidad.
           </p>
         </div>
@@ -735,7 +735,7 @@ function renderEditorialApp() {
         <div class="editorial-header-block reveal" style="text-align: center; max-width: 820px; margin-left: auto; margin-right: auto;">
           <span class="editorial-tag">CONFIDENCIAL & EXCLUSIVO • VOCES DE HUÉSPEDES</span>
           <h2 id="testimoniosHeading" class="editorial-headline" style="color: var(--color-white);">Historias de Pasión & Confort Absoluto</h2>
-          <p style="color: #D8D2C6; margin-top: 1rem; font-size: 1.05rem; line-height: 1.6;">
+          <p style="color: #3f6552; margin-top: 1rem; font-size: 1.05rem; line-height: 1.6;">
             Voces y vivencias de parejas que convirtieron una noche cualquiera en una velada ardiente e inolvidable. Cero miradas, máxima complicidad y discreción garantizada las 24 horas.
           </p>
         </div>
@@ -743,15 +743,15 @@ function renderEditorialApp() {
         <!-- BARRA DE MÉTRICAS & SOCIAL PROOF -->
         <div class="testimonials-stat-bar reveal">
           <div class="stat-pill">
-            <span style="color: #D4AF37; font-size: 1.1rem;">★</span>
+            <span style="color: #d4141f; font-size: 1.1rem;">★</span>
             <span><strong>4.9 / 5.0</strong> en Satisfacción de Parejas</span>
           </div>
           <div class="stat-pill">
-            <span style="color: #D4AF37; font-size: 1.1rem;">🔒</span>
+            <span style="color: #d4141f; font-size: 1.1rem;">🔒</span>
             <span><strong>100% Discreción</strong> y Cero Contacto</span>
           </div>
           <div class="stat-pill">
-            <span style="color: #D4AF37; font-size: 1.1rem;">✨</span>
+            <span style="color: #d4141f; font-size: 1.1rem;">✨</span>
             <span><strong>+14,200</strong> Noches de Pasión Verificadas</span>
           </div>
         </div>
@@ -955,7 +955,7 @@ function renderEditorialApp() {
         <div class="editorial-header-block reveal" style="text-align: center; max-width: 800px; margin-left: auto; margin-right: auto;">
           <span class="editorial-tag">LOCALIZACIÓN PRIVADA & ACCESO DIRECTO</span>
           <h2 id="ubicacionHeading" class="editorial-headline" style="color: var(--color-white);">Nuestra Ubicación & Cómo Llegar</h2>
-          <p style="color: #D8D2C6; margin-top: 1rem; font-size: 1.05rem; line-height: 1.6;">
+          <p style="color: #3f6552; margin-top: 1rem; font-size: 1.05rem; line-height: 1.6;">
             Ubicados estratégicamente frente al mar en la Costa Verde de San Miguel. Discreción total con ingreso vehicular individual y estacionamiento privado directo a la habitación las 24 horas.
           </p>
         </div>
@@ -1111,7 +1111,7 @@ function renderGastronomiaList(categoryKey = 'gourmet') {
       <p class="gastro-item-desc">${item.desc}</p>
       <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
         <span style="font-size: 0.7rem; color: #10b981;">● Disponible 24 Horas</span>
-        <button class="btn-editorial-outline js-order-gastro" data-name="${item.nombre}" data-price="${item.precio}" style="padding: 0.35rem 0.8rem; font-size: 0.75rem; cursor: pointer; border-color: rgba(212, 175, 55,0.4); color: #D4AF37; border-radius: 9999px;">
+        <button class="btn-editorial-outline js-order-gastro" data-name="${item.nombre}" data-price="${item.precio}" style="padding: 0.35rem 0.8rem; font-size: 0.75rem; cursor: pointer; border-color: rgba(212, 175, 55,0.4); color: #d4141f; border-radius: 9999px;">
           + Pre-ordenar
         </button>
       </div>
@@ -1254,21 +1254,21 @@ function openFullTermsModal() {
       <button class="admin-modal-close" id="btnCloseFullTerms" title="Cerrar">&times;</button>
       
       <div style="text-align: center; margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
-        <span style="color: #D4AF37; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">
+        <span style="color: #d4141f; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">
           DOCUMENTO OFICIAL • HOTEL WIMBLEDON S.A.C.
         </span>
-        <h2 style="font-family: var(--font-serif); font-size: 1.55rem; color: #fff; margin-top: 0.35rem;">
+        <h2 style="font-family: var(--font-serif); font-size: 1.55rem; color: var(--color-white); margin-top: 0.35rem;">
           Acta de Entrega de Llave y Reglamento Interno
         </h2>
-        <p style="color: #A8A29A; font-size: 0.8rem; margin-top: 0.25rem;">
+        <p style="color: #4d7260; font-size: 0.8rem; margin-top: 0.25rem;">
           RUC: 20508934121 • Av. Costanera 2008, San Miguel, Lima • Tel: (01) 560-0388
         </p>
       </div>
 
-      <div style="font-size: 0.82rem; line-height: 1.6; color: #D8D2C6; display: flex; flex-direction: column; gap: 1rem;">
+      <div style="font-size: 0.82rem; line-height: 1.6; color: #3f6552; display: flex; flex-direction: column; gap: 1rem;">
         <!-- ACTA DE ENTREGA DE LLAVE -->
         <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid rgba(212, 175, 55, 0.35); border-radius: 12px; padding: 1.15rem;">
-          <h3 style="color: #D4AF37; font-size: 1rem; margin-top: 0; margin-bottom: 0.5rem; font-family: var(--font-serif); text-transform: uppercase; letter-spacing: 0.5px;">
+          <h3 style="color: #d4141f; font-size: 1rem; margin-top: 0; margin-bottom: 0.5rem; font-family: var(--font-serif); text-transform: uppercase; letter-spacing: 0.5px;">
             Acta de entrega de llave
           </h3>
           <p style="margin: 0 0 0.6rem 0;">
@@ -1277,14 +1277,14 @@ function openFullTermsModal() {
           <p style="margin: 0 0 0.6rem 0;">
             El usuario por el presente recibe también el reglamento del hotel Wimbledon.
           </p>
-          <p style="margin: 0; font-style: italic; color: #e2e8f0;">
+          <p style="margin: 0; font-style: italic; color: #2f5443;">
             Todas las personas que se hospeden en el hotel, durante su estadía, estarán sujetas a este reglamento, el que se considera un contrato que se debe cumplir. Caso contrario, la administración se reserva el derecho de admisión y permanencia.
           </p>
         </div>
 
         <!-- REGLAMENTO INTERNO DE HOSPEDAJE -->
         <div>
-          <h4 style="color: #fff; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem; border-left: 3px solid #D4AF37; padding-left: 0.5rem;">
+          <h4 style="color: var(--color-white); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem; border-left: 3px solid #D4AF37; padding-left: 0.5rem;">
             Reglamento Interno de Hospedaje
           </h4>
           <div style="display: flex; flex-direction: column; gap: 0.65rem;">
@@ -1308,7 +1308,7 @@ function openFullTermsModal() {
 
         <!-- POLÍTICAS Y RESTRICCIONES -->
         <div style="background: rgba(255,255,255,0.02); border: 1px solid #2E2C33; border-radius: 10px; padding: 1rem;">
-          <h4 style="color: #D4AF37; font-size: 0.9rem; text-transform: uppercase; margin-top: 0; margin-bottom: 0.5rem;">
+          <h4 style="color: #d4141f; font-size: 0.9rem; text-transform: uppercase; margin-top: 0; margin-bottom: 0.5rem;">
             Políticas y Restricciones
           </h4>
           <ul style="margin: 0; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem;">
@@ -1343,7 +1343,7 @@ function openFullTermsModal() {
           href="/reglamento_hotel_wimbledon.pdf" 
           download="reglamento_hotel_wimbledon.pdf" 
           class="btn-editorial-outline" 
-          style="padding: 0.75rem 1.25rem; font-size: 0.85rem; text-decoration: none; border-color: #D4AF37; color: #D4AF37; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.4rem;"
+          style="padding: 0.75rem 1.25rem; font-size: 0.85rem; text-decoration: none; border-color: #D4AF37; color: #d4141f; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.4rem;"
         >
           📄 Descargar PDF Oficial
         </a>
@@ -1862,8 +1862,8 @@ function setupHeroVideo() {
     if (video.dataset.enc === sufijo) return;
     video.dataset.enc = sufijo;
     video.classList.remove('listo');
-    video.poster = `/video/hero-noche-${sufijo}.jpg`;
-    video.src = `/video/hero-noche-${sufijo}.mp4`;
+    video.poster = `/video/hero-navidad-${sufijo}.jpg`;
+    video.src = `/video/hero-navidad-${sufijo}.mp4`;
     video.load();
     video.play().catch(() => {});
   };

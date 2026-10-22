@@ -1,7 +1,7 @@
 /**
  * Capa de efectos navideños (web cliente y panel admin).
  * - Telón de entrada con titileo, brasas 3D (Three.js) que reaccionan al mouse y al scroll
- * - Barra de progreso, relámpagos suaves, murciélagos que cruzan, botones magnéticos
+ * - Barra de progreso, bastones de caramelo que cruzan, botones magnéticos
  * - Inclinación 3D en tarjetas, titulares que se revelan por líneas, parallax de imágenes
  * Todo se apaga con prefers-reduced-motion; three se carga aparte para no frenar la primera pintura.
  */
@@ -141,39 +141,25 @@ export async function initBrasas({ intensidad = 1 } = {}) {
   requestAnimationFrame(bucle);
 }
 
-/* ---------- Relámpagos y murciélagos ---------- */
+/* ---------- Bastones de caramelo que cruzan la pantalla ---------- */
 export function initAmbiente() {
   if (calmado()) return;
-  const flash = document.createElement('div');
-  flash.className = 'fx-relampago';
-  flash.setAttribute('aria-hidden', 'true');
-  document.body.appendChild(flash);
-  const relampago = () => {
-    gsap.timeline()
-      .to(flash, { opacity: 0.22, duration: 0.05 })
-      .to(flash, { opacity: 0.04, duration: 0.08 })
-      .to(flash, { opacity: 0.3, duration: 0.04 })
-      .to(flash, { opacity: 0, duration: 0.7, ease: 'power2.out' });
-    setTimeout(relampago, 22000 + Math.random() * 30000);
-  };
-  setTimeout(relampago, 9000 + Math.random() * 8000);
-
-  const murcielago = () => {
-    if (document.hidden) { setTimeout(murcielago, 8000); return; }
+  const baston = () => {
+    if (document.hidden) { setTimeout(baston, 8000); return; }
     const b = document.createElement('span');
-    b.className = 'fx-murcielago';
+    b.className = 'fx-baston';
     b.setAttribute('aria-hidden', 'true');
     const ltr = Math.random() > 0.5;
     const y0 = 8 + Math.random() * 45;
     b.style.top = y0 + 'vh';
     document.body.appendChild(b);
-    gsap.fromTo(b, { x: ltr ? '-12vw' : '112vw', y: 0, scaleX: ltr ? 1 : -1, scaleY: 1, rotation: 0 },
+    gsap.fromTo(b, { x: ltr ? '-12vw' : '112vw', y: 0, rotation: -20 },
       { x: ltr ? '112vw' : '-12vw', duration: 7 + Math.random() * 4, ease: 'none', onComplete: () => b.remove() });
     gsap.to(b, { y: () => (Math.random() - 0.5) * 120, duration: 1.1, repeat: 8, yoyo: true, ease: 'sine.inOut' });
-    gsap.to(b, { scaleY: 0.55, duration: 0.12, repeat: -1, yoyo: true, ease: 'sine.inOut' });
-    setTimeout(murcielago, 16000 + Math.random() * 20000);
+    gsap.to(b, { rotation: ltr ? 340 : -380, duration: 9, ease: 'none' });
+    setTimeout(baston, 16000 + Math.random() * 20000);
   };
-  setTimeout(murcielago, 5000);
+  setTimeout(baston, 5000);
 }
 
 /* ---------- Interacciones ---------- */
