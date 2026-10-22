@@ -1,5 +1,4 @@
 const SPOTS = [
-  { id: 'spot-halloween', tag: 'SPOT HALLOWEEN', titulo: 'Halloween', sub: '31 de octubre • disfraz de cortesía' },
   { id: 'spot-cumple', tag: 'SPOT CUMPLEAÑOS', titulo: 'Cumpleaños 50%', sub: '50% de descuento • todo noviembre 2026 • DNI' },
   { id: 'spot-disfraces', tag: 'SPOT DISFRACES', titulo: 'Alquila tu disfraz', sub: 'Alquila o compra en el hotel' },
 ];

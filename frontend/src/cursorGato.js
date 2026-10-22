@@ -1,5 +1,5 @@
 /**
- * Cursor de Halloween: Maxwell the Cat (meme) girando y balanceándose, siguiendo al mouse.
+ * Cursor de Navidad: Maxwell the Cat (meme) con gorrito girando y balanceándose, siguiendo al mouse.
  * El sprite es un WebP animado recortado del video en pantalla verde del meme
  * (proyecto educativo, sin uso comercial).
  *
@@ -22,7 +22,7 @@ export function initCursorGato() {
   const el = document.createElement('div');
   el.className = 'cat-cursor';
   el.setAttribute('aria-hidden', 'true');
-  el.innerHTML = '<div class="cat-cursor__tilt"><div class="cat-cursor__sway"><div class="cat-cursor__spin"></div></div></div>';
+  el.innerHTML = '<div class="cat-cursor__tilt"><div class="cat-cursor__sway"><div class="cat-cursor__spin"></div><div class="cat-cursor__hat"></div></div></div>';
   document.body.appendChild(el);
   const tilt = el.querySelector('.cat-cursor__tilt');
   document.documentElement.classList.add('has-cat-cursor');
@@ -44,7 +44,7 @@ export function initCursorGato() {
 
   let objX = -200, objY = -200, x = -200, y = -200, vx = 0, vy = 0, ang = 0, visible = false;
   const chispas = [];
-  const colores = ['255,170,60', '255,120,30', '190,120,255', '255,220,140'];
+  const colores = ['255,255,255', '200,230,255', '255,90,90', '120,220,150', '255,220,140'];
 
   const soltar = (px, py, n, fuerza, vida) => {
     for (let i = 0; i < n; i++) {

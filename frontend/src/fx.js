@@ -1,5 +1,5 @@
 /**
- * Capa de efectos de Halloween (web cliente y panel admin).
+ * Capa de efectos navideños (web cliente y panel admin).
  * - Telón de entrada con titileo, brasas 3D (Three.js) que reaccionan al mouse y al scroll
  * - Barra de progreso, relámpagos suaves, murciélagos que cruzan, botones magnéticos
  * - Inclinación 3D en tarjetas, titulares que se revelan por líneas, parallax de imágenes
@@ -18,7 +18,7 @@ export function initTelon(texto = 'WIMBLEDON') {
   try { sessionStorage.setItem('wb_telon', '1'); } catch { /* sin almacenamiento */ }
   const t = document.createElement('div');
   t.className = 'fx-telon';
-  t.innerHTML = `<div class="fx-telon__marca"><span class="fx-telon__ojo"></span><b>${texto}</b><i>Noche de brujas</i></div>`;
+  t.innerHTML = `<div class="fx-telon__marca"><span class="fx-telon__ojo"></span><b>${texto}</b><i>Feliz Navidad</i></div>`;
   document.body.appendChild(t);
   document.documentElement.classList.add('fx-bloqueado');
   return new Promise((ok) => {
@@ -80,7 +80,7 @@ export async function initBrasas({ intensidad = 1 } = {}) {
       void main(){
         vec3 p = position;
         float sp = 0.25 + seed.x * 0.9;
-        p.y = mod(p.y + t * sp + scroll * (2.0 + seed.z * 6.0) + 11.0, 22.0) - 11.0;
+        p.y = mod(p.y - t * sp * 0.6 - scroll * (2.0 + seed.z * 6.0) + 11.0, 22.0) - 11.0;
         p.x += sin(t * 0.5 + seed.y * 40.0) * (0.6 + seed.z);
         p.z += cos(t * 0.35 + seed.x * 30.0) * 0.8;
         vec2 d = p.xy - mouse * vec2(15.0, 9.0);
@@ -97,7 +97,7 @@ export async function initBrasas({ intensidad = 1 } = {}) {
       void main(){
         float d = length(gl_PointCoord - 0.5);
         float a = smoothstep(0.5, 0.0, d);
-        vec3 naranja = vec3(1.0, 0.45, 0.08), dorado = vec3(1.0, 0.78, 0.35), violeta = vec3(0.62, 0.35, 1.0);
+        vec3 naranja = vec3(1.0, 1.0, 1.0), dorado = vec3(0.85, 0.93, 1.0), violeta = vec3(1.0, 0.85, 0.45);
         vec3 c = vH < 0.6 ? mix(naranja, dorado, vH / 0.6) : violeta;
         gl_FragColor = vec4(c * pow(a, 1.6), pow(a, 1.6) * vA * 0.8);
       }`,
@@ -235,4 +235,35 @@ export function observarNuevos(raiz) {
       ScrollTrigger.refresh();
     }, 120);
   }).observe(raiz, { childList: true, subtree: true });
+}
+
+/* ---------- Personajes navideños en los márgenes (aparecen y se van con el scroll) ---------- */
+const LATERALES = [
+  ['izq', 'star_a'], ['der', 'star_c'], ['izq', 'oso_a'], ['der', 'oso_b'],
+  ['izq', 'star_b'], ['der', 'star_a'], ['izq', 'oso_b'], ['der', 'oso_a'],
+];
+
+export function initLaterales() {
+  if (calmado() || tactil()) return;
+  const paso = 1 / LATERALES.length;
+  LATERALES.forEach(([lado, img], i) => {
+    const el = document.createElement('div');
+    el.className = `nav-lateral nav-lateral--${lado}${img.startsWith('oso') ? ' nav-lateral--oso' : ''}`;
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML = `<img src="/images/navidad/${img}.webp" alt="" loading="lazy" />`;
+    document.body.appendChild(el);
+    const desde = lado === 'izq' ? -90 : 90;
+    gsap.timeline({
+      scrollTrigger: {
+        trigger: document.body,
+        start: () => ScrollTrigger.maxScroll(window) * (i * paso),
+        end: () => ScrollTrigger.maxScroll(window) * ((i + 1) * paso),
+        scrub: 0.6,
+        invalidateOnRefresh: true,
+      },
+    })
+      .fromTo(el, { opacity: 0, x: desde, scale: 0.92 }, { opacity: 1, x: 0, scale: 1, duration: 0.3, ease: 'power2.out' })
+      .to(el, { duration: 0.4 })
+      .to(el, { opacity: 0, x: desde, scale: 0.92, duration: 0.3, ease: 'power2.in' });
+  });
 }

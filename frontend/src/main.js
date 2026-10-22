@@ -1,7 +1,7 @@
 import { initSmoothScroll, scrollToSection, initHeroPinAnimation, initServicesHoverAnimation, initHorizontalSuitesScroll, refreshHorizontalSuitesScroll, initMagneticButton } from './smoothScroll.js';
 import { abrirGaleria } from './galeria.js';
 import { initCursorGato } from './cursorGato.js';
-import { initTelon, initProgreso, initBrasas, initAmbiente, initInteracciones, observarNuevos } from './fx.js';
+import { initTelon, initProgreso, initBrasas, initLaterales, initAmbiente, initInteracciones, observarNuevos } from './fx.js';
 import { initAsistente } from './asistente.js';
 import { initSpots } from './videos.js';
 import { initCuartos } from './cuartos.js';
@@ -110,6 +110,7 @@ async function initApp() {
     setupHeroVideo();
     initProgreso();
     initBrasas();
+    initLaterales();
     initAmbiente();
     initInteracciones();
     observarNuevos(document.getElementById('app'));
@@ -265,11 +266,6 @@ function renderEditorialApp() {
       </div>
     </section>
     <!-- EDITORIAL CONCEPT SECTION WITH VIDEO BACKGROUND -->
-    <figure class="fx-luna" aria-label="Noche de brujas en Hotel Wimbledon">
-      <img src="/images/halloween/noche.webp" alt="Hotel Wimbledon bajo la luna de Halloween" loading="lazy" />
-      <figcaption class="fx-luna__texto"><span>31 de octubre</span><strong>Noche de brujas frente al mar</strong></figcaption>
-    </figure>
-
     <section id="concepto" class="section-editorial section-video-bg">
       <div class="video-bg-container">
         <video autoplay loop muted playsinline class="video-bg-media">
@@ -298,19 +294,19 @@ function renderEditorialApp() {
         <div class="promo-grid">
           <!-- Columna Información de Promoción -->
           <div class="promo-info-col reveal">
-            <span class="editorial-tag text-gold">CAMPAÑA HALLOWEEN • 31 DE OCTUBRE</span>
+            <span class="editorial-tag text-gold">CAMPAÑA NAVIDAD • 24 Y 25 DE DICIEMBRE</span>
             <h2 class="editorial-headline text-white promo-title lux-heading">
-              Una Noche de Disfraces, <br/><span class="promo-title-sub">Tu Disfraz Corre por Nuestra Cuenta</span>
+              Una Navidad Íntima, <br/><span class="promo-title-sub">Brinda Frente al Mar</span>
             </h2>
             <p class="promo-editorial-desc text-light">
-              Reserva cualquier suite para la noche del <strong>31 de octubre</strong> y recibe <strong>un disfraz temático de cortesía</strong> esperándote en la habitación. Elige tu fantasía; nosotros preparamos el escenario.
+              Reserva cualquier suite para la noche del <strong>24 o 25 de diciembre</strong> y recibe <strong>un detalle navideño de cortesía</strong> esperándote en la habitación. Tú eliges con quién celebrar; nosotros preparamos el escenario.
             </p>
             <div class="promo-perks-list">
               <div class="promo-perk-item">
                 <span class="promo-perk-bullet">✦</span>
                 <div>
-                  <h4 class="promo-perk-title">1 Disfraz Temático de Cortesía</h4>
-                  <p class="promo-perk-desc">Válido para toda reserva con ingreso el 31 de octubre, en cualquier suite y duración.</p>
+                  <h4 class="promo-perk-title">1 Detalle Navideño de Cortesía</h4>
+                  <p class="promo-perk-desc">Válido para toda reserva con ingreso el 24 o 25 de diciembre, en cualquier suite y duración.</p>
                 </div>
               </div>
               <div class="promo-perk-item">
@@ -329,7 +325,7 @@ function renderEditorialApp() {
               </div>
             </div>
             <div class="promo-actions-row">
-              <button type="button" id="btnPromoReserve" class="btn-hero-primary" style="cursor: pointer; border: none;" aria-label="Reservar promoción de Halloween por WhatsApp">RESERVAR PROMOCIÓN</button>
+              <button type="button" id="btnPromoReserve" class="btn-hero-primary" style="cursor: pointer; border: none;" aria-label="Reservar promoción de Navidad por WhatsApp">RESERVAR PROMOCIÓN</button>
               <a href="#habitaciones" class="btn-hero-secondary">EXPLORAR SUITES</a>
             </div>
           </div>
@@ -340,7 +336,7 @@ function renderEditorialApp() {
               <div class="promo-video-header">
                 <div class="promo-tag-pill">
                   <span class="promo-pulse-dot"></span>
-                  <span id="promoSpotTag">SPOT HALLOWEEN</span>
+                  <span id="promoSpotTag">SPOT CUMPLEAÑOS</span>
                 </div>
                 <span class="promo-badge-tag">HOTEL WIMBLEDON</span>
               </div>
@@ -350,7 +346,7 @@ function renderEditorialApp() {
                   class="promo-video-media" 
                   width="608" 
                   height="342" 
-                  poster="/video/spot-halloween-poster.jpg" 
+                  poster="/video/spot-cumple-poster.jpg" 
                   controls 
                   autoplay 
                   muted 
@@ -358,16 +354,16 @@ function renderEditorialApp() {
                   playsinline 
                   preload="metadata"
                 >
-                  <source src="/video/spot-halloween.webm" type="video/webm" />
-                  <source src="/video/spot-halloween.mp4" type="video/mp4" />
+                  <source src="/video/spot-cumple.webm" type="video/webm" />
+                  <source src="/video/spot-cumple.mp4" type="video/mp4" />
                   Tu navegador no soporta la reproducción de video.
                 </video>
               </div>
               <div class="promo-spots" id="promoSpots"></div>
               <div class="promo-video-footer">
                 <div class="promo-video-meta">
-                  <span class="promo-video-title" id="promoSpotTitle">Halloween</span>
-                  <span class="promo-video-sub" id="promoSpotSub">31 de octubre • disfraz de cortesía</span>
+                  <span class="promo-video-title" id="promoSpotTitle">Cumpleaños 50%</span>
+                  <span class="promo-video-sub" id="promoSpotSub">50% de descuento • todo noviembre 2026 • DNI</span>
                 </div>
                 <button id="promoAudioToggle" class="promo-audio-btn" type="button" aria-label="Activar o silenciar sonido">
                   <span id="promoAudioIcon">🔇</span>
@@ -700,7 +696,7 @@ function renderEditorialApp() {
       </div>
     </section>
     <!-- GASTRONOMÍA EDITORIAL DE LUJO (4 CATEGORÍAS EN VIVO) -->
-    <section id="gastronomia" class="section-editorial" style="background: #0B0B0D; border-top: 1px solid rgba(255,255,255,0.08); padding: 6rem 0;">
+    <section id="gastronomia" class="section-editorial" style="background: #16382c; border-top: 1px solid rgba(255,255,255,0.08); padding: 6rem 0;">
       <div class="editorial-container">
         <div class="editorial-header-block reveal" style="text-align: center; margin-bottom: 2.5rem;">
           <span class="editorial-tag text-gold">ROOM SERVICE 24 HORAS CON MÁXIMA DISCRECIÓN</span>
@@ -1201,6 +1197,7 @@ function openDrawer(roomId) {
   if (drawerBtn) {
     drawerBtn.onclick = () => {
       drawer.classList.remove('open');
+      if (backdrop) backdrop.classList.remove('open');
       drawer.setAttribute('aria-hidden', 'true');
       openCheckoutModal(room.id);
     };
@@ -1222,14 +1219,14 @@ function setupDrawerModalStaticListeners() {
     };
   }
 }
-const WHATSAPP_HALLOWEEN = 'https://wa.me/51990370681?text=' + encodeURIComponent(
-  'Hola Hotel Wimbledon, deseo reservar mi suite para este 31 de Octubre y acceder a la promoción de Halloween (Disfraz de cortesía).'
+const WHATSAPP_NAVIDAD = 'https://wa.me/51990370681?text=' + encodeURIComponent(
+  'Hola Hotel Wimbledon, deseo reservar mi suite para Navidad (24 o 25 de diciembre) y acceder a la promoción navideña (detalle de cortesía).'
 );
 
 function setupCheckoutModalListeners() {
   const promoReserveBtn = document.getElementById('btnPromoReserve');
   if (promoReserveBtn) {
-    promoReserveBtn.onclick = () => window.open(WHATSAPP_HALLOWEEN, '_blank', 'noopener');
+    promoReserveBtn.onclick = () => window.open(WHATSAPP_NAVIDAD, '_blank', 'noopener');
   }
 }
 // ==========================================================================
@@ -1758,11 +1755,13 @@ function setupMobileNav() {
   const sandwichBtn = document.getElementById('btnSandwichToggle');
   const drawer = document.getElementById('luxuryNavDrawer');
   const drawerCloseBtn = document.getElementById('luxuryDrawerClose');
+  const backdrop = document.getElementById('navBackdrop');
   const drawerLinks = document.querySelectorAll('#luxuryDrawerNav a');
 
   if (sandwichBtn && drawer) {
     const openDrawer = () => {
       drawer.classList.add('open');
+      if (backdrop) backdrop.classList.add('open');
       drawer.setAttribute('aria-hidden', 'false');
       document.body.style.overflow = 'hidden';
     };
@@ -1775,13 +1774,26 @@ function setupMobileNav() {
 
     sandwichBtn.addEventListener('click', openDrawer);
 
+    // Letra del menú: pequeña por defecto, el botón alterna a grande (se recuerda)
+    const fontBtn = document.getElementById('luxuryDrawerFont');
+    const aplicarLetra = (grande) => {
+      drawer.classList.toggle('letra-grande', grande);
+      if (fontBtn) fontBtn.textContent = grande ? 'A−' : 'A+';
+    };
+    let letraGrande = false;
+    try { letraGrande = localStorage.getItem('menuLetraGrande') === '1'; } catch {}
+    aplicarLetra(letraGrande);
+    if (fontBtn) fontBtn.addEventListener('click', () => {
+      letraGrande = !letraGrande;
+      aplicarLetra(letraGrande);
+      try { localStorage.setItem('menuLetraGrande', letraGrande ? '1' : '0'); } catch {}
+    });
+
     if (drawerCloseBtn) {
       drawerCloseBtn.addEventListener('click', closeDrawer);
     }
 
-    drawer.addEventListener('click', (e) => {
-      if (e.target === drawer) closeDrawer();
-    });
+    if (backdrop) backdrop.addEventListener('click', closeDrawer);
 
     drawerLinks.forEach(link => {
       link.addEventListener('click', closeDrawer);
