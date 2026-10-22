@@ -4020,3 +4020,17 @@ html, body { background-color: var(--color-black); }
 .hero-slide-video, .hero-slide-bg { filter: none; }
 .hero-editorial-desc, .hero-meta-item { color: #0a3624 !important; font-weight: 600; text-shadow: 0 0 14px rgba(255,247,236,0.95), 0 0 4px rgba(255,247,236,0.9); }
 .btn-hero-secondary { color: #0a3624 !important; border-color: #0a3624 !important; background: rgba(255,247,236,0.7) !important; }
+
+/* Letras claras restantes → verdes/rojos vivos sobre fondo claro */
+.services-showcase-slide { background: linear-gradient(135deg, #fff1e0, #e6f7ec) !important; border-radius: 24px; }
+.service-slide-title, .testimonials-cta-title { color: #0f3a2a !important; }
+.service-slide-desc, .testimonials-cta-desc { color: #2f5443 !important; }
+.service-slide-content-wrap span:not(.service-slide-tag):not(.service-slide-badge) { color: #b3121c !important; }
+.service-slide-content-wrap *:not(.service-slide-title):not(.service-slide-desc):not(.service-slide-tag):not(.service-slide-badge) { color: #2f5443; }
+.service-cta-btn, .btn-ubicacion-maps { color: #fff7ec !important; background: #0d4a30 !important; border-color: #0d4a30 !important; }
+.service-nav-chip.active, .testimonial-filter-btn.active { color: #fff7ec !important; background: #d4141f !important; border-color: #d4141f !important; }
+a { --lnk: 1; }
+.section-ubicacion a:not([class]), footer a { color: #0d4a30 !important; }
+.testimonial-card { background: #fff !important; }
+.testimonial-card, .testimonial-card * { color: #0f3a2a; }
+.testimonial-card .testimonial-stars { color: #e0a800; }
