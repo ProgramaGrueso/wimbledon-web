@@ -722,6 +722,14 @@ function renderEditorialApp() {
     </section>
 
     <!-- TESTIMONIOS REALES DE PAREJAS (SUGERENTES & DISCRETAS) -->
+    <section id="gummy" class="section-gummy" aria-label="Gummy bears navideños">
+      <div class="editorial-container">
+        <span class="editorial-tag text-gold">UN DETALLE DULCE</span>
+        <h2 class="editorial-headline text-white lux-heading">Juega con los <span class="promo-title-sub">Gummy Bears</span></h2>
+        <iframe class="gummy-frame" src="/gummy/index.html" title="Gummy bears interactivos" loading="lazy" allowfullscreen></iframe>
+      </div>
+    </section>
+
     <section id="testimonios" class="section-testimonials" aria-labelledby="testimoniosHeading">
       <div class="editorial-container">
         <div class="editorial-header-block reveal" style="text-align: center; max-width: 820px; margin-left: auto; margin-right: auto;">
