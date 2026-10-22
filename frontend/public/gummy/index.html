@@ -1389,6 +1389,28 @@ const boxGeo = new THREE.BoxGeometry(1, 1, 1);
 const planeGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
 const bearMats = { vertexShader: VS_WORLD, fragmentShader: FS_BEAR };
 
+// ---- gorritos navideños: se colocan sobre la cabeza real del osito (posición y marco de cabeza en el mundo)
+const hatGeo = {
+  brim: new THREE.TorusGeometry(0.31, 0.095, 10, 28).rotateX(Math.PI / 2),
+  cone: new THREE.ConeGeometry(0.31, 0.78, 24, 1, true).translate(0, 0.39, 0),
+  pom: new THREE.SphereGeometry(0.11, 14, 10),
+};
+const hatWhite = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x555555 });
+const hatReds = [0xc8102e, 0x1f7a3a, 0xc8102e].map(c => new THREE.MeshLambertMaterial({ color: c, side: THREE.DoubleSide }));
+scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+const hatSun = new THREE.DirectionalLight(0xffffff, 2.2); hatSun.position.set(-0.4, 1, 0.6); scene.add(hatSun);
+const _hfr = new Float64Array(9), _hm = new THREE.Matrix4(), _hr = new THREE.Vector3(), _hu = new THREE.Vector3(), _hf = new THREE.Vector3();
+function makeHat(id) {
+  const g = new THREE.Group();
+  const brim = new THREE.Mesh(hatGeo.brim, hatWhite);
+  const tilt = new THREE.Group(); // el cono se inclina hacia atrás y la borla cuelga de la punta
+  tilt.position.set(0, 0.02, 0); tilt.rotation.x = -0.5;
+  const cone = new THREE.Mesh(hatGeo.cone, hatReds[id % hatReds.length]);
+  const pom = new THREE.Mesh(hatGeo.pom, hatWhite); pom.position.set(0, 0.8, 0);
+  tilt.add(cone, pom); g.add(brim, tilt);
+  return g;
+}
+
 class BearVisual {
   constructor(bear) {
     const f = FLAVORS[bear.flavor];
@@ -1416,6 +1438,7 @@ class BearVisual {
     this.shadow.frustumCulled = false;
     this.rd = makeRenderOut();
     scene.add(this.mesh); shadowScene.add(this.shadow);
+    this.hat = makeHat(bear.id); scene.add(this.hat);
   }
   sync(bear) {
     const rd = world.renderData(bear, this.rd), u = this.u;
@@ -1438,8 +1461,19 @@ class BearVisual {
     this.shadow.scale.set(x1 - x0, 1, z1 - z0);
     this.shadow.visible = bx[1] < 9;
     u.uOpacity.value = Math.min(1, bear.vis * 1.6);
+    // gorrito: marco de la cabeza a partir de los puntos del osito en el mundo
+    const x = bear.x, k = bear.s * bear.vis;
+    this.hat.visible = bear.vis > 0.05;
+    if (this.hat.visible) {
+      headFrame([x[0], x[1], x[2]], [x[9], x[10], x[11]], [x[3], x[4], x[5]], [x[6], x[7], x[8]], _hfr);
+      _hr.set(_hfr[0], _hfr[1], _hfr[2]); _hu.set(_hfr[3], _hfr[4], _hfr[5]); _hf.set(_hfr[6], _hfr[7], _hfr[8]);
+      this.hat.quaternion.setFromRotationMatrix(_hm.makeBasis(_hr, _hu, _hf));
+      this.hat.position.set(x[0] + _hu.x * 0.44 * k - _hf.x * 0.07 * k, x[1] + _hu.y * 0.44 * k - _hf.y * 0.07 * k, x[2] + _hu.z * 0.44 * k - _hf.z * 0.07 * k);
+      this.hat.scale.setScalar(k);
+    }
   }
   dispose() {
+    scene.remove(this.hat);
     scene.remove(this.mesh); shadowScene.remove(this.shadow);
     this.mesh.material.dispose(); this.shadow.material.dispose();
   }
