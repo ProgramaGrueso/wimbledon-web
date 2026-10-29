@@ -96,8 +96,9 @@ function abrirModal() {
  * Abre la reserva.
  * @param {string|number|null} roomId suite de origen; null = reserva global con selector de suite.
  * Con suite de origen, la suite queda fijada (no se puede cambiar dentro del modal).
+ * @param {{duracion?: string, dias?: number, hora?: string}} preset duración (clave), días desde hoy y hora "HH:MM" sugeridos.
  */
-export function openCheckoutModal(roomId = null) {
+export function openCheckoutModal(roomId = null, preset = {}) {
   // Si hay una retención en curso, se retoma en vez de abrir otra.
   if (reservaActiva) {
     abrirModal();
@@ -125,6 +126,10 @@ export function openCheckoutModal(roomId = null) {
     error: null,
     idemKey: nuevaClave()
   };
+  // Datos sugeridos (p. ej. por el asistente): la hora solo se conserva si está libre al cargar los horarios.
+  if (DURACIONES.some(d => d.key === preset.duracion)) st.duracion = preset.duracion;
+  if (preset.dias > 0) { const d = new Date(); d.setDate(d.getDate() + Math.min(preset.dias, DIAS_MAX)); st.fecha = isoLocal(d); }
+  if (preset.hora) st.hora = preset.hora;
   abrirModal();
   renderFormulario();
   cargarHorarios();

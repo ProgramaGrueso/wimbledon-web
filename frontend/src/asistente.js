@@ -1,4 +1,5 @@
 import api from './services/api.js';
+import { scrollToSection } from './smoothScroll.js';
 import { crearMicrofono, crearVoz, crearVozNavegador, vozDisponible, vozNavegadorDisponible } from './voz.js';
 
 /**
@@ -40,9 +41,107 @@ function burbuja(rol, texto) {
   return el;
 }
 
+const SECCIONES = [
+  ['habitaciones', /habitaci|cuarto|suite/, 'las habitaciones'],
+  ['promocion', /promo|oferta|navidad/, 'la promoción de Navidad'],
+  ['gummy', /oso|gummy/, 'los ositos de Navidad'],
+  ['parking', /parking|cochera|estacionamiento/, 'el parking'],
+  ['decoraciones', /decoraci/, 'las decoraciones especiales'],
+  ['experiencia', /servicio|amenidad|experiencia/, 'los servicios y amenidades'],
+  ['gastronomia', /carta|gastronom|comida|restaurante/, 'la carta gastronómica'],
+  ['testimonios', /testimonio|opinion|comentario/, 'los testimonios'],
+  ['ubicacion', /ubicaci|contacto|direccion|mapa|donde queda/, 'la ubicación y contacto'],
+  ['concepto', /concepto|el hotel|nosotros/, 'el concepto del hotel'],
+];
+
+const WHATSAPP = '51990370681';
+let acciones = { habitaciones: () => [], abrirHabitacion() {}, reservar() {} };
+
+const limpiar = (t) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+/** Habitación citada en el texto: gana el nombre más largo que aparezca completo; si no, la de más palabras en común. */
+function habitacionCitada(t) {
+  let mejor = null;
+  for (const h of acciones.habitaciones()) {
+    const nombre = limpiar(h.nombre || '').replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim();
+    if (!nombre) continue;
+    const palabras = nombre.split(' ').filter((p) => p.length > 4 && p !== 'suite' && p !== 'habitacion');
+    const puntos = t.includes(nombre) ? 100 + nombre.length : palabras.filter((p) => t.includes(p)).length * 10 - nombre.length / 100;
+    if (puntos > 0 && (!mejor || puntos > mejor.puntos)) mejor = { h, puntos };
+  }
+  return mejor?.h || null;
+}
+
+/** "8 pm", "20:00", "a las 9 de la noche" → "HH:00" (las horas libres van de 08:00 a 23:00). */
+function horaCitada(t) {
+  const m = t.match(/(?:a las|las)?\s*(\d{1,2})(?::(\d{2}))?\s*(pm|am|de la (?:noche|tarde|manana)|horas)?/);
+  if (!m || !/\d/.test(t)) return null;
+  let h = Number(m[1]);
+  const tarde = /pm|noche|tarde/.test(m[3] || '') || (/noche|tarde|pm/.test(t) && !/am|manana/.test(t));
+  if (h < 8 && h >= 1) h += 12;
+  else if (tarde && h < 12) h += 12;
+  return h >= 8 && h <= 23 ? String(h).padStart(2, '0') + ':00' : null;
+}
+
+/** Órdenes habladas o escritas que la página resuelve sola. Devuelve {texto, ejecutar, enlace?} o null (→ responde el asistente). */
+function interpretar(texto) {
+  const t = limpiar(texto);
+  if (t.length > 80) return null;
+
+  if (/whatsapp|hablar con (una )?persona|asesor|recepcionista|humano/.test(t)) {
+    const url = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hola, quisiera información del Hotel Wimbledon.')}`;
+    return { texto: 'Claro, aquí puedes escribirle a una persona del hotel por WhatsApp.', enlace: { url, etiqueta: 'Abrir WhatsApp' }, ejecutar() {} };
+  }
+
+  if (/\b(abre|abrir|abreme|muestra|muestrame|cierra|cerrar|oculta)\b.*\bmenu\b|\bmenu\b.*\b(abre|abrir|cierra|cerrar)\b/.test(t)) {
+    const cerrar = /cierra|cerrar|oculta/.test(t);
+    return {
+      texto: cerrar ? 'Listo, cerré el menú.' : 'Listo, abrí el menú.',
+      ejecutar() { document.getElementById(cerrar ? 'luxuryDrawerClose' : 'btnSandwichToggle')?.click(); },
+    };
+  }
+
+  const habitacion = habitacionCitada(t);
+  if (habitacion && /\b(reserva|reservar|reservame|alquilar|alquilo|quiero la|quiero el|me quedo)\b/.test(t)) {
+    const hora = horaCitada(t);
+    const dias = /pasado manana/.test(t) ? 2 : /manana/.test(t) && !/de la manana/.test(t) ? 1 : 0;
+    const duracion = /pernocte|toda la noche|12 horas|doce horas/.test(t) ? 'DOCE_HORAS' : /\b3 horas|tres horas/.test(t) ? 'TRES_HORAS' : /\b6 horas|seis horas/.test(t) ? 'SEIS_HORAS' : undefined;
+    const cuando = dias === 1 ? ' para mañana' : dias === 2 ? ' para pasado mañana' : '';
+    return {
+      texto: `Perfecto, abrí la reserva de ${habitacion.nombre}${cuando}${hora ? ` a las ${hora}` : ''}. Revisa los datos y completa tu nombre y teléfono.`,
+      ejecutar() { acciones.reservar(habitacion.id, { hora, dias, duracion }); },
+    };
+  }
+
+  if (!/\b(ve|ven|vamos|ir|ver|llevame|llevanos|muestrame|ensename|bajame|abre|abreme|quiero ver)\b/.test(t)) return null;
+  if (/horario|precio|fecha|reserv|disponib|cuanto|cuesta|hay\b/.test(t)) return null; // eso lo responde el asistente
+
+  if (habitacion) {
+    return { texto: `Claro, te muestro ${habitacion.nombre}.`, ejecutar() { acciones.abrirHabitacion(habitacion.id); } };
+  }
+  const seccion = SECCIONES.find(([, patron]) => patron.test(t));
+  return seccion ? { texto: `Claro, te llevo a ${seccion[2]}.`, ejecutar() { scrollToSection(seccion[0]); } } : null;
+}
+
 async function enviar() {
   const texto = caja.value.trim();
   if (!texto || enviando) return;
+
+  const orden = interpretar(texto);
+  if (orden) {
+    caja.value = '';
+    burbuja('user', texto);
+    const msg = burbuja('assistant', orden.texto);
+    if (orden.enlace) {
+      const a = document.createElement('a');
+      a.href = orden.enlace.url; a.target = '_blank'; a.rel = 'noopener';
+      a.textContent = ` ${orden.enlace.etiqueta}`;
+      msg.appendChild(a);
+    }
+    orden.ejecutar();
+    if (voz && altavozActivo) voz.decir(orden.texto, voz.empezar());
+    return;
+  }
 
   enviando = true;
   caja.value = '';
@@ -160,7 +259,8 @@ async function prepararVoz(cabecera, formulario) {
   }
 }
 
-export function initAsistente() {
+export function initAsistente(accionesPagina = {}) {
+  acciones = { ...acciones, ...accionesPagina };
   if (document.getElementById('asistente')) return;
   cargarHistorial();
 

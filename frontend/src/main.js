@@ -106,7 +106,7 @@ async function initApp() {
     setupTestimonialsInteractions();
     setupDecoracionesListeners();
     initCursorGato();
-    initAsistente();
+    initAsistente({ habitaciones: () => roomsData, abrirHabitacion: openDrawer, reservar: openCheckoutModal });
     setupHeroVideo();
     initProgreso();
     initBrasas();

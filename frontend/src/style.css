@@ -3344,24 +3344,24 @@ body.editorial-body { background: var(--color-black); }
 .rsv-steps { list-style: none; display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; counter-reset: paso; }
 .rsv-steps li {
   counter-increment: paso; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--color-muted); padding: 0.35rem 0.8rem; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 9999px;
+  color: #4f6b5c; padding: 0.35rem 0.8rem; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 9999px;
 }
 .rsv-steps li::before { content: counter(paso) ". "; }
-.rsv-steps li.active { color: #fff7ec; background: var(--color-accent); border-color: var(--color-accent); font-weight: 700; }
+.rsv-steps li.active { color: #fff; background: var(--color-accent); border-color: var(--color-accent); font-weight: 700; }
 .rsv-steps li.done { color: var(--color-accent); border-color: var(--color-gold-dim); }
 
 .rsv-section { border-top: 1px solid rgba(255, 255, 255, 0.06); padding: 1.35rem 0 0.35rem; }
 .rsv-section-title { font-family: var(--font-display); font-weight: 500; font-size: 1.35rem; margin-bottom: 1rem; }
 .rsv-section-title span { color: var(--color-accent); font-family: var(--font-sans); font-size: 0.8rem; letter-spacing: 0.15em; margin-right: 0.5rem; }
-.rsv-section-title em { color: var(--color-muted); font-size: 0.85rem; font-style: normal; }
+.rsv-section-title em { color: #4f6b5c; font-size: 0.85rem; font-style: normal; }
 .rsv-field { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.1rem; }
 .rsv-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 @media (max-width: 560px) { .rsv-grid-2 { grid-template-columns: 1fr; } }
-.rsv-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-gold-highlight); }
-.rsv-sublabel { display: block; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-muted); margin: 0.25rem 0 0.5rem; }
-.rsv-hint, .rsv-muted { color: var(--color-muted); font-size: 0.8rem; line-height: 1.5; }
+.rsv-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #8a6a14; }
+.rsv-sublabel { display: block; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: #4f6b5c; margin: 0.25rem 0 0.5rem; }
+.rsv-hint, .rsv-muted { color: #4f6b5c; font-size: 0.8rem; line-height: 1.5; }
 .rsv-input, .rsv-select {
-  width: 100%; padding: 0.8rem 0.95rem; background: rgba(255, 247, 236, 0.7); color: #fff;
+  width: 100%; padding: 0.8rem 0.95rem; background: rgba(255, 247, 236, 0.7); color: #0f3a2a;
   border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; font: inherit; font-size: 0.95rem; color-scheme: dark;
 }
 .rsv-input:focus, .rsv-select:focus { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.18); }
@@ -3377,7 +3377,7 @@ body.editorial-body { background: var(--color-black); }
 .rsv-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
 .rsv-chip {
   display: flex; flex-direction: column; gap: 0.2rem; padding: 0.75rem; text-align: center; cursor: pointer;
-  background: rgba(255, 247, 236, 0.6); color: #fff; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
+  background: rgba(255, 247, 236, 0.6); color: #0f3a2a; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
   transition: border-color 0.25s, background 0.25s;
 }
 .rsv-chip:hover { border-color: var(--color-gold-dim); }
@@ -3388,16 +3388,16 @@ body.editorial-body { background: var(--color-black); }
 .rsv-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 0.4rem; }
 .rsv-slot {
   padding: 0.55rem 0; border-radius: 8px; cursor: pointer; font: inherit; font-size: 0.88rem; font-variant-numeric: tabular-nums;
-  background: rgba(255, 247, 236, 0.6); color: #fff; border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 247, 236, 0.6); color: #0f3a2a; border: 1px solid rgba(255, 255, 255, 0.1);
 }
 .rsv-slot:hover:not([disabled]) { border-color: var(--color-gold-dim); }
-.rsv-slot.active { background: var(--color-accent); color: #fff7ec; border-color: var(--color-accent); font-weight: 700; }
+.rsv-slot.active { background: var(--color-accent); color: #fff; border-color: var(--color-accent); font-weight: 700; }
 .rsv-slot[disabled] { opacity: 0.3; cursor: not-allowed; text-decoration: line-through; }
 
 .rsv-extras-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.5rem; margin-bottom: 0.75rem; }
 .rsv-extra {
   display: flex; flex-direction: column; gap: 0.3rem; text-align: left; padding: 0.8rem 0.9rem; cursor: pointer; font: inherit;
-  background: rgba(255, 247, 236, 0.6); color: #fff; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
+  background: rgba(255, 247, 236, 0.6); color: #0f3a2a; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
   transition: border-color 0.25s, box-shadow 0.25s;
 }
 .rsv-extra:hover { border-color: var(--color-gold-dim); }
@@ -3405,11 +3405,11 @@ body.editorial-body { background: var(--color-black); }
 .rsv-extra-row { display: flex; justify-content: space-between; gap: 0.5rem; }
 .rsv-extra-name { font-weight: 600; font-size: 0.88rem; }
 .rsv-extra-price { color: var(--color-accent); font-size: 0.85rem; white-space: nowrap; }
-.rsv-extra-desc { color: var(--color-muted); font-size: 0.76rem; line-height: 1.4; }
-.rsv-extra-state { align-self: flex-end; font-size: 0.72rem; font-weight: 700; color: var(--color-muted); }
+.rsv-extra-desc { color: #4f6b5c; font-size: 0.76rem; line-height: 1.4; }
+.rsv-extra-state { align-self: flex-end; font-size: 0.72rem; font-weight: 700; color: #4f6b5c; }
 .rsv-extra.selected .rsv-extra-state { color: var(--color-accent); }
 
-.rsv-terms { display: flex; gap: 0.65rem; align-items: flex-start; font-size: 0.82rem; color: #D8D2C6; line-height: 1.5; cursor: pointer; }
+.rsv-terms { display: flex; gap: 0.65rem; align-items: flex-start; font-size: 0.82rem; color: #3f6552; line-height: 1.5; cursor: pointer; }
 .rsv-terms input { margin-top: 0.2rem; accent-color: #D4AF37; width: 1rem; height: 1rem; flex-shrink: 0; }
 .rsv-link { background: none; border: none; padding: 0; color: var(--color-accent); text-decoration: underline; cursor: pointer; font: inherit; }
 
@@ -3420,12 +3420,12 @@ body.editorial-body { background: var(--color-black); }
 .rsv-summary .rsv-muted { margin-top: 0.25rem; }
 .rsv-total { font-family: var(--font-display); font-size: 1.9rem; font-weight: 600; color: var(--color-accent); white-space: nowrap; font-variant-numeric: lining-nums; }
 .lux-heading, .editorial-headline, .lux-gradient-text, .rsv-title { font-variant-numeric: lining-nums; }
-.rsv-hold-note { font-size: 0.8rem; color: var(--color-muted); margin-bottom: 0.9rem; }
-.rsv-alert { color: #f3b1a7; background: rgba(220, 90, 70, 0.1); border: 1px solid rgba(220, 90, 70, 0.35); border-radius: 10px; padding: 0.7rem 0.9rem; font-size: 0.85rem; margin-bottom: 0.9rem; }
+.rsv-hold-note { font-size: 0.8rem; color: #4f6b5c; margin-bottom: 0.9rem; }
+.rsv-alert { color: #a3281a; background: rgba(220, 90, 70, 0.1); border: 1px solid rgba(220, 90, 70, 0.35); border-radius: 10px; padding: 0.7rem 0.9rem; font-size: 0.85rem; margin-bottom: 0.9rem; }
 
 .rsv-btn-primary {
   display: flex; align-items: center; justify-content: center; gap: 0.6rem; width: 100%; padding: 1.05rem;
-  background: linear-gradient(135deg, #D4AF37, #F5E5C9 55%, #C5A059); color: #fff7ec; border: none; border-radius: 12px;
+  background: linear-gradient(135deg, #D4AF37, #F5E5C9 55%, #C5A059); color: #0f3a2a; border: none; border-radius: 12px;
   font: inherit; font-weight: 800; letter-spacing: 0.12em; cursor: pointer; text-decoration: none; text-align: center;
   transition: box-shadow 0.35s var(--easing-lux), transform 0.35s var(--easing-lux), opacity 0.2s;
 }
@@ -3444,27 +3444,27 @@ body.editorial-body { background: var(--color-black); }
 .rsv-countdown { text-align: center; margin-bottom: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; }
 .rsv-countdown-time {
   font-family: var(--font-display); font-size: 3.2rem; font-weight: 500; letter-spacing: 0.06em;
-  color: var(--color-gold-highlight); font-variant-numeric: lining-nums tabular-nums;
+  color: #8a6a14; font-variant-numeric: lining-nums tabular-nums;
 }
-.rsv-countdown-time.urgent { color: #f3b1a7; }
+.rsv-countdown-time.urgent { color: #a3281a; }
 .rsv-hold-box {
   padding: 1.15rem 1.25rem; border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 14px; background: rgba(212, 175, 55, 0.04);
-  font-size: 0.88rem; line-height: 1.6; color: #D8D2C6;
+  font-size: 0.88rem; line-height: 1.6; color: #3f6552;
 }
 .rsv-pay-list { margin-top: 0.9rem; display: grid; gap: 0.55rem; }
 .rsv-pay-list > div { display: grid; grid-template-columns: 140px 1fr; align-items: center; gap: 0.75rem; }
-.rsv-pay-list dt { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-muted); }
+.rsv-pay-list dt { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: #4f6b5c; }
 .rsv-pay-list dd { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0; }
 @media (max-width: 480px) { .rsv-pay-list > div { grid-template-columns: 1fr; gap: 0.2rem; } }
 .rsv-copy-row { display: inline-flex; align-items: center; gap: 0.4rem; }
-.rsv-copy-row code { font-family: var(--font-sans); font-weight: 700; color: #fff; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.rsv-copy-row code { font-family: var(--font-sans); font-weight: 700; color: #0f3a2a; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
 .rsv-copy {
   background: transparent; color: var(--color-accent); border: 1px solid var(--color-gold-dim); border-radius: 9999px;
   padding: 0.2rem 0.6rem; font: inherit; font-size: 0.7rem; letter-spacing: 0.08em; cursor: pointer;
 }
 .rsv-copy:hover { background: rgba(212, 175, 55, 0.12); }
 .rsv-center { text-align: center; margin-top: 0.75rem; }
-.rsv-center-block { display: block; margin: 0.75rem auto 0; font-size: 0.8rem; color: var(--color-muted); }
+.rsv-center-block { display: block; margin: 0.75rem auto 0; font-size: 0.8rem; color: #4f6b5c; }
 .rsv-expired { text-align: center; display: flex; flex-direction: column; gap: 1rem; padding: 1rem 0; }
 
 @media (max-width: 1200px) {
