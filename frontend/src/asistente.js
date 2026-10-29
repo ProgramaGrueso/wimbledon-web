@@ -1,5 +1,5 @@
 import api from './services/api.js';
-import { crearMicrofono, crearVoz, vozDisponible } from './voz.js';
+import { crearMicrofono, crearVoz, crearVozNavegador, vozDisponible, vozNavegadorDisponible } from './voz.js';
 
 /**
  * Asistente flotante del hotel: una carita que abre un chat con el agente de negocio.
@@ -17,7 +17,7 @@ let enviando = false;
 let panel, lista, caja, boton;
 let marcoCara = null;   // iframe del avatar animado
 let voz = null;         // voz del asistente (solo si el backend la tiene activa)
-let altavozActivo = false;
+let altavozActivo = true;   // por defecto contesta con voz
 let botonAltavoz = null;
 
 function cargarHistorial() {
@@ -118,10 +118,11 @@ function avatarHablando(hablando) {
   marcoCara?.contentWindow?.postMessage({ t: 'voz', hablando }, location.origin);
 }
 
-/** Botones de micrófono y altavoz: solo aparecen si el backend tiene la voz activa. */
+/** Botones de micrófono y altavoz. Voz del navegador (es-CO, instantánea); si no hay, la del backend si está activa. */
 async function prepararVoz(cabecera, formulario) {
-  if (!(await vozDisponible())) return;
-  voz = crearVoz({ alHablar: avatarHablando });
+  if (vozNavegadorDisponible()) voz = crearVozNavegador({ alHablar: avatarHablando });
+  else if (await vozDisponible()) voz = crearVoz({ alHablar: avatarHablando });
+  else return;
 
   botonAltavoz = document.createElement('button');
   botonAltavoz.type = 'button';

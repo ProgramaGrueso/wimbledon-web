@@ -47,6 +47,47 @@ function trocear(texto) {
   return frases.slice(0, MAX_FRASES);
 }
 
+/** ¿El navegador puede hablar? (síntesis de voz nativa, sin servidor: arranca al instante) */
+export const vozNavegadorDisponible = () => 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+
+/** Mejor voz en español: colombiana (Google o la del sistema) → otra de Google en español → cualquiera en español. */
+function elegirVozEspanol() {
+  const voces = speechSynthesis.getVoices().filter((v) => /^es\b|^es[-_]/i.test(v.lang));
+  const google = (v) => /google/i.test(v.name);
+  const co = voces.filter((v) => /^es[-_]CO$/i.test(v.lang));
+  return co.find(google) || co[0] || voces.find((v) => google(v) && /^es[-_](US|MX|419)$/i.test(v.lang))
+    || voces.find(google) || voces[0] || null;
+}
+
+/** Misma interfaz que crearVoz, pero con la voz del navegador (es-CO). Habla toda la respuesta, frase por frase. */
+export function crearVozNavegador({ alHablar }) {
+  let turnoActual = 0;
+  const cortar = () => { turnoActual++; speechSynthesis.cancel(); alHablar(false); };
+  speechSynthesis.getVoices(); // Chrome las carga en segundo plano
+  return {
+    cortar,
+    empezar() { cortar(); return { id: turnoActual }; },
+    async decir(texto, turno) {
+      if (!turno || turno.id !== turnoActual) return;
+      const limpio = texto.replace(/[*_`#>]/g, '').replace(/^\s*[-•]\s+/gm, '').replace(/\p{Extended_Pictographic}/gu, '').replace(/\s+/g, ' ').trim();
+      // Por frases: Chrome corta los textos largos a mitad.
+      const frases = limpio.split(/(?<=[.!?…:])\s+/).map((f) => f.trim()).filter(Boolean);
+      if (!frases.length) return;
+      const voz = elegirVozEspanol();
+      frases.forEach((f, i) => {
+        const u = new SpeechSynthesisUtterance(f);
+        u.lang = voz?.lang || 'es-CO';
+        if (voz) u.voice = voz;
+        u.rate = 1.05;
+        if (i === 0) u.onstart = () => { if (turno.id === turnoActual) alHablar(true); };
+        if (i === frases.length - 1) u.onend = u.onerror = () => { if (turno.id === turnoActual) alHablar(false); };
+        speechSynthesis.speak(u);
+      });
+    },
+    fallo(turno) { if (turno && turno.id === turnoActual) cortar(); },
+  };
+}
+
 export function crearVoz({ alHablar }) {
   let turnoActual = 0;
   let sonando = null;
@@ -110,7 +151,7 @@ export function crearMicrofono({ alTexto, alEstado }) {
   const Reconocedor = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!Reconocedor) return null;
   const rec = new Reconocedor();
-  rec.lang = 'es-PE';
+  rec.lang = 'es-CO';
   rec.interimResults = false;
   rec.maxAlternatives = 1;
   let activo = false;
